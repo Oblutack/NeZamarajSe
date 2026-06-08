@@ -7,8 +7,8 @@
     <p class="text-xl text-gray-500 mb-8">
       Your personal CRM, cover letter generator, and automated job scraper for the Bosnian IT market.
     </p>
-    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition transform hover:-translate-y-1">
-      Login with Google
-    </button>
+    <%= button_to "Login with Google", user_google_oauth2_omniauth_authorize_path, 
+      data: { turbo: false },
+      class: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition transform hover:-translate-y-1" %>
   </div>
 </div>
