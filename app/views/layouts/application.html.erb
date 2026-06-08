@@ -24,7 +24,20 @@
   </head>
 
   <body>
-    <main class="container mx-auto mt-28 px-5 flex">
+    <!-- Add this Flash message block -->
+    <% if notice %>
+      <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+        <p><%= notice %></p>
+      </div>
+    <% end %>
+    <% if alert %>
+      <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+        <p><%= alert %></p>
+      </div>
+    <% end %>
+    <!-- End Flash message block -->
+
+    <main class="container mx-auto mt-4 px-5 flex flex-col">
       <%= yield %>
     </main>
   </body>
