@@ -1,5 +1,5 @@
 <!-- app/views/home/index.html.erb -->
-<div class="min-h-screen bg-gray-50 flex flex-col justify-center items-center">
+<div class="min-h-[70vh] bg-gray-50 flex flex-col justify-center items-center rounded-3xl mt-8">
   <div class="max-w-3xl text-center px-4">
     <h1 class="text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
       Ne Zamaraj Se. <span class="text-indigo-600">Automate your Job Hunt.</span>
@@ -7,8 +7,16 @@
     <p class="text-xl text-gray-500 mb-8">
       Your personal CRM, cover letter generator, and automated job scraper for the Bosnian IT market.
     </p>
-    <%= button_to "Login with Google", user_google_oauth2_omniauth_authorize_path, 
-      data: { turbo: false },
-      class: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition transform hover:-translate-y-1" %>
+    
+    <% if user_signed_in? %>
+      <div class="bg-green-100 text-green-800 p-4 rounded-lg inline-block shadow">
+        <p class="font-bold">You are authenticated and ready to go!</p>
+        <p class="text-sm mt-1">Next, we will build your CRM dashboard.</p>
+      </div>
+    <% else %>
+      <%= button_to "Login with Google", user_google_oauth2_omniauth_authorize_path, 
+            data: { turbo: false },
+            class: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition transform hover:-translate-y-1" %>
+    <% end %>
   </div>
 </div>

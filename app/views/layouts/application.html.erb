@@ -24,20 +24,23 @@
   </head>
 
   <body>
-    <!-- Add this Flash message block -->
+    <!-- 1. Render the Navbar at the very top -->
+    <%= render "shared/navbar" %>
+
+    <!-- 2. Flash messages -->
     <% if notice %>
-      <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+      <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 container mx-auto" role="alert">
         <p><%= notice %></p>
       </div>
     <% end %>
     <% if alert %>
-      <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+      <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 container mx-auto" role="alert">
         <p><%= alert %></p>
       </div>
     <% end %>
-    <!-- End Flash message block -->
 
-    <main class="container mx-auto mt-4 px-5 flex flex-col">
+    <!-- 3. Main content -->
+    <main class="container mx-auto px-5 flex flex-col">
       <%= yield %>
     </main>
   </body>
