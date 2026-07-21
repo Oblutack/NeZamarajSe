@@ -7,6 +7,7 @@ class User < ApplicationRecord
   has_many :applications, dependent: :destroy
   has_many :jobs, through: :applications
   has_many_attached :resumes
+  has_many :cover_letter_templates, dependent: :destroy
   
   # This method handles the OAuth payload
   def self.from_omniauth(auth)

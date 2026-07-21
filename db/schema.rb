@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_21_231935) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_21_232810) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -63,6 +63,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_21_231935) do
     t.index ["name"], name: "index_companies_on_name", unique: true
   end
 
+  create_table "cover_letter_templates", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "name"], name: "index_cover_letter_templates_on_user_id_and_name", unique: true
+    t.index ["user_id"], name: "index_cover_letter_templates_on_user_id"
+  end
+
   create_table "jobs", force: :cascade do |t|
     t.bigint "company_id", null: false
     t.datetime "created_at", null: false
@@ -99,5 +109,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_21_231935) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "applications", "jobs"
   add_foreign_key "applications", "users"
+  add_foreign_key "cover_letter_templates", "users"
   add_foreign_key "jobs", "companies"
 end

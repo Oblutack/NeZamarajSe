@@ -1,0 +1,32 @@
+<!-- app/views/cover_letter_templates/_form.html.erb -->
+<%= form_with model: template, class: "space-y-6" do |f| %>
+  <% if template.errors.any? %>
+    <div class="bg-red-50 text-red-700 p-4 rounded-md">
+      <ul class="list-disc pl-5">
+        <% template.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :name, "Template Name (e.g., 'Senior Backend Role')", class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :name, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" %>
+  </div>
+
+  <div>
+    <div class="flex justify-between items-end">
+      <%= f.label :body, "Email Body", class: "block text-sm font-medium text-gray-700" %>
+      <span class="text-xs text-gray-500 font-mono bg-gray-100 p-1 rounded">
+        Tags: {{company_name}}, {{job_title}}, {{location}}
+      </span>
+    </div>
+    <%= f.text_area :body, rows: 10, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border font-mono" %>
+  </div>
+
+  <div class="flex justify-end space-x-3">
+    <%= link_to "Cancel", cover_letter_templates_path, class: "bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none" %>
+    <%= f.submit class: "cursor-pointer inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none" %>
+  </div>
+<% end %>
