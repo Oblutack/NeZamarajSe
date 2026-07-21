@@ -6,7 +6,8 @@ class User < ApplicationRecord
 
   has_many :applications, dependent: :destroy
   has_many :jobs, through: :applications
-
+  has_many_attached :resumes
+  
   # This method handles the OAuth payload
   def self.from_omniauth(auth)
     # Find the user by their Google UID, or create them if they don't exist
