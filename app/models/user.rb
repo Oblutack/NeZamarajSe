@@ -1,9 +1,11 @@
 # app/models/user.rb
 class User < ApplicationRecord
-  # Include default devise modules.
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :omniauthable, omniauth_providers: [ :google_oauth2 ] # <-- Add this
+         :omniauthable, omniauth_providers: [ :google_oauth2 ]
+
+  has_many :applications, dependent: :destroy
+  has_many :jobs, through: :applications
 
   # This method handles the OAuth payload
   def self.from_omniauth(auth)

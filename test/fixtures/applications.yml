@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  job: one
+  status: MyString
+  applied_at: 2026-07-22 01:12:03
+
+two:
+  user: two
+  job: two
+  status: MyString
+  applied_at: 2026-07-22 01:12:03
