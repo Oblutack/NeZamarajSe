@@ -1,0 +1,60 @@
+<!-- app/views/applications/index.html.erb -->
+<div class="max-w-screen-2xl mx-auto py-8 overflow-hidden flex flex-col h-[85vh]">
+  <div class="mb-6 px-4 sm:px-6 lg:px-8">
+    <h2 class="text-3xl font-extrabold text-gray-900">My CRM</h2>
+    <p class="text-sm text-gray-500 mt-1">Drag and drop jobs to track your application pipeline.</p>
+  </div>
+
+  <!-- Kanban Board Container -->
+  <div class="flex-1 overflow-x-auto flex space-x-6 px-4 sm:px-6 lg:px-8 pb-4">
+    
+    <% @grouped_applications.each do |status, applications| %>
+      
+      <!-- COLUMN -->
+      <!-- We attach Stimulus drop listeners to the column -->
+      <div class="flex-shrink-0 w-80 bg-gray-100 rounded-xl flex flex-col"
+           data-controller="drag"
+           data-action="dragover->drag#dragOver drop->drag#drop"
+           data-status="<%= status %>">
+        
+        <!-- Column Header -->
+        <div class="p-4 border-b border-gray-200">
+          <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex justify-between">
+            <%= status.titleize %>
+            <span class="bg-gray-200 text-gray-600 py-0.5 px-2 rounded-full text-xs"><%= applications.count %></span>
+          </h3>
+        </div>
+
+        <!-- Column Body (List of Cards) -->
+        <div class="flex-1 p-3 overflow-y-auto space-y-3">
+          <% applications.each do |app| %>
+            
+            <!-- CARD -->
+            <!-- We make it draggable and attach Stimulus drag listeners -->
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-grab active:cursor-grabbing hover:shadow transition transform duration-100"
+                 draggable="true"
+                 data-controller="drag"
+                 data-action="dragstart->drag#dragStart dragend->drag#dragEnd"
+                 data-id="<%= app.id %>">
+              
+              <div class="flex justify-between items-start mb-2">
+                <h4 class="text-sm font-bold text-gray-900 leading-tight"><%= app.job.title %></h4>
+                <!-- Delete Button -->
+                <%= button_to "×", application_path(app), method: :delete, data: { turbo_confirm: "Remove from CRM?" }, class: "text-gray-400 hover:text-red-500 text-lg leading-none" %>
+              </div>
+              <p class="text-xs font-medium text-indigo-600 mb-2"><%= app.job.company.name %></p>
+              
+              <!-- Hidden form used by Stimulus to update the status -->
+              <%= form_with model: app, id: "move-form-#{app.id}", class: "hidden" do |f| %>
+                <%= f.hidden_field :status, class: "status-input" %>
+              <% end %>
+
+            </div>
+
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    
+  </div>
+</div>

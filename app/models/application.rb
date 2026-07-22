@@ -3,8 +3,8 @@ class Application < ApplicationRecord
   belongs_to :user
   belongs_to :job
 
-  # The Rails Way to handle state machines / CRM lanes
-  enum status: {
+  # The Rails 8 Way to handle state machines / CRM lanes
+  enum :status, {
     wishlist: "wishlist",
     applied: "applied",
     interviewing: "interviewing",

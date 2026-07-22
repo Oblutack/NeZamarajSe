@@ -1,0 +1,43 @@
+<!-- app/views/jobs/index.html.erb -->
+<div class="max-w-7xl mx-auto py-8">
+  <div class="md:flex md:items-center md:justify-between mb-8">
+    <div class="flex-1 min-w-0">
+      <h2 class="text-3xl font-extrabold text-gray-900">
+        Job Market
+      </h2>
+      <p class="mt-2 text-sm text-gray-500">Latest IT jobs scraped from Bosnian job boards.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <% @jobs.each do |job| %>
+      <div class="bg-white overflow-hidden shadow rounded-lg border border-gray-200 flex flex-col transition hover:shadow-md">
+        <div class="px-4 py-5 flex-grow">
+          <div class="flex justify-between items-start">
+            <h3 class="text-lg font-bold text-gray-900 leading-tight mb-1"><%= job.title %></h3>
+          </div>
+          <p class="text-sm font-medium text-indigo-600 mb-4"><%= job.company.name %></p>
+          
+          <div class="text-xs text-gray-500 flex items-center space-x-2">
+            <span><%= job.location || "Bosnia and Herzegovina" %></span>
+            <span>&bull;</span>
+            <span>Scraped <%= time_ago_in_words(job.created_at) %> ago</span>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50 px-4 py-3 flex justify-between items-center border-t border-gray-200">
+          <%= link_to "View Original", job.url, target: "_blank", class: "text-xs font-medium text-gray-500 hover:text-gray-900 underline" %>
+          
+          <% if @saved_job_ids.include?(job.id) %>
+            <span class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100">
+              Saved in CRM
+            </span>
+          <% else %>
+            <!-- The Magic Button to add it to the CRM -->
+            <%= button_to "Save to Wishlist", applications_path(job_id: job.id), class: "inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
