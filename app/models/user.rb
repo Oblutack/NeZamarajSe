@@ -7,6 +7,12 @@ class User < ApplicationRecord
   has_many :applications, dependent: :destroy
   has_many :jobs, through: :applications
   has_many_attached :resumes
+  validates :resumes,
+            content_type: { in: "application/pdf", message: "must be a valid PDF format" },
+            size: { less_than: 5.megabytes, message: "must be under 5MB" }
+
+  # --- SECURITY: ENCRYPT OAUTH TOKENS IN THE DB ---
+  encrypts :access_token, :refresh_token
   has_many :cover_letter_templates, dependent: :destroy
 
   # This method handles the OAuth payload

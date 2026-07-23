@@ -80,3 +80,7 @@ gem "sidekiq", "~> 8.1"
 gem "sidekiq-cron", "~> 2.4"
 
 gem "google-apis-gmail_v1", "~> 0.52.0"
+
+gem "active_storage_validations", "~> 3.0"
+
+gem "rack-attack", "~> 6.8"
