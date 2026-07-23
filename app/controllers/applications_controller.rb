@@ -35,6 +35,30 @@ class ApplicationsController < ApplicationController
     redirect_to crm_path, notice: "Removed from CRM.", status: :see_other
   end
 
+  def compose
+    @application = current_user.applications.find(params[:id])
+    @templates = current_user.cover_letter_templates
+    @resumes = current_user.resumes
+  end
+
+  def dispatch_email
+    @application = current_user.applications.find(params[:id])
+    template_id = params[:template_id]
+    resume_blob_id = params[:resume_blob_id]
+
+    if template_id.present? && resume_blob_id.present?
+      # 1. Optimistic Update: Move it to applied immediately so the UI feels instant
+      @application.update!(status: "applied", applied_at: Time.current)
+
+      # 2. Fire off the background job!
+      SendApplicationJob.perform_later(@application.id, template_id, resume_blob_id)
+
+      redirect_to crm_path, notice: "Application queued! The email is being sent in the background."
+    else
+      redirect_to compose_application_path(@application), alert: "Please select both a template and a resume."
+    end
+  end
+
   private
 
   def application_params

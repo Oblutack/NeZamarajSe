@@ -18,7 +18,12 @@ Rails.application.routes.draw do
 
   # --- PHASE 4 ROUTES (The Job Market & CRM) ---
   resources :jobs, only: [ :index ]
-  resources :applications, only: [ :create, :update, :destroy ]
+  resources :applications, only: [ :create, :update, :destroy ] do
+    member do
+      get :compose       # The page with the dropdowns
+      post :dispatch_email # The action that triggers Sidekiq
+    end
+  end
   get "/crm", to: "applications#index", as: :crm
 
   root "home#index"
