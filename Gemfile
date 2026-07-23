@@ -78,3 +78,5 @@ gem "omniauth-rails_csrf_protection", "~> 2.0"
 gem "sidekiq", "~> 8.1"
 
 gem "sidekiq-cron", "~> 2.4"
+
+gem "google-apis-gmail_v1", "~> 0.52.0"

@@ -282,12 +282,11 @@ Devise.setup do |config|
     Rails.application.credentials.dig(:google, :client_id),
     Rails.application.credentials.dig(:google, :client_secret),
     {
-      # We request 'offline' access so Google gives us a refresh_token
-      # This is critical so Sidekiq can send emails when the user is not actively on the site
       access_type: "offline",
       prompt: "consent",
       select_account: true,
-      scope: "email, profile" # We will add Gmail scopes later in the project
+      # UPDATE THIS LINE to include the Gmail scope:
+      scope: "email, profile, https://www.googleapis.com/auth/gmail.send"
     }
 
   # ==> Warden configuration
