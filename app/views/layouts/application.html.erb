@@ -27,19 +27,36 @@
     <!-- 1. Render the Navbar at the very top -->
     <%= render "shared/navbar" %>
 
-    <!-- 2. Flash messages -->
-    <% if notice %>
-      <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 container mx-auto" role="alert">
-        <p><%= notice %></p>
-      </div>
-    <% end %>
-    <% if alert %>
-      <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 container mx-auto" role="alert">
-        <p><%= alert %></p>
-      </div>
-    <% end %>
+    <!-- FLOATING TOAST CONTAINER -->
+    <div class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+      <% if notice %>
+        <div data-controller="flash" 
+             class="pointer-events-auto bg-gray-900 text-white p-4 rounded-xl shadow-lg border border-gray-700 flex items-center justify-between transform transition-all duration-300 opacity-100 translate-y-0">
+          <div class="flex items-center gap-3">
+            <span class="text-green-400 text-xl">✓</span>
+            <p class="text-sm font-medium"><%= notice %></p>
+          </div>
+          <button data-action="click->flash#dismiss" class="text-gray-400 hover:text-white transition">
+            ✕
+          </button>
+        </div>
+      <% end %>
 
-    <!-- 3. Main content -->
+      <% if alert %>
+        <div data-controller="flash" 
+             class="pointer-events-auto bg-red-50 text-red-800 p-4 rounded-xl shadow-lg border border-red-200 flex items-center justify-between transform transition-all duration-300 opacity-100 translate-y-0">
+          <div class="flex items-center gap-3">
+            <span class="text-red-500 text-xl">⚠</span>
+            <p class="text-sm font-medium"><%= alert %></p>
+          </div>
+          <button data-action="click->flash#dismiss" class="text-red-400 hover:text-red-700 transition">
+            ✕
+          </button>
+        </div>
+      <% end %>
+    </div>
+    <!-- END FLOATING TOAST CONTAINER -->
+
     <main class="container mx-auto px-5 flex flex-col">
       <%= yield %>
     </main>
