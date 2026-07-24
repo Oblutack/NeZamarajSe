@@ -59,6 +59,49 @@ class ApplicationsController < ApplicationController
     end
   end
 
+  def bulk_compose
+    # params[:application_ids] comes in as an array of strings: ["1", "4", "5"]
+    @applications = current_user.applications.where(id: params[:application_ids])
+
+    if @applications.empty?
+      redirect_to crm_path, alert: "No applications selected."
+      return
+    end
+
+    @templates = current_user.cover_letter_templates
+    @resumes = current_user.resumes
+  end
+
+  def bulk_dispatch
+    @applications = current_user.applications.where(id: params[:application_ids])
+    template_id = params[:template_id]
+    resume_blob_id = params[:resume_blob_id]
+
+    if template_id.present? && resume_blob_id.present?
+
+      @applications.each_with_index do |application, index|
+        # 1. Optimistic UI Update
+        application.update!(status: "applied", applied_at: Time.current)
+
+        # 2. THE ANTI-SPAM DELAY ENGINE
+        # App 0 -> waits 0 minutes (sends now)
+        # App 1 -> waits 5 minutes
+        # App 2 -> waits 10 minutes
+        delay_time = (index * 5).minutes
+
+        SendApplicationJob.set(wait: delay_time).perform_later(
+          application.id,
+          template_id,
+          resume_blob_id
+        )
+      end
+
+      redirect_to crm_path, notice: "Campaign Launched! 🚀 #{@applications.count} applications are securely queued."
+    else
+      redirect_to crm_path, alert: "Campaign failed: Please select a template and resume."
+    end
+  end
+
   private
 
   def application_params
