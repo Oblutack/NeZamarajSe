@@ -50,6 +50,8 @@ module Scrapers
             puts "✨ New Job: #{title} @ #{company.name}"
             job.save!
           end
+          # This makes the bot look like a human reading the page
+          sleep(rand(1.0..3.0))
         end
 
         puts "✅ Scraping complete!"
