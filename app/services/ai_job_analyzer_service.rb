@@ -1,0 +1,75 @@
+# app/services/ai_job_analyzer_service.rb
+require "open-uri"
+require "nokogiri"
+
+class AiJobAnalyzerService
+  def self.call(job)
+    new(job).call
+  end
+
+  def initialize(job)
+    @job = job
+    @client = OpenAI::Client.new
+  end
+
+  def call
+    puts "🤖 AI analyzing job: #{@job.title}..."
+
+    # 1. Fetch the actual job posting page
+    begin
+      html = URI.open(@job.url, "User-Agent" => "Mozilla/5.0")
+      doc = Nokogiri::HTML(html)
+
+      # Strip noisy HTML tags so we don't confuse the AI (and save tokens)
+      doc.search("script, style, nav, footer, header").remove
+
+      # Convert the DOM to raw text, removing excessive whitespace
+      raw_text = doc.text.gsub(/\s+/, " ").strip
+
+      # Truncate to ~4000 characters just to be safe with token limits
+      text_to_analyze = raw_text[0..4000]
+    rescue StandardError => e
+      puts "❌ Failed to fetch inner job URL: #{e.message}"
+      return
+    end
+
+    # 2. Construct the AI Prompt
+    prompt = <<~PROMPT
+      You are an expert HR data extractor. Read the following job description and extract the HR contact email (if any) and the application deadline/expiration date.
+      Return ONLY a valid JSON object. Do not include markdown formatting or explanations.
+      Keys required:
+      - "hr_email": The email address to send applications to (or null if none found).
+      - "expiration_date": The deadline date in YYYY-MM-DD format (or null if none found).
+
+      Job Description:
+      #{text_to_analyze}
+    PROMPT
+
+    # 3. Ask Groq (Llama-3)
+    begin
+      response = @client.chat(
+        parameters: {
+          model: "llama-3.1-8b-instant", # Updated model name!
+          messages: [ { role: "user", content: prompt } ],
+          temperature: 0.1,
+          response_format: { type: "json_object" }
+        }
+      )
+
+      # 4. Parse the JSON and Save to Postgres
+      result_json = response.dig("choices", 0, "message", "content")
+      result = JSON.parse(result_json)
+
+      @job.update!(
+        hr_email: result["hr_email"],
+        expires_at: result["expiration_date"]
+      )
+
+      puts "✅ AI Extracted -> Email: #{@job.hr_email || 'None'}, Expires: #{@job.expires_at || 'None'}"
+    rescue JSON::ParserError
+      puts "❌ AI returned invalid JSON."
+    rescue StandardError => e
+      puts "❌ AI API Error: #{e.message}"
+    end
+  end
+end
