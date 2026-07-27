@@ -23,7 +23,7 @@ class ResumesController < ApplicationController
     @resume = current_user.resumes.find(params[:id])
     # Active Storage Magic: .purge deletes the file from disk AND removes the database record
     @resume.purge
-    
+
     # In Rails 7/Hotwire, redirects after a DELETE request must include status: :see_other (303)
     redirect_to resumes_path, notice: "Resume deleted.", status: :see_other
   end

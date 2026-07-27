@@ -7,8 +7,8 @@ class CreateCoverLetterTemplates < ActiveRecord::Migration[7.1]
 
       t.timestamps
     end
-    
+
     # A user shouldn't have two templates with the exact same name
-    add_index :cover_letter_templates, [:user_id, :name], unique: true
+    add_index :cover_letter_templates, [ :user_id, :name ], unique: true
   end
 end

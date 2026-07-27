@@ -1,7 +1,7 @@
 # app/controllers/cover_letter_templates_controller.rb
 class CoverLetterTemplatesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_template, only: [:edit, :update, :destroy]
+  before_action :set_template, only: [ :edit, :update, :destroy ]
 
   def index
     @templates = current_user.cover_letter_templates.order(created_at: :desc)
@@ -13,7 +13,7 @@ class CoverLetterTemplatesController < ApplicationController
 
   def create
     @template = current_user.cover_letter_templates.build(template_params)
-    
+
     if @template.save
       redirect_to cover_letter_templates_path, notice: "Template created successfully."
     else

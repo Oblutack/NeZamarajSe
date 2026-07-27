@@ -27,8 +27,8 @@ class DeviseCreateUsers < ActiveRecord::Migration[7.1]
 
     add_index :users, :email,                unique: true
     add_index :users, :reset_password_token, unique: true
-    
+
     # Add a composite index to ensure a Google user is unique
-    add_index :users, [:provider, :uid], unique: true
+    add_index :users, [ :provider, :uid ], unique: true
   end
 end

@@ -2,11 +2,11 @@
 
 # We define a hash of our scheduled jobs
 schedule = {
-  'scrape_dzobs_daily' => {
+  "scrape_dzobs_daily" => {
     # Run every day at 3:00 AM (Cron syntax)
-    'cron'  => '0 3 * * *',
-    'class' => 'ScrapeDzobsJob',
-    'queue' => 'default'
+    "cron"  => "0 3 * * *",
+    "class" => "ScrapeDzobsJob",
+    "queue" => "default"
   }
 }
 

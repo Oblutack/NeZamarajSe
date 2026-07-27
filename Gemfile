@@ -84,3 +84,5 @@ gem "google-apis-gmail_v1", "~> 0.52.0"
 gem "active_storage_validations", "~> 3.0"
 
 gem "rack-attack", "~> 6.8"
+
+gem "ruby-openai", "~> 8.3"
