@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_27_204908) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_28_195131) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -55,9 +55,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_27_204908) do
   end
 
   create_table "companies", force: :cascade do |t|
+    t.string "address"
+    t.string "city"
     t.datetime "created_at", null: false
     t.string "domain"
+    t.string "industry_code"
+    t.boolean "is_cold_outreach", default: false
     t.string "name", null: false
+    t.string "primary_email"
     t.datetime "updated_at", null: false
     t.string "website"
     t.index ["name"], name: "index_companies_on_name", unique: true
