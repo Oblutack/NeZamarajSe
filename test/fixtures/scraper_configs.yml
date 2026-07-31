@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  site_name: MyString
+  url: MyString
+  card_selector: MyString
+  title_selector: MyString
+  company_selector: MyString
+  link_selector: MyString
+  active: false
+
+two:
+  site_name: MyString
+  url: MyString
+  card_selector: MyString
+  title_selector: MyString
+  company_selector: MyString
+  link_selector: MyString
+  active: false

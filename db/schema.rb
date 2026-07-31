@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_28_195131) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_31_192433) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -92,6 +92,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_195131) do
     t.index ["company_id"], name: "index_jobs_on_company_id"
     t.index ["external_id"], name: "index_jobs_on_external_id", unique: true
     t.index ["url"], name: "index_jobs_on_url", unique: true
+  end
+
+  create_table "scraper_configs", force: :cascade do |t|
+    t.boolean "active", default: true
+    t.string "card_selector"
+    t.string "company_selector"
+    t.datetime "created_at", null: false
+    t.string "link_selector"
+    t.string "site_name"
+    t.string "title_selector"
+    t.datetime "updated_at", null: false
+    t.string "url"
   end
 
   create_table "users", force: :cascade do |t|
