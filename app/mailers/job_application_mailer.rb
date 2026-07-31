@@ -1,19 +1,20 @@
 # app/mailers/job_application_mailer.rb
 class JobApplicationMailer < ApplicationMailer
-  # This builds the email but DOES NOT send it (Google API will do the sending)
   def apply(user, job, template, resume)
-    # Use our smart tags to dynamically render the text
     @body = template.render_content(job)
-
-    # Active Storage Magic: Download the PDF from disk/S3 and attach it to the email
     attachments[resume.filename.to_s] = resume.download
 
-    # Create the mail object.
-    # For now, we'll send it to your OWN email address so we don't accidentally spam real companies while testing!
+    # Figure out who we *want* to email
+    intended_target = job.hr_email || job.company.primary_email || "NO_EMAIL_FOUND"
+
+    # TRAINING WHEELS: Force the email to go to YOU, but tag the subject line
+    # so you can see who it was supposed to go to.
+    safe_to_address = user.email
+
     mail(
-      to: user.email, # TODO: Change to job.company.email in production
+      to: safe_to_address, 
       from: user.email,
-      subject: "Application: #{job.title}"
+      subject: "[TEST: Intended for #{intended_target}] Application: #{job.title}"
     )
   end
 end
