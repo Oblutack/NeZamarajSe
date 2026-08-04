@@ -11,6 +11,7 @@
         <% if user_signed_in? %>
           <%= link_to "Job Market", jobs_path, class: "text-sm font-medium text-gray-500 hover:text-gray-900" %>
           <%= link_to "My CRM", crm_path, class: "text-sm font-medium text-gray-500 hover:text-gray-900" %>
+          <%= link_to "Radar Settings", edit_user_preference_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-800" %>
           <%= link_to "Asset Library", resumes_path, class: "text-sm font-medium text-gray-500 hover:text-gray-900" %>
           <%= link_to "Templates", cover_letter_templates_path, class: "text-sm font-medium text-gray-500 hover:text-gray-900" %>
 

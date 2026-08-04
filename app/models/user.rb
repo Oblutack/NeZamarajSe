@@ -15,6 +15,22 @@ class User < ApplicationRecord
   encrypts :access_token, :refresh_token
   has_many :cover_letter_templates, dependent: :destroy
 
+  # NEW: A user has exactly ONE preference profile
+  has_one :user_preference, dependent: :destroy
+
+  # NEW: Automatically create preferences after Google OAuth
+  after_create :create_default_preferences
+
+  private
+
+  def create_default_preferences
+    create_user_preference(
+      keywords: "Developer, Software, IT",
+      location: "Bosnia",
+      receive_daily_alerts: true
+    )
+  end
+
   # This method handles the OAuth payload
   def self.from_omniauth(auth)
     # Find the user, or initialize a new one if they don't exist yet

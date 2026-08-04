@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_31_192433) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_04_213001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -106,6 +106,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_31_192433) do
     t.string "url"
   end
 
+  create_table "user_preferences", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "keywords"
+    t.string "location"
+    t.boolean "receive_daily_alerts", default: true
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_user_preferences_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "access_token"
     t.datetime "created_at", null: false
@@ -130,4 +140,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_31_192433) do
   add_foreign_key "applications", "users"
   add_foreign_key "cover_letter_templates", "users"
   add_foreign_key "jobs", "companies"
+  add_foreign_key "user_preferences", "users"
 end

@@ -3,6 +3,8 @@ require "sidekiq/web"
 require "sidekiq/cron/web"
 
 Rails.application.routes.draw do
+  get "user_preferences/edit"
+  get "user_preferences/update"
   devise_for :users, controllers: {
     omniauth_callbacks: "users/omniauth_callbacks"
   }
@@ -15,6 +17,8 @@ Rails.application.routes.draw do
   # --- ASSETS & TEMPLATES ---
   resources :resumes, only: [ :index, :create, :destroy ]
   resources :cover_letter_templates, except: [ :show ]
+
+  resource :user_preference, only: [ :edit, :update ]
 
   # --- PHASE 4 ROUTES (The Job Market & CRM) ---
   resources :jobs, only: [ :index ]
