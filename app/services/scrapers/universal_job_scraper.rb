@@ -54,7 +54,7 @@ module Scrapers
             job_url = relative_url.start_with?("http") ? relative_url : "#{base_url.scheme}://#{base_url.host}#{relative_url}"
 
             company = Company.find_or_create_by!(name: company_name)
-            job = Job.find_or_initialize_by(url: job_url)
+            job = Job.find_or_initialize_by(url: job_url)‚‚‚‚
             job.title = title
             job.company = company
             job.description = "Scraped via Headless Chrome from #{@config.site_name}"
