@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_04_213001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_161904) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -100,6 +100,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_04_213001) do
     t.string "company_selector"
     t.datetime "created_at", null: false
     t.string "link_selector"
+    t.string "next_page_selector"
     t.string "site_name"
     t.string "title_selector"
     t.datetime "updated_at", null: false

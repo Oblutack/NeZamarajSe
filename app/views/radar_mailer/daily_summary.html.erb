@@ -1,0 +1,26 @@
+<!-- app/views/radar_mailer/daily_summary.html.erb -->
+<h2>Good morning!</h2>
+<p>Our AI scraper found <strong><%= @jobs.count %></strong> new jobs matching your keywords: <em><%= @user.user_preference.keywords %></em>.</p>
+
+<ul style="list-style-type: none; padding: 0;">
+  <% @jobs.each do |job| %>
+    <li style="margin-bottom: 20px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px;">
+      <h3 style="margin: 0 0 5px 0; color: #111827;"><%= job.title %></h3>
+      <p style="margin: 0 0 10px 0; color: #4f46e5; font-weight: bold;"><%= job.company.name %></p>
+      
+      <p style="margin: 0; font-size: 12px; color: #6b7280;">
+        📍 <%= job.location || "Remote/Bosnia" %>
+      </p>
+      
+      <div style="margin-top: 15px;">
+        <a href="http://localhost:3000/jobs" style="background-color: #4f46e5; color: white; padding: 8px 12px; text-decoration: none; border-radius: 5px; font-size: 14px;">
+          View in Job Market
+        </a>
+      </div>
+    </li>
+  <% end %>
+</ul>
+
+<p style="font-size: 12px; color: #9ca3af; margin-top: 30px;">
+  You are receiving this because you enabled Daily Radar Alerts in your NeZamarajSe settings.
+</p>

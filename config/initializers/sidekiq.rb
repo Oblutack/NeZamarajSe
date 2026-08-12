@@ -7,6 +7,11 @@ schedule = {
     "cron"  => "0 3 * * *",
     "class" => "ScrapeDzobsJob",
     "queue" => "default"
+  },
+  "send_radar_emails" => {
+    "cron"  => "0 8 * * *", # 8:00 AM Server Time
+    "class" => "SendDailyRadarJob",
+    "queue" => "default"
   }
 }
 

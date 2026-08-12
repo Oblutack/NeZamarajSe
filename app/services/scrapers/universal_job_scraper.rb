@@ -11,44 +11,66 @@ module Scrapers
     def call
       puts "🕷️ Starting Universal Scraper for: #{@config.site_name}..."
 
-      begin
-        html = URI.open(@config.url, "User-Agent" => "Mozilla/5.0")
-        doc = Nokogiri::HTML(html)
+      current_url = @config.url
+      pages_scraped = 0
+      max_pages = 5 # Safety limit
 
-        job_cards = doc.css(@config.card_selector)
-        puts "Found #{job_cards.count} jobs on #{@config.site_name}."
+      while current_url.present? && pages_scraped < max_pages
+        puts "📄 Scraping Page #{pages_scraped + 1}: #{current_url}"
 
-        job_cards.each do |card|
-          title = extract_text(card, @config.title_selector)
-          company_name = extract_text(card, @config.company_selector)
-          relative_url = extract_link(card, @config.link_selector)
+        begin
+          html = URI.open(current_url, "User-Agent" => "Mozilla/5.0")
+          doc = Nokogiri::HTML(html)
 
-          next if title.blank? || company_name.blank? || relative_url.blank?
+          job_cards = doc.css(@config.card_selector)
+          puts "   Found #{job_cards.count} jobs on this page."
 
-          # Clean up the URL (handles https://, http://, or relative paths like /job/123)
-          base_url = URI.parse(@config.url)
-          job_url = relative_url.start_with?("http") ? relative_url : "#{base_url.scheme}://#{base_url.host}#{relative_url}"
+          job_cards.each do |card|
+            title = extract_text(card, @config.title_selector)
+            company_name = extract_text(card, @config.company_selector)
+            relative_url = extract_link(card, @config.link_selector)
 
-          # Insert into DB
-          company = Company.find_or_create_by!(name: company_name)
-          job = Job.find_or_initialize_by(url: job_url)
-          job.title = title
-          job.company = company
-          job.description = "Scraped from #{@config.site_name}"
+            next if title.blank? || company_name.blank? || relative_url.blank?
 
-          if job.new_record?
-            puts "✨ New Job: #{title} @ #{company.name}"
-            job.save!
+            base_url = URI.parse(@config.url)
+            job_url = relative_url.start_with?("http") ? relative_url : "#{base_url.scheme}://#{base_url.host}#{relative_url}"
 
-            # Send to the AI Pipeline!
-            ::AnalyzeJob.perform_later(job.id)
+            company = Company.find_or_create_by!(name: company_name)
+            job = Job.find_or_initialize_by(url: job_url)
+            job.title = title
+            job.company = company
+            job.description = "Scraped from #{@config.site_name}"
+
+            if job.new_record?
+              puts "   ✨ New Job: #{title} @ #{company.name}"
+              job.save!
+              ::AnalyzeJob.perform_later(job.id)
+            end
+
+            sleep(rand(0.5..1.5))
           end
 
-          sleep(rand(0.5..1.5))
+          # PAGINATION LOGIC
+          pages_scraped += 1
+
+          if @config.next_page_selector.present?
+            next_button = doc.at_css(@config.next_page_selector)
+            if next_button && next_button["href"]
+              current_url = next_button["href"].start_with?("http") ? next_button["href"] : "#{URI.parse(@config.url).scheme}://#{URI.parse(@config.url).host}#{next_button['href']}"
+            else
+              current_url = nil # No more pages found
+            end
+          else
+            current_url = nil # Pagination not configured
+          end
+
+        rescue StandardError => e
+          puts "❌ Scraping failed on page #{pages_scraped + 1}: #{e.message}"
+          current_url = nil # Break the loop on failure
         end
-      rescue StandardError => e
-        puts "❌ Scraping failed for #{@config.site_name}: #{e.message}"
       end
+
+      puts "✅ Finished scraping #{@config.site_name}. Total pages: #{pages_scraped}"
     end
 
     private
@@ -61,10 +83,7 @@ module Scrapers
 
     def extract_link(card, selector)
       return nil if selector.blank?
-      # If the card ITSELF is the 'a' tag, we just grab its href attribute
       return card["href"] if selector == "self"
-
-      # Otherwise, find the inner 'a' tag
       element = card.at_css(selector)
       element ? element["href"] : nil
     end
