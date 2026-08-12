@@ -86,3 +86,5 @@ gem "active_storage_validations", "~> 3.0"
 gem "rack-attack", "~> 6.8"
 
 gem "ruby-openai", "~> 8.3"
+
+gem "ferrum", "~> 0.17.2"

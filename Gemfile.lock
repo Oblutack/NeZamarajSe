@@ -145,6 +145,12 @@ GEM
       multipart-post (~> 2.0)
     faraday-net_http (3.4.4)
       net-http (~> 0.5)
+    ferrum (0.17.2)
+      addressable (~> 2.5)
+      base64 (~> 0.2)
+      concurrent-ruby (~> 1.1)
+      webrick (~> 1.7)
+      websocket-driver (~> 0.7)
     ffi (1.17.4-aarch64-linux-gnu)
     ffi (1.17.4-aarch64-linux-musl)
     ffi (1.17.4-arm-linux-gnu)
@@ -519,6 +525,7 @@ GEM
       actionview (>= 8.0.0)
       bindex (>= 0.4.0)
       railties (>= 8.0.0)
+    webrick (1.9.2)
     websocket (1.2.11)
     websocket-driver (0.8.1)
       base64
@@ -548,6 +555,7 @@ DEPENDENCIES
   capybara
   debug
   devise (~> 5.0)
+  ferrum (~> 0.17.2)
   google-apis-gmail_v1 (~> 0.52.0)
   image_processing (~> 1.2)
   importmap-rails
