@@ -42,11 +42,11 @@ Database credentials/name are in `config/database.yml` (local Postgres, `ne_zama
 ## Architecture
 
 ### Data ingestion & enrichment pipeline
-1. `ScraperConfig` rows (DB-driven, not hardcoded) define per-site CSS selectors (`card_selector`, `title_selector`, `company_selector`, `link_selector`, `next_page_selector`) and the seed URL. `Scrapers::UniversalJobScraper` reads a config, drives Ferrum headless Chrome, paginates up to 5 pages, and `find_or_create`s `Company`/`Job` rows.
-2. New `Job` rows enqueue `AnalyzeJob` → `AiJobAnalyzerService`, which re-fetches the job's own URL, strips it to text, and asks Groq/Llama-3.1 for `hr_email` + `expiration_date` as strict JSON.
-3. If AI enrichment doesn't yield an email, `EmailFinderService` resolves the company's real domain via Clearbit (stripping legal suffixes like "d.o.o." from the name first) and then queries Hunter.io's domain-search for an HR/career/recruit-style address.
-4. `Scrapers::CompanyWallScraper` is a separate, currently-paused pipeline for cold-outreach: crawling business directories (companywall.ba, NACE code 62.01) to seed `Company` records independent of job postings.
-5. `ScrapeDzobsJob` is Sidekiq-cron-scheduled daily and kicks off the universal scraper against the seeded `ScraperConfig` (currently only `dzobs.com` is seeded).
+1. `ScraperConfig` rows (DB-driven, not hardcoded) define per-site CSS selectors (`card_selector`, `title_selector`, `company_selector`, `link_selector`, `next_page_selector`) and the seed URL. `Scrapers::UniversalJobScraper` reads a config, drives Ferrum headless Chrome, paginates up to 5 pages, and `find_or_create`s `Company`/`Job` rows. Four configs are seeded (`db/seeds.rb`): Dzobs IT, Dzobs Management, ITBase.ba, and MojPosao — MojPosao is seeded unfiltered (no category param) since it's the only general-industry source of the four; Dzobs and ITBase.ba are both IT-only by nature of the sites themselves. A mapped-but-disabled Jooble config is commented out in `db/seeds.rb`: `ba.jooble.org` serves headless Ferrum a Cloudflare challenge page it can't get past.
+2. `ScrapeJobBoardsJob` is Sidekiq-cron-scheduled daily and loops over every `ScraperConfig.where(active: true)` row, calling `UniversalJobScraper` for each. **This is the only thing that makes ingestion run on a schedule — a `ScraperConfig` row with nothing calling it, or a job class calling the wrong scraper, silently does nothing.** (This job used to call a different, dead-end legacy scraper that ignored `ScraperConfig` entirely and referenced a nonexistent `AnalyzeJobJob` constant — fixed, but worth remembering as a class of bug: always confirm a Sidekiq-cron `"class"` entry actually points at current code, not just that the code you're editing looks right in isolation.)
+3. New `Job` rows enqueue `AnalyzeJob` → `AiJobAnalyzerService`, which re-fetches the job's own URL, strips it to text, and asks Groq/Llama-3.1 for `hr_email` + `expiration_date` as strict JSON.
+4. `EmailFinderService` resolves a company's real domain via Clearbit (stripping legal suffixes like "d.o.o." from the name first) and then queries Hunter.io's domain-search for an HR/career/recruit-style address. It's currently only invoked for cold-outreach companies (via `FindCompanyEmailJob`, below) — `AiJobAnalyzerService` does not call it as a fallback when AI enrichment misses an email, despite that being the originally documented intent. Wiring that up is still open.
+5. `Scrapers::CompanyWallScraper` crawls business directories (companywall.ba, NACE code 62.01) to seed `Company` records (`is_cold_outreach: true`) independent of job postings. It's active (confirmed getting past Cloudflare) and scheduled weekly via `ScrapeCompanyWallJob` — weekly rather than daily to stay light on a Cloudflare-protected target. Each newly-found company enqueues `FindCompanyEmailJob` → `EmailFinderService` to resolve its contact email.
 
 ### CRM / campaign sending engine
 - `Application` is the join model between `User` and `Job`, with a status enum (`wishlist → applied → interviewing/rejected/offered`) driving the Kanban board (`/crm`).
@@ -61,7 +61,7 @@ Database credentials/name are in `config/database.yml` (local Postgres, `ne_zama
 - **Note:** `SendDailyRadarJob`'s source file lives at `app/views/jobs/send_daily_radar_job.rb` instead of `app/jobs/`. `app/views` is not an autoload path in a stock Rails app — if this job stops being resolvable (`NameError: uninitialized constant`), move the file to `app/jobs/send_daily_radar_job.rb`.
 
 ### Scheduling has two independent mechanisms
-- `config/initializers/sidekiq.rb` loads a hash into `Sidekiq::Cron::Job` at boot (`scrape_dzobs_daily`, `send_radar_emails`).
+- `config/initializers/sidekiq.rb` loads a hash into `Sidekiq::Cron::Job` at boot (`scrape_job_boards_daily`, `send_radar_emails`, `scrape_company_wall_weekly`).
 - `config/recurring.yml` is Solid Queue's own recurring-task config (currently only a production `clear_solid_queue_finished_jobs` cleanup).
 These are separate systems (Sidekiq vs. Solid Queue) — check both when adding or debugging a scheduled task.
 
@@ -70,4 +70,4 @@ All CRM data is scoped through `current_user.applications` / `current_user.cover
 
 ## Known constraints from the Ferrum scraper
 
-`Scrapers::UniversalJobScraper` uses a fixed `sleep(4.0)` after `browser.goto` to let JS-rendered pages paint, rather than `wait_for_idle`/network-idle detection — this is the current source of blank-page scrape failures on heavier SPAs (see ROADMAP.md Phase 1). Ferrum is launched with `no-sandbox`/`disable-dev-shm-usage` for headless Linux/WSL compatibility.
+`Scrapers::UniversalJobScraper` and `Scrapers::CompanyWallScraper` wait on `browser.network.wait_for_idle` (not a blind `sleep`) after navigation — this fixed the blank-page/0-results failures ROADMAP.md Phase 1 originally flagged. `CompanyWallScraper` additionally sleeps ~3.5s first for Cloudflare's interstitial redirect timer, which fires with no network activity to wait on. Ferrum is launched with `no-sandbox`/`disable-dev-shm-usage` for headless Linux/WSL compatibility, plus `disable-blink-features: AutomationControlled` for `CompanyWallScraper` specifically — note that flag alone was not enough to get `ba.jooble.org` past its (harder) Cloudflare challenge, so don't assume it's a general fix.

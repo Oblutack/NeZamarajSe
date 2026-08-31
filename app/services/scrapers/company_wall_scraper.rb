@@ -68,6 +68,7 @@ module Scrapers
             if company.new_record?
               puts "   🏢 New Target: #{name} | #{raw_address}"
               company.save!
+              ::FindCompanyEmailJob.perform_later(company.id)
             end
           end
 

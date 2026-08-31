@@ -2,15 +2,22 @@
 
 # We define a hash of our scheduled jobs
 schedule = {
-  "scrape_dzobs_daily" => {
+  "scrape_job_boards_daily" => {
     # Run every day at 3:00 AM (Cron syntax)
     "cron"  => "0 3 * * *",
-    "class" => "ScrapeDzobsJob",
+    "class" => "ScrapeJobBoardsJob",
     "queue" => "default"
   },
   "send_radar_emails" => {
     "cron"  => "0 8 * * *", # 8:00 AM Server Time
     "class" => "SendDailyRadarJob",
+    "queue" => "default"
+  },
+  "scrape_company_wall_weekly" => {
+    # Cold-outreach company discovery - weekly, not daily, to stay light on a
+    # Cloudflare-protected target (see CompanyWallScraper).
+    "cron"  => "0 4 * * 1", # Monday 4:00 AM
+    "class" => "ScrapeCompanyWallJob",
     "queue" => "default"
   }
 }
