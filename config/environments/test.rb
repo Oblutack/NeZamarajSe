@@ -50,4 +50,14 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Active Record Encryption (User#access_token/refresh_token) needs these
+  # keys to encrypt anything, but CI intentionally has no RAILS_MASTER_KEY
+  # (see config/initializers/openai.rb) so credentials.yml.enc isn't
+  # readable there. Test data is throwaway and never leaves this run, so a
+  # fixed, non-secret key here (rather than a real credential) is the
+  # standard Rails approach for the test environment.
+  config.active_record.encryption.primary_key = "test_primary_key_test_primary_key"
+  config.active_record.encryption.deterministic_key = "test_deterministic_key_test_key"
+  config.active_record.encryption.key_derivation_salt = "test_key_derivation_salt_test_salt"
 end
