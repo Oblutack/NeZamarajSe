@@ -57,6 +57,14 @@ module Scrapers
             job_url = relative_url.start_with?("http") ? relative_url : "#{base_url.scheme}://#{base_url.host}#{relative_url}"
 
             company = Company.find_or_create_by!(name: company_name)
+
+            # Aggregators (e.g. Jooble) link to their own redirect URL rather than the
+            # original posting, so the same job re-appears under a different job_url.
+            # Exact-URL dedup above can't catch that - fall back to title+company.
+            if Job.exists?(company_id: company.id, title: title)
+              next
+            end
+
             job = Job.find_or_initialize_by(url: job_url)
             job.title = title
             job.company = company
@@ -100,7 +108,14 @@ module Scrapers
     def extract_text(card, selector)
       return nil if selector.blank?
       element = card.at_css(selector)
-      element ? element.text.strip : nil
+      return nil unless element
+
+      # Some sites (e.g. MojPosao's featured cards) only carry the company name as
+      # an <img alt="..."> logo rather than visible text.
+      return element["alt"]&.strip if element.name == "img"
+
+      text = element.text.strip
+      text.presence || element["alt"]&.strip
     end
 
     def extract_link(card, selector)
