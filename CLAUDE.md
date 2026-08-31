@@ -37,6 +37,8 @@ bin/ci                               # runs the full pipeline above (see config/
 
 Sidekiq's web UI is mounted at `/sidekiq` (auth-gated, any logged-in user). Sidekiq-cron schedule is visible there too.
 
+**Tailwind CSS is not auto-rebuilt if you only run `bin/rails server`** (as opposed to `bin/dev`, which also runs `tailwindcss:watch` via Procfile.dev). If you edit Tailwind classes and the page renders unstyled, that's why — run `bin/rails tailwindcss:build` once to pick up the new classes. In at least one dev environment (WSL), `tailwindcss:watch` itself doesn't stay running as a background process (exits immediately, no persistent stdin/TTY), so a one-shot `tailwindcss:build` after each round of view edits is the reliable move there.
+
 Database credentials/name are in `config/database.yml` (local Postgres, `ne_zamaraj_se_development` / `_test`).
 
 ## Architecture
