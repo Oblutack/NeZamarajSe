@@ -12,7 +12,7 @@ class JobApplicationMailer < ApplicationMailer
     safe_to_address = user.email
 
     mail(
-      to: safe_to_address, 
+      to: safe_to_address,
       from: user.email,
       subject: "[TEST: Intended for #{intended_target}] Application: #{job.title}"
     )
