@@ -22,15 +22,27 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   teardown do
     next if passed?
 
+    puts "\n--- Failure diagnostics (#{self.class}##{name}) ---"
+
+    begin
+      puts "current_url: #{page.current_url}"
+      puts "Application.count: #{Application.count}"
+    rescue StandardError => e
+      puts "(couldn't read page/DB state: #{e.message})"
+    end
+
     begin
       logs = page.driver.browser.logs.get(:browser)
       if logs.present?
-        puts "\n--- Browser console logs (#{self.class}##{name}) ---"
-        logs.each { |entry| puts "[#{entry.level}] #{entry.message}" }
-        puts "--- end browser console logs ---\n"
+        puts "browser console logs:"
+        logs.each { |entry| puts "  [#{entry.level}] #{entry.message}" }
+      else
+        puts "browser console logs: (none)"
       end
     rescue StandardError => e
       puts "(couldn't retrieve browser console logs: #{e.message})"
     end
+
+    puts "--- end failure diagnostics ---\n"
   end
 end

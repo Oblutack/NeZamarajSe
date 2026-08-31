@@ -18,6 +18,7 @@ class CrmFlowTest < ApplicationSystemTestCase
     assert_text job.title
 
     click_button "Save to Wishlist"
+    assert_current_path jobs_path
     assert_text "added to your CRM Wishlist"
 
     visit crm_path
