@@ -1,27 +1,45 @@
 <!-- app/views/jobs/index.html.erb -->
 <div class="max-w-7xl mx-auto py-8">
-  <div class="md:flex md:items-center md:justify-between mb-8">
+  <div class="md:flex md:items-center md:justify-between mb-8 gap-6">
     <div class="flex-1 min-w-0">
       <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Job Market</h2>
       <p class="mt-1.5 text-[13.5px] text-zinc-500">
-        <% if current_user.user_preference&.keyword_array&.any? %>
+        <% if @query.present? %>
+          Showing results for: <span class="font-semibold text-zinc-900">&ldquo;<%= @query %>&rdquo;</span>
+          <%= link_to "Clear", jobs_path, class: "ml-1 text-zinc-400 hover:text-zinc-700 underline" %>
+        <% elsif current_user.user_preference&.keyword_array&.any? %>
           Showing jobs matching: <span class="font-semibold text-zinc-900"><%= current_user.user_preference.keywords %></span>
         <% else %>
           Latest jobs scraped from Bosnian job boards.
         <% end %>
       </p>
     </div>
+
+    <%= form_with url: jobs_path, method: :get, class: "mt-4 md:mt-0" do %>
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <%= text_field_tag :q, @query, placeholder: "Search title or company…", class: "w-full md:w-64 pl-9 pr-3 py-2 text-[13px] rounded-md border border-zinc-300 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-400" %>
+      </div>
+    <% end %>
   </div>
 
   <% if @jobs.empty? %>
     <!-- EMPTY STATE -->
     <div class="text-center py-20 bg-white rounded-lg border border-dashed border-zinc-300">
       <svg class="mx-auto w-8 h-8 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-      <h3 class="mt-4 text-[14.5px] font-semibold text-zinc-900">No jobs match your radar</h3>
-      <p class="mt-1.5 text-[13px] text-zinc-500">Try adjusting your keywords in the Radar Settings.</p>
-      <div class="mt-6">
-        <%= link_to "Update Settings", edit_user_preference_path, class: "inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
-      </div>
+      <% if @query.present? %>
+        <h3 class="mt-4 text-[14.5px] font-semibold text-zinc-900">No jobs match &ldquo;<%= @query %>&rdquo;</h3>
+        <p class="mt-1.5 text-[13px] text-zinc-500">Try a different title or company name.</p>
+        <div class="mt-6">
+          <%= link_to "Clear search", jobs_path, class: "inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
+        </div>
+      <% else %>
+        <h3 class="mt-4 text-[14.5px] font-semibold text-zinc-900">No jobs match your radar</h3>
+        <p class="mt-1.5 text-[13px] text-zinc-500">Try adjusting your keywords in the Radar Settings.</p>
+        <div class="mt-6">
+          <%= link_to "Update Settings", edit_user_preference_path, class: "inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
+        </div>
+      <% end %>
     </div>
   <% else %>
     <!-- JOB GRID -->
