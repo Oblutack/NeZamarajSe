@@ -1,22 +1,22 @@
 <!-- app/views/home/index.html.erb -->
-<div class="min-h-[70vh] bg-gray-50 flex flex-col justify-center items-center rounded-3xl mt-8">
-  <div class="max-w-3xl text-center px-4">
-    <h1 class="text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
-      Ne Zamaraj Se. <span class="text-indigo-600">Automate your Job Hunt.</span>
+<div class="min-h-[70vh] flex flex-col justify-center items-center mt-8">
+  <div class="max-w-2xl text-center px-4">
+    <h1 class="text-[40px] leading-[1.1] font-bold text-zinc-950 tracking-tight mb-4">
+      Ne Zamaraj Se. <span class="text-indigo-700">Automate your job hunt.</span>
     </h1>
-    <p class="text-xl text-gray-500 mb-8">
+    <p class="text-[15px] text-zinc-500 mb-8">
       Your personal CRM, cover letter generator, and automated job scraper for the Bosnian IT market.
     </p>
-    
+
     <% if user_signed_in? %>
-      <div class="bg-green-100 text-green-800 p-4 rounded-lg inline-block shadow">
-        <p class="font-bold">You are authenticated and ready to go!</p>
-        <p class="text-sm mt-1">Next, we will build your CRM dashboard.</p>
+      <div class="border border-emerald-200 bg-emerald-50 text-emerald-800 px-5 py-4 rounded-lg inline-block">
+        <p class="text-[13.5px] font-semibold">You are authenticated and ready to go.</p>
+        <p class="text-[12.5px] text-emerald-700 mt-0.5">Next, we will build your CRM dashboard.</p>
       </div>
     <% else %>
-      <%= button_to "Login with Google", user_google_oauth2_omniauth_authorize_path, 
+      <%= button_to "Login with Google", user_google_oauth2_omniauth_authorize_path,
             data: { turbo: false },
-            class: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition transform hover:-translate-y-1" %>
+            class: "cursor-pointer bg-zinc-900 hover:bg-zinc-800 text-white text-[13.5px] font-semibold py-3 px-7 rounded-lg transition" %>
     <% end %>
   </div>
 </div>

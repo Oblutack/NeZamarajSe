@@ -1,22 +1,22 @@
 <div class="max-w-4xl mx-auto py-8">
   <div class="flex items-center justify-between mb-8">
     <div>
-      <h2 class="text-3xl font-extrabold text-gray-900">Cover Letters</h2>
-      <p class="mt-2 text-sm text-gray-500">Create templates with smart tags for automated emailing.</p>
+      <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Cover Letters</h2>
+      <p class="mt-1.5 text-[13.5px] text-zinc-500">Create templates with smart tags for automated emailing.</p>
     </div>
-    <%= link_to "New Template", new_cover_letter_template_path, class: "inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
+    <%= link_to "New Template", new_cover_letter_template_path, class: "inline-flex items-center justify-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-indigo-700 hover:bg-indigo-800" %>
   </div>
 
-  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
     <% @templates.each do |template| %>
-      <div class="bg-white overflow-hidden shadow rounded-lg border border-gray-200 flex flex-col">
-        <div class="px-4 py-5 flex-grow">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 truncate" title="<%= template.name %>"><%= template.name %></h3>
-          <p class="mt-2 text-sm text-gray-500 font-mono text-xs line-clamp-4"><%= template.body %></p>
+      <div class="bg-white rounded-lg border border-zinc-200 flex flex-col">
+        <div class="px-4 py-4 flex-grow">
+          <h3 class="text-[14px] font-semibold text-zinc-900 truncate" title="<%= template.name %>"><%= template.name %></h3>
+          <p class="mt-2 text-[11.5px] text-zinc-500 font-mono line-clamp-4"><%= template.body %></p>
         </div>
-        <div class="bg-gray-50 px-4 py-4 flex justify-between items-center border-t border-gray-200">
-          <%= link_to "Edit", edit_cover_letter_template_path(template), class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium" %>
-          <%= button_to "Delete", cover_letter_template_path(template), method: :delete, data: { turbo_confirm: "Delete this template?" }, class: "text-red-600 hover:text-red-900 text-sm font-medium" %>
+        <div class="px-4 py-3 flex justify-between items-center border-t border-zinc-100">
+          <%= link_to "Edit", edit_cover_letter_template_path(template), class: "text-indigo-700 hover:text-indigo-900 text-[12.5px] font-semibold" %>
+          <%= button_to "Delete", cover_letter_template_path(template), method: :delete, data: { turbo_confirm: "Delete this template?" }, class: "cursor-pointer text-zinc-500 hover:text-red-600 text-[12.5px] font-semibold" %>
         </div>
       </div>
     <% end %>

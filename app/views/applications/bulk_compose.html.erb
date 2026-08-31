@@ -1,53 +1,53 @@
 <!-- app/views/applications/bulk_compose.html.erb -->
-<div class="max-w-3xl mx-auto py-12">
+<div class="max-w-3xl mx-auto py-8">
   <div class="mb-8">
-    <h1 class="text-4xl font-extrabold text-gray-900 mb-2">Campaign Setup</h1>
-    <p class="text-lg text-gray-500">You are about to automate applications to <span class="font-bold text-indigo-600"><%= @applications.count %> companies</span>.</p>
+    <h1 class="text-[26px] font-bold text-zinc-950 tracking-tight mb-1.5">Campaign Setup</h1>
+    <p class="text-[14px] text-zinc-500">You are about to automate applications to <span class="font-semibold text-indigo-700"><%= @applications.count %> companies</span>.</p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <!-- Left Column: The Target List -->
-    <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 h-fit max-h-96 overflow-y-auto">
-      <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4">Target Jobs</h3>
-      <ul class="space-y-3">
+    <div class="bg-zinc-50 rounded-lg p-5 border border-zinc-200 h-fit max-h-96 overflow-y-auto">
+      <h3 class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-3">Target Jobs</h3>
+      <ul class="space-y-2.5">
         <% @applications.each do |app| %>
-          <li class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between">
+          <li class="bg-white p-3 rounded-md border border-zinc-200 flex items-center justify-between">
             <div>
-              <p class="text-sm font-bold text-gray-900"><%= app.job.title %></p>
-              <p class="text-xs text-indigo-600"><%= app.job.company.name %></p>
+              <p class="text-[13px] font-semibold text-zinc-900"><%= app.job.title %></p>
+              <p class="text-[11.5px] text-indigo-700"><%= app.job.company.name %></p>
             </div>
-            <span class="text-green-500 text-lg">✓</span>
+            <svg class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </li>
         <% end %>
       </ul>
     </div>
 
     <!-- Right Column: The Form -->
-    <div class="bg-white shadow-xl sm:rounded-xl p-6 border border-gray-200">
-      <%= form_with url: bulk_dispatch_applications_path, method: :post, class: "space-y-6" do |f| %>
-        
+    <div class="bg-white border border-zinc-200 rounded-lg p-5">
+      <%= form_with url: bulk_dispatch_applications_path, method: :post, class: "space-y-5" do |f| %>
+
         <!-- Hidden fields to pass the array of IDs to the dispatch action -->
         <% @applications.each do |app| %>
           <%= f.hidden_field "application_ids[]", value: app.id %>
         <% end %>
 
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">Select Smart Template</label>
-          <%= f.collection_select :template_id, @templates, :id, :name, { prompt: "Choose a template..." }, { class: "block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 bg-gray-50" } %>
-          <p class="text-xs text-gray-500 mt-2">Smart tags (e.g. {{company_name}}) will be dynamically injected for each email.</p>
+          <label class="block text-[13px] font-semibold text-zinc-700 mb-1">Select Smart Template</label>
+          <%= f.collection_select :template_id, @templates, :id, :name, { prompt: "Choose a template..." }, { class: "block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 p-2 border" } %>
+          <p class="text-[11.5px] text-zinc-500 mt-1.5">Smart tags (e.g. {{company_name}}) will be dynamically injected for each email.</p>
         </div>
 
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">Select Attached Resume</label>
-          <%= f.collection_select :resume_blob_id, @resumes, ->(r) { r.blob.id }, ->(r) { r.filename.to_s }, { prompt: "Choose a PDF..." }, { class: "block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 bg-gray-50" } %>
+          <label class="block text-[13px] font-semibold text-zinc-700 mb-1">Select Attached Resume</label>
+          <%= f.collection_select :resume_blob_id, @resumes, ->(r) { r.blob.id }, ->(r) { r.filename.to_s }, { prompt: "Choose a PDF..." }, { class: "block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 p-2 border" } %>
         </div>
 
-        <div class="pt-6 mt-6 border-t border-gray-100 flex flex-col gap-3">
-          <%= f.submit "Launch Campaign 🚀", class: "w-full cursor-pointer justify-center py-3 px-4 border border-transparent shadow-md text-sm font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition" %>
-          <%= link_to "Cancel", crm_path, class: "w-full text-center py-3 px-4 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition" %>
+        <div class="pt-5 mt-5 border-t border-zinc-100 flex flex-col gap-2.5">
+          <%= f.submit "Launch Campaign", class: "cursor-pointer w-full justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-indigo-700 hover:bg-indigo-800 transition" %>
+          <%= link_to "Cancel", crm_path, class: "w-full text-center py-2.5 px-4 rounded-md text-[13px] font-semibold text-zinc-600 hover:bg-zinc-50 transition" %>
         </div>
-        
-        <p class="text-xs text-center text-gray-400 font-medium">
+
+        <p class="text-[11.5px] text-center text-zinc-400 font-medium">
           Emails will be staggered by 5 minutes to bypass Google Spam Filters.
         </p>
 

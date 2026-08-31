@@ -2,10 +2,10 @@
 <div class="max-w-7xl mx-auto py-8">
   <div class="md:flex md:items-center md:justify-between mb-8">
     <div class="flex-1 min-w-0">
-      <h2 class="text-3xl font-extrabold text-gray-900">Job Market</h2>
-      <p class="mt-2 text-sm text-gray-500">
+      <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Job Market</h2>
+      <p class="mt-1.5 text-[13.5px] text-zinc-500">
         <% if current_user.user_preference&.keyword_array&.any? %>
-          Showing jobs matching: <span class="font-bold text-indigo-600"><%= current_user.user_preference.keywords %></span>
+          Showing jobs matching: <span class="font-semibold text-indigo-700"><%= current_user.user_preference.keywords %></span>
         <% else %>
           Latest jobs scraped from Bosnian job boards.
         <% end %>
@@ -15,54 +15,56 @@
 
   <% if @jobs.empty? %>
     <!-- EMPTY STATE -->
-    <div class="text-center py-20 bg-white rounded-xl border border-gray-200 border-dashed">
-      <span class="text-4xl">📭</span>
-      <h3 class="mt-4 text-lg font-bold text-gray-900">No jobs match your radar!</h3>
-      <p class="mt-2 text-sm text-gray-500">Try adjusting your keywords in the Radar Settings.</p>
+    <div class="text-center py-20 bg-white rounded-lg border border-dashed border-zinc-300">
+      <svg class="mx-auto w-8 h-8 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      <h3 class="mt-4 text-[14.5px] font-semibold text-zinc-900">No jobs match your radar</h3>
+      <p class="mt-1.5 text-[13px] text-zinc-500">Try adjusting your keywords in the Radar Settings.</p>
       <div class="mt-6">
-        <%= link_to "Update Settings", edit_user_preference_path, class: "inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
+        <%= link_to "Update Settings", edit_user_preference_path, class: "inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-indigo-700 hover:bg-indigo-800" %>
       </div>
     </div>
   <% else %>
     <!-- JOB GRID -->
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       <% @jobs.each do |job| %>
-        <div class="bg-white overflow-hidden shadow rounded-lg border border-gray-200 flex flex-col transition hover:shadow-md relative">
-          
+        <div class="bg-white rounded-lg border border-zinc-200 flex flex-col relative">
+
           <!-- AI Data Badges -->
           <div class="absolute top-4 right-4 flex flex-col gap-1 items-end">
             <% if job.hr_email.present? %>
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800" title="<%= job.hr_email %>">
-                ✉️ Email Found
+              <span class="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-700" title="<%= job.hr_email %>">
+                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>
+                Email found
               </span>
             <% end %>
             <% if job.expires_at.present? %>
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800">
-                ⏰ Ends <%= job.expires_at.strftime("%b %d") %>
+              <span class="inline-flex items-center gap-1 text-[10.5px] font-semibold text-red-700">
+                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Ends <%= job.expires_at.strftime("%b %d") %>
               </span>
             <% end %>
           </div>
 
-          <div class="px-4 py-5 flex-grow pr-24">
-            <h3 class="text-lg font-bold text-gray-900 leading-tight mb-1"><%= job.title %></h3>
-            <p class="text-sm font-medium text-indigo-600 mb-4"><%= job.company.name %></p>
-            
-            <div class="text-xs text-gray-500 flex items-center space-x-2">
-              <span>📍 <%= job.location || "Bosnia and Herzegovina" %></span>
-              <span>&bull;</span>
+          <div class="px-4 py-4 flex-grow pr-28">
+            <h3 class="text-[14px] font-semibold text-zinc-900 leading-snug mb-1"><%= job.title %></h3>
+            <p class="text-[12.5px] text-zinc-500 mb-3"><%= job.company.name %></p>
+
+            <div class="text-[11.5px] text-zinc-400 flex items-center gap-1.5">
+              <span><%= job.location || "Bosnia and Herzegovina" %></span>
+              <span>&middot;</span>
               <span>Scraped <%= time_ago_in_words(job.created_at) %> ago</span>
             </div>
           </div>
-          
-          <div class="bg-gray-50 px-4 py-3 flex justify-between items-center border-t border-gray-200">
-            <%= link_to "View Original", job.url, target: "_blank", class: "text-xs font-medium text-gray-500 hover:text-gray-900 underline" %>
-            
+
+          <div class="px-4 py-3 flex justify-between items-center border-t border-zinc-100">
+            <%= link_to "View Original", job.url, target: "_blank", class: "text-[12px] font-semibold text-zinc-500 hover:text-zinc-900" %>
+
             <% if @saved_job_ids.include?(job.id) %>
-              <span class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100">
+              <span class="inline-flex items-center px-2.5 py-1 text-[11.5px] font-semibold rounded text-emerald-700 bg-emerald-50">
                 Saved in CRM
               </span>
             <% else %>
-              <%= button_to "Save to Wishlist", applications_path(job_id: job.id), class: "inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none cursor-pointer" %>
+              <%= button_to "Save to Wishlist", applications_path(job_id: job.id), class: "cursor-pointer inline-flex items-center px-3 py-1.5 text-[11.5px] font-semibold rounded text-white bg-indigo-700 hover:bg-indigo-800" %>
             <% end %>
           </div>
         </div>
