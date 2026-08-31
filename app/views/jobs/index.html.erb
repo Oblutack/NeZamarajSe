@@ -88,7 +88,7 @@
                 Saved in CRM
               </span>
             <% else %>
-              <%= button_to "Save to Wishlist", applications_path(job_id: job.id), class: "cursor-pointer inline-flex items-center px-3.5 py-2 text-[11.5px] font-semibold rounded text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
+              <%= button_to "Save to Wishlist", applications_path(job_id: job.id), data: { turbo: false }, class: "cursor-pointer inline-flex items-center px-3.5 py-2 text-[11.5px] font-semibold rounded text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
             <% end %>
           </div>
         </div>
