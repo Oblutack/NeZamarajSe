@@ -19,6 +19,12 @@ schedule = {
     "cron"  => "0 4 * * 1", # Monday 4:00 AM
     "class" => "ScrapeCompanyWallJob",
     "queue" => "default"
+  },
+  "scrape_it_karijera_daily" => {
+    # IT Karijera's own JSON API, not a ScraperConfig row - see ItKarijeraScraper.
+    "cron"  => "30 3 * * *", # 3:30 AM Server Time
+    "class" => "ScrapeItKarijeraJob",
+    "queue" => "default"
   }
 }
 
