@@ -8,6 +8,7 @@ class AnalyzeJob < ApplicationJob
     AiJobAnalyzerService.call(job)
   rescue StandardError => e
     Rails.logger.error "AI Analysis failed for Job #{job_id}: #{e.message}"
+    Honeybadger.notify(e, context: { job_id: job_id })
     raise e
   end
 end

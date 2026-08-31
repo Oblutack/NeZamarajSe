@@ -75,6 +75,7 @@ class EmailFinderService
       end
     rescue StandardError => e
       puts "   -> Clearbit API failed: #{e.message}"
+      Honeybadger.notify(e, context: { company_id: @company.id, company_name: @company.name })
     end
 
     nil

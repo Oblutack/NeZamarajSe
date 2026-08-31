@@ -26,6 +26,7 @@ class SendApplicationJob < ApplicationJob
   rescue StandardError => e
     # If something fails (e.g., token revoked), log it so Sidekiq can retry
     Rails.logger.error "Failed to send application: #{e.message}"
+    Honeybadger.notify(e, context: { application_id: application_id })
     raise e
   end
 end

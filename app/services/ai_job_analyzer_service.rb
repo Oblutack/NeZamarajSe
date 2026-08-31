@@ -30,6 +30,7 @@ class AiJobAnalyzerService
       text_to_analyze = raw_text[0..4000]
     rescue StandardError => e
       puts "❌ Failed to fetch inner job URL: #{e.message}"
+      Honeybadger.notify(e, context: { job_id: @job.id, url: @job.url })
       return
     end
 
@@ -66,10 +67,20 @@ class AiJobAnalyzerService
       )
 
       puts "✅ AI Extracted -> Email: #{@job.hr_email || 'None'}, Expires: #{@job.expires_at || 'None'}"
-    rescue JSON::ParserError
+
+      # The AI often can't find an HR email on the posting itself - fall back
+      # to the same Clearbit->Hunter.io domain lookup cold outreach uses,
+      # scoped to this job's company (guarded so an already-resolved company
+      # doesn't trigger a repeat Hunter.io lookup for every job it posts).
+      if @job.hr_email.blank? && @job.company.primary_email.blank?
+        FindCompanyEmailJob.perform_later(@job.company.id)
+      end
+    rescue JSON::ParserError => e
       puts "❌ AI returned invalid JSON."
+      Honeybadger.notify(e, context: { job_id: @job.id })
     rescue StandardError => e
       puts "❌ AI API Error: #{e.message}"
+      Honeybadger.notify(e, context: { job_id: @job.id })
     end
   end
 end

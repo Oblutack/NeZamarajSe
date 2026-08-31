@@ -88,3 +88,5 @@ gem "rack-attack", "~> 6.8"
 gem "ruby-openai", "~> 8.3"
 
 gem "ferrum", "~> 0.17.2"
+
+gem "honeybadger", "~> 5.0"

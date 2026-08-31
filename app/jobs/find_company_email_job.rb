@@ -9,6 +9,7 @@ class FindCompanyEmailJob < ApplicationJob
     EmailFinderService.call(company)
   rescue StandardError => e
     Rails.logger.error "Email lookup failed for Company #{company_id}: #{e.message}"
+    Honeybadger.notify(e, context: { company_id: company_id })
     raise e
   end
 end
