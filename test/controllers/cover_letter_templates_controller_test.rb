@@ -1,18 +1,22 @@
 require "test_helper"
 
 class CoverLetterTemplatesControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    sign_in users(:one)
+  end
+
   test "should get index" do
-    get cover_letter_templates_index_url
+    get cover_letter_templates_url
     assert_response :success
   end
 
   test "should get new" do
-    get cover_letter_templates_new_url
+    get new_cover_letter_template_url
     assert_response :success
   end
 
   test "should get edit" do
-    get cover_letter_templates_edit_url
+    get edit_cover_letter_template_url(cover_letter_templates(:one))
     assert_response :success
   end
 end
