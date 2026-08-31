@@ -56,7 +56,25 @@ ScraperConfig.create!(
   next_page_selector: "a[rel='next']"
 )
 
-# 5. Jooble (aggregator) - selectors mapped and verified against the live DOM, but
+# 5. Klix Posao - job board run by Klix.ba, BiH's most-visited news site. General
+# market like MojPosao (not IT-specific), server-rendered with clean pagination.
+# The "next page" link's classes are shared with the "previous" link (both reuse
+# the same Tailwind utility chain) and with every numbered page link too, so a
+# plain CSS class selector would grab the wrong one depending on which page
+# you're on - matched on visible text instead via Nokogiri's :contains()
+# extension, which is stable across the whole listing (228+ live postings as
+# of testing) and correctly returns nothing on the last page.
+ScraperConfig.create!(
+  site_name: "Klix Posao",
+  url: "https://posao.klix.ba/oglasi",
+  card_selector: ".job-card",
+  title_selector: "h4 a",
+  company_selector: ".text-sm.text-gray-500.font-light.min-w-0.truncate a",
+  link_selector: "h4 a",
+  next_page_selector: "a:contains('Sljedeća')"
+)
+
+# 6. Jooble (aggregator) - selectors mapped and verified against the live DOM, but
 # NOT enabled: ba.jooble.org serves a Cloudflare "Just a moment..." challenge to
 # our headless Ferrum browser (confirmed - neither disable-blink-features nor a
 # longer wait gets past it), so this would silently find 0 jobs on every cron
@@ -82,6 +100,11 @@ ScraperConfig.create!(
 # (DNS no longer resolves) from the original roadmap targets are gone. Substitutes
 # checked and rejected: job.ba (abandoned, ~2 listings site-wide), poslovnioglasi.ba
 # (its job-search listing returns 0 results sitewide - broken, not just filtered),
-# boljiposao.com (loads blank - broken frontend). None were reliable enough to seed.
+# boljiposao.com (loads blank - broken frontend), poslovi.ba (no working "all
+# jobs" browse page - /jobs just re-renders the homepage's small hot-jobs
+# carousel; its 12 categories are industrial/blue-collar only - elektrotehnika,
+# mašinstvo, građevina, transport, turizam, etc - with no IT/general category,
+# so it wouldn't meaningfully add coverage even if scraped per-category). None
+# were reliable enough to seed.
 
 puts "✅ Seeding complete!"
