@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require "fileutils"
+require "bundler"
 
 APP_ROOT = File.expand_path("..", __dir__)
 
@@ -13,7 +14,14 @@ FileUtils.chdir APP_ROOT do
   # Add necessary setup steps to this file.
 
   puts "== Installing dependencies =="
-  system("bundle check") || system!("bundle install")
+  # Strip any BUNDLE_GEMFILE/RUBYOPT already set by a parent process that's itself
+  # running under Bundler (e.g. bin/ci) before shelling out to `bundle` - without
+  # this, the nested `bundle` invocation's own RubyGems bin-stub activation gets
+  # confused about which gem environment it's in and raises a LoadError trying to
+  # load its own exe/bundle file from a garbled path.
+  Bundler.with_unbundled_env do
+    system("bundle check") || system!("bundle install")
+  end
 
   # puts "\n== Copying sample files =="
   # unless File.exist?("config/database.yml")
