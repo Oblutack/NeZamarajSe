@@ -1,1 +1,35 @@
 @import "tailwindcss";
+
+/* Smooth, fast micro-interactions across the whole app - a sensible baseline
+   transition on every interactive element, so nothing snaps instantly on
+   hover/focus unless a view explicitly opts out. Tailwind's own `transition*`
+   utilities (higher specificity via @layer utilities) still win where a view
+   sets a more specific duration/property list. */
+@layer base {
+  a, button, input, textarea, select, [role="button"] {
+    transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+}
+
+/* Turbo Drive page transitions (View Transitions API - progressive
+   enhancement, no-op in browsers that don't support it). Keep the default
+   cross-fade but make it snappier than the browser's 300ms default. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 120ms;
+}
+
+/* Flash toast entrance: the server renders the toast already in its final
+   "shown" position/opacity (see shared toast markup), so the transition
+   needs a starting point to animate FROM on insertion - @starting-style
+   supplies that without any JS. flash_controller.js's dismiss() handles the
+   exit animation by toggling these same classes back off. */
+@starting-style {
+  [data-controller="flash"] {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+

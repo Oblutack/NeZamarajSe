@@ -1,5 +1,5 @@
 <%= turbo_frame_tag app do %>
-  <div class="bg-white p-3.5 rounded-lg border border-zinc-200 cursor-grab active:cursor-grabbing hover:border-zinc-300 transition relative" draggable="true" data-controller="drag" data-action="dragstart->drag#dragStart dragend->drag#dragEnd" data-id="<%= app.id %>">
+  <div class="bg-white p-3.5 rounded-lg border border-zinc-200 cursor-grab active:cursor-grabbing hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition relative" draggable="true" data-controller="drag" data-action="dragstart->drag#dragStart dragend->drag#dragEnd" data-id="<%= app.id %>">
 
     <% if app.status == "wishlist" %>
       <div class="absolute top-3.5 right-3.5">

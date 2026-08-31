@@ -20,14 +20,14 @@
       <h3 class="mt-4 text-[14.5px] font-semibold text-zinc-900">No jobs match your radar</h3>
       <p class="mt-1.5 text-[13px] text-zinc-500">Try adjusting your keywords in the Radar Settings.</p>
       <div class="mt-6">
-        <%= link_to "Update Settings", edit_user_preference_path, class: "inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-indigo-700 hover:bg-indigo-800" %>
+        <%= link_to "Update Settings", edit_user_preference_path, class: "inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-indigo-700 hover:bg-indigo-800 active:scale-[0.98]" %>
       </div>
     </div>
   <% else %>
     <!-- JOB GRID -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       <% @jobs.each do |job| %>
-        <div class="bg-white rounded-lg border border-zinc-200 flex flex-col relative">
+        <div class="bg-white rounded-lg border border-zinc-200 flex flex-col relative hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition">
 
           <!-- AI Data Badges -->
           <div class="absolute top-4 right-4 flex flex-col gap-1 items-end">
@@ -41,6 +41,12 @@
               <span class="inline-flex items-center gap-1 text-[10.5px] font-semibold text-red-700">
                 <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 Ends <%= job.expires_at.strftime("%b %d") %>
+              </span>
+            <% end %>
+            <% if job.hr_email.blank? && job.expires_at.blank? && job.created_at > 1.hour.ago %>
+              <span class="inline-flex items-center gap-1 text-[10.5px] font-semibold text-zinc-400">
+                <svg class="w-2.5 h-2.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9"/></svg>
+                Analyzing&hellip;
               </span>
             <% end %>
           </div>
@@ -64,7 +70,7 @@
                 Saved in CRM
               </span>
             <% else %>
-              <%= button_to "Save to Wishlist", applications_path(job_id: job.id), class: "cursor-pointer inline-flex items-center px-3 py-1.5 text-[11.5px] font-semibold rounded text-white bg-indigo-700 hover:bg-indigo-800" %>
+              <%= button_to "Save to Wishlist", applications_path(job_id: job.id), class: "cursor-pointer inline-flex items-center px-3 py-1.5 text-[11.5px] font-semibold rounded text-white bg-indigo-700 hover:bg-indigo-800 active:scale-[0.98]" %>
             <% end %>
           </div>
         </div>

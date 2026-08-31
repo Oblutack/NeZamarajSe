@@ -4,12 +4,12 @@
       <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Cover Letters</h2>
       <p class="mt-1.5 text-[13.5px] text-zinc-500">Create templates with smart tags for automated emailing.</p>
     </div>
-    <%= link_to "New Template", new_cover_letter_template_path, class: "inline-flex items-center justify-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-indigo-700 hover:bg-indigo-800" %>
+    <%= link_to "New Template", new_cover_letter_template_path, class: "inline-flex items-center justify-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-indigo-700 hover:bg-indigo-800 active:scale-[0.98]" %>
   </div>
 
   <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
     <% @templates.each do |template| %>
-      <div class="bg-white rounded-lg border border-zinc-200 flex flex-col">
+      <div class="bg-white rounded-lg border border-zinc-200 flex flex-col hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition">
         <div class="px-4 py-4 flex-grow">
           <h3 class="text-[14px] font-semibold text-zinc-900 truncate" title="<%= template.name %>"><%= template.name %></h3>
           <p class="mt-2 text-[11.5px] text-zinc-500 font-mono line-clamp-4"><%= template.body %></p>
