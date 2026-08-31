@@ -5,7 +5,7 @@
       <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Job Market</h2>
       <p class="mt-1.5 text-[13.5px] text-zinc-500">
         <% if current_user.user_preference&.keyword_array&.any? %>
-          Showing jobs matching: <span class="font-semibold text-indigo-700"><%= current_user.user_preference.keywords %></span>
+          Showing jobs matching: <span class="font-semibold text-zinc-900"><%= current_user.user_preference.keywords %></span>
         <% else %>
           Latest jobs scraped from Bosnian job boards.
         <% end %>
@@ -20,7 +20,7 @@
       <h3 class="mt-4 text-[14.5px] font-semibold text-zinc-900">No jobs match your radar</h3>
       <p class="mt-1.5 text-[13px] text-zinc-500">Try adjusting your keywords in the Radar Settings.</p>
       <div class="mt-6">
-        <%= link_to "Update Settings", edit_user_preference_path, class: "inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-indigo-700 hover:bg-indigo-800 active:scale-[0.98]" %>
+        <%= link_to "Update Settings", edit_user_preference_path, class: "inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
       </div>
     </div>
   <% else %>
@@ -70,7 +70,7 @@
                 Saved in CRM
               </span>
             <% else %>
-              <%= button_to "Save to Wishlist", applications_path(job_id: job.id), class: "cursor-pointer inline-flex items-center px-3 py-1.5 text-[11.5px] font-semibold rounded text-white bg-indigo-700 hover:bg-indigo-800 active:scale-[0.98]" %>
+              <%= button_to "Save to Wishlist", applications_path(job_id: job.id), class: "cursor-pointer inline-flex items-center px-3.5 py-2 text-[11.5px] font-semibold rounded text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
             <% end %>
           </div>
         </div>

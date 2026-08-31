@@ -1,6 +1,6 @@
 <%
   nav_link_class = ->(path) {
-    current_page?(path) ? "text-[13px] font-semibold text-indigo-700" : "text-[13px] font-medium text-zinc-500 hover:text-zinc-900"
+    current_page?(path) ? "text-[13px] font-semibold text-zinc-950" : "text-[13px] font-medium text-zinc-500 hover:text-zinc-900"
   }
 %>
 <nav class="bg-white border-b border-zinc-200 mb-8">
@@ -39,7 +39,7 @@
           <!-- Login Link for Navbar -->
           <%= button_to "Sign in", user_google_oauth2_omniauth_authorize_path,
                 data: { turbo: false },
-                class: "text-[13px] font-semibold text-zinc-900 hover:text-indigo-700 transition cursor-pointer" %>
+                class: "text-[13px] font-semibold text-zinc-900 hover:text-zinc-600 transition cursor-pointer" %>
         <% end %>
       </div>
     </div>

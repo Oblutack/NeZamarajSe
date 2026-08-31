@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Geist: a minimal, geometric grotesk (Vercel's typeface) - replaces the
+   system font stack app-wide. Loaded via Google Fonts in the layout head;
+   this is what actually makes every font-sans/default-text element in the
+   app use it, including Preflight's own base html font-family. */
+@theme {
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
 /* Smooth, fast micro-interactions across the whole app - a sensible baseline
    transition on every interactive element, so nothing snaps instantly on
    hover/focus unless a view explicitly opts out. Tailwind's own `transition*`

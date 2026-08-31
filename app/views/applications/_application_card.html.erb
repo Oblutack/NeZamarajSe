@@ -4,7 +4,7 @@
     <% if app.status == "wishlist" %>
       <div class="absolute top-3.5 right-3.5">
         <!-- name="application_ids[]" tells Rails to group all selected IDs into an array! -->
-        <input type="checkbox" name="application_ids[]" value="<%= app.id %>" data-bulk-campaign-target="checkbox" data-action="change->bulk-campaign#toggleBar" class="h-3.5 w-3.5 text-indigo-600 focus:ring-indigo-500 border-zinc-300 rounded cursor-pointer">
+        <input type="checkbox" name="application_ids[]" value="<%= app.id %>" data-bulk-campaign-target="checkbox" data-action="change->bulk-campaign#toggleBar" class="h-3.5 w-3.5 text-zinc-900 focus:ring-zinc-500 border-zinc-300 rounded cursor-pointer">
       </div>
     <% end %>
 
@@ -23,7 +23,7 @@
 
     <% if app.status == "wishlist" %>
       <div class="mt-2.5 pt-2.5 border-t border-zinc-100">
-        <%= link_to "Apply individually →", compose_application_path(app), data: { turbo: false }, class: "text-[11.5px] font-semibold text-indigo-700 hover:text-indigo-900" %>
+        <%= link_to "Apply individually →", compose_application_path(app), data: { turbo: false }, class: "text-[11.5px] font-semibold text-zinc-700 hover:text-zinc-950" %>
       </div>
     <% end %>
   </div>

@@ -7,18 +7,18 @@
 
       <div>
         <%= f.label :keywords, "Job Keywords (Comma separated)", class: "block text-[13px] font-semibold text-zinc-700" %>
-        <%= f.text_field :keywords, placeholder: "e.g. Ruby, React, Marketing, Manager", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 p-2 border" %>
+        <%= f.text_field :keywords, placeholder: "e.g. Ruby, React, Marketing, Manager", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border" %>
         <p class="text-[12px] text-zinc-500 mt-1.5">Our AI and scraper will only show you jobs matching these words.</p>
       </div>
 
       <div>
         <%= f.label :location, "Preferred Location", class: "block text-[13px] font-semibold text-zinc-700" %>
-        <%= f.text_field :location, placeholder: "e.g. Sarajevo, Remote", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 p-2 border" %>
+        <%= f.text_field :location, placeholder: "e.g. Sarajevo, Remote", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border" %>
       </div>
 
       <div class="flex items-start pt-1">
         <div class="flex items-center h-5">
-          <%= f.check_box :receive_daily_alerts, class: "focus:ring-indigo-500 h-3.5 w-3.5 text-indigo-700 border-zinc-300 rounded" %>
+          <%= f.check_box :receive_daily_alerts, class: "focus:ring-zinc-500 h-3.5 w-3.5 text-zinc-900 border-zinc-300 rounded" %>
         </div>
         <div class="ml-2.5 text-[13px]">
           <%= f.label :receive_daily_alerts, "Enable Daily Radar Email", class: "font-semibold text-zinc-700" %>
@@ -27,7 +27,7 @@
       </div>
 
       <div class="flex justify-end pt-4 border-t border-zinc-100">
-        <%= f.submit "Save Radar Settings", class: "cursor-pointer inline-flex justify-center py-2 px-4 text-[13px] font-semibold rounded-md text-white bg-indigo-700 hover:bg-indigo-800 active:scale-[0.98]" %>
+        <%= f.submit "Save Radar Settings", class: "cursor-pointer inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
       </div>
     <% end %>
   </div>

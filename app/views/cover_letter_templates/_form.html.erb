@@ -12,7 +12,7 @@
 
   <div>
     <%= f.label :name, "Template Name (e.g., 'Senior Backend Role')", class: "block text-[13px] font-semibold text-zinc-700" %>
-    <%= f.text_field :name, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 p-2 border" %>
+    <%= f.text_field :name, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border" %>
   </div>
 
   <div>
@@ -22,11 +22,11 @@
         Tags: {{company_name}}, {{job_title}}, {{location}}
       </span>
     </div>
-    <%= f.text_area :body, rows: 10, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13px] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 p-2 border font-mono" %>
+    <%= f.text_area :body, rows: 10, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border font-mono" %>
   </div>
 
   <div class="flex justify-end space-x-3">
     <%= link_to "Cancel", cover_letter_templates_path, class: "bg-white py-2 px-4 border border-zinc-300 rounded-md text-[13px] font-semibold text-zinc-700 hover:bg-zinc-50" %>
-    <%= f.submit class: "cursor-pointer inline-flex justify-center py-2 px-4 text-[13px] font-semibold rounded-md text-white bg-indigo-700 hover:bg-indigo-800 active:scale-[0.98]" %>
+    <%= f.submit class: "cursor-pointer inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
   </div>
 <% end %>

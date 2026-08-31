@@ -20,9 +20,9 @@
       <!-- Rails Form Builder -->
       <%= form_with url: resumes_path, local: true, html: { multipart: true, class: "mt-4 sm:flex sm:items-center" } do |form| %>
         <div class="w-full sm:max-w-xs">
-          <%= form.file_field :resume, accept: 'application/pdf', class: "block w-full text-[12.5px] text-zinc-500 file:mr-4 file:py-2 file:px-3.5 file:rounded-md file:border-0 file:text-[12.5px] file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" %>
+          <%= form.file_field :resume, accept: 'application/pdf', class: "block w-full text-[12.5px] text-zinc-500 file:mr-4 file:py-2 file:px-3.5 file:rounded-md file:border-0 file:text-[12.5px] file:font-semibold file:bg-zinc-100 file:text-zinc-900 hover:file:bg-zinc-200" %>
         </div>
-        <%= form.submit "Upload", class: "cursor-pointer mt-3 w-full inline-flex items-center justify-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-indigo-700 hover:bg-indigo-800 active:scale-[0.98] sm:mt-0 sm:ml-3 sm:w-auto" %>
+        <%= form.submit "Upload", class: "cursor-pointer mt-3 w-full inline-flex items-center justify-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] sm:mt-0 sm:ml-3 sm:w-auto" %>
       <% end %>
     </div>
   </div>
@@ -40,7 +40,7 @@
                 </svg>
                 <div class="ml-3">
                   <!-- url_for generates a temporary URL to view the file -->
-                  <%= link_to resume.filename, url_for(resume), target: "_blank", class: "text-[13px] font-semibold text-indigo-700 hover:text-indigo-900" %>
+                  <%= link_to resume.filename, url_for(resume), target: "_blank", class: "text-[13px] font-semibold text-zinc-900 hover:text-zinc-600" %>
                   <p class="text-[11.5px] text-zinc-400 mt-0.5">Uploaded <%= time_ago_in_words(resume.created_at) %> ago &middot; <%= (resume.byte_size / 1024.0).round(2) %> KB</p>
                 </div>
               </div>
