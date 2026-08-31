@@ -46,11 +46,15 @@ class AiJobAnalyzerService
       #{text_to_analyze}
     PROMPT
 
-    # 3. Ask Groq (Llama-3)
+    # 3. Ask Groq
     begin
       response = @client.chat(
         parameters: {
-          model: "llama-3.1-8b-instant", # Updated model name!
+          # llama-3.1-8b-instant was retired from Groq's catalog (calls started
+          # failing with a 404 model_not_found) - gpt-oss-20b is the current
+          # small/fast equivalent and was verified against this exact
+          # response_format: json_object usage before switching.
+          model: "openai/gpt-oss-20b",
           messages: [ { role: "user", content: prompt } ],
           temperature: 0.1,
           response_format: { type: "json_object" }
