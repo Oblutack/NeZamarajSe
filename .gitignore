@@ -37,6 +37,10 @@
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
+# Personal AI planning/handoff notes — not part of the application.
+/HANDOFF.md
+/ROADMAP.md
+
 # Ignore OS and editor cruft.
 .DS_Store
 Thumbs.db
