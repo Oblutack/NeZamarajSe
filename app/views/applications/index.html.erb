@@ -1,5 +1,7 @@
 <!-- app/views/applications/index.html.erb -->
 
+<%= turbo_stream_from current_user, :crm %>
+
 <!-- 1. Wrap the entire board in a form and attach our Stimulus controller -->
 <%= form_with url: bulk_compose_applications_path, method: :get, data: { controller: "bulk-campaign" }, class: "max-w-screen-2xl mx-auto py-8 overflow-hidden flex flex-col h-[85vh]" do |form| %>
 
@@ -23,29 +25,7 @@
 
         <div class="flex-1 p-3 overflow-y-auto space-y-3">
           <% applications.each do |app| %>
-            
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-grab active:cursor-grabbing hover:shadow transition transform duration-100 relative" draggable="true" data-controller="drag" data-action="dragstart->drag#dragStart dragend->drag#dragEnd" data-id="<%= app.id %>">
-              
-              <!-- 2. The Checkbox (Only show on Wishlist) -->
-              <% if status == "wishlist" %>
-                <div class="absolute top-4 right-4">
-                  <!-- name="application_ids[]" tells Rails to group all selected IDs into an array! -->
-                  <input type="checkbox" name="application_ids[]" value="<%= app.id %>" data-bulk-campaign-target="checkbox" data-action="change->bulk-campaign#toggleBar" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer">
-                </div>
-              <% end %>
-
-              <div class="flex justify-between items-start mb-2 pr-6">
-                <h4 class="text-sm font-bold text-gray-900 leading-tight"><%= app.job.title %></h4>
-              </div>
-              <p class="text-xs font-medium text-indigo-600 mb-2"><%= app.job.company.name %></p>
-              
-              <% if status == "wishlist" %>
-                <div class="mt-3 pt-3 border-t border-gray-100 text-center">
-                  <%= link_to "✉️ Apply individually", compose_application_path(app), data: { turbo: false }, class: "w-full block bg-gray-50 hover:bg-gray-100 text-gray-600 font-medium py-1.5 rounded text-xs transition" %>
-                </div>
-              <% end %>
-            </div>
-
+            <%= render "applications/application_card", app: app %>
           <% end %>
         </div>
       </div>

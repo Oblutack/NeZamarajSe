@@ -3,11 +3,11 @@
 one:
   user: one
   job: one
-  status: MyString
-  applied_at: 2026-07-22 01:12:03
+  status: wishlist
+  applied_at:
 
 two:
   user: two
   job: two
-  status: MyString
+  status: applied
   applied_at: 2026-07-22 01:12:03

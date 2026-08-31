@@ -47,8 +47,9 @@ class ApplicationsController < ApplicationController
     resume_blob_id = params[:resume_blob_id]
 
     if template_id.present? && resume_blob_id.present?
-      # 1. Optimistic Update: Move it to applied immediately so the UI feels instant
-      @application.update!(status: "applied", applied_at: Time.current)
+      # 1. Move it to queued immediately so the UI feels instant; SendApplicationJob
+      # flips it to "applied" only once Gmail actually confirms the send.
+      @application.update!(status: "queued")
 
       # 2. Fire off the background job!
       SendApplicationJob.perform_later(@application.id, template_id, resume_blob_id)
@@ -80,8 +81,9 @@ class ApplicationsController < ApplicationController
     if template_id.present? && resume_blob_id.present?
 
       @applications.each_with_index do |application, index|
-        # 1. Optimistic UI Update
-        application.update!(status: "applied", applied_at: Time.current)
+        # 1. Move it to queued immediately; SendApplicationJob flips it to "applied"
+        # only once Gmail actually confirms the send.
+        application.update!(status: "queued")
 
         # 2. THE ANTI-SPAM DELAY ENGINE
         # App 0 -> waits 0 minutes (sends now)

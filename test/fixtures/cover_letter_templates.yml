@@ -2,10 +2,10 @@
 
 one:
   user: one
-  name: MyString
-  body: MyText
+  name: Standard Application
+  body: "Dear {{company_name}}, I'm applying for {{job_title}} in {{location}}."
 
 two:
   user: two
-  name: MyString
-  body: MyText
+  name: Standard Application
+  body: "Dear {{company_name}}, I'm applying for {{job_title}} in {{location}}."

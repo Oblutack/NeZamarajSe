@@ -2,12 +2,12 @@
 
 one:
   user: one
-  keywords: MyString
-  location: MyString
-  receive_daily_alerts: false
+  keywords: "Developer, Software, IT"
+  location: Bosnia
+  receive_daily_alerts: true
 
 two:
   user: two
-  keywords: MyString
-  location: MyString
+  keywords: "Ruby, Rails"
+  location: Bosnia
   receive_daily_alerts: false

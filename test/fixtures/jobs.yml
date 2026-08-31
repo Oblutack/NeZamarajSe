@@ -2,16 +2,14 @@
 
 one:
   company: one
-  title: MyString
-  url: MyString
-  location: MyString
-  description: MyText
-  external_id: MyString
+  title: Backend Engineer
+  url: https://jobs.example.com/backend-engineer-one
+  location: Sarajevo
+  description: Fixture job one.
 
 two:
   company: two
-  title: MyString
-  url: MyString
-  location: MyString
-  description: MyText
-  external_id: MyString
+  title: Frontend Engineer
+  url: https://jobs.example.com/frontend-engineer-two
+  location: Banja Luka
+  description: Fixture job two.

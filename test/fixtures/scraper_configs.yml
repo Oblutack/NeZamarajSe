@@ -1,19 +1,19 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  site_name: MyString
-  url: MyString
-  card_selector: MyString
-  title_selector: MyString
-  company_selector: MyString
-  link_selector: MyString
-  active: false
+  site_name: Dzobs IT
+  url: https://dzobs.com/it-jobs
+  card_selector: .job-card
+  title_selector: .job-title
+  company_selector: .job-company
+  link_selector: a.job-link
+  active: true
 
 two:
-  site_name: MyString
-  url: MyString
-  card_selector: MyString
-  title_selector: MyString
-  company_selector: MyString
-  link_selector: MyString
+  site_name: Example Board
+  url: https://example-board.example/jobs
+  card_selector: .listing
+  title_selector: .listing-title
+  company_selector: .listing-company
+  link_selector: a.listing-link
   active: false

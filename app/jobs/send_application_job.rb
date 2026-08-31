@@ -20,6 +20,9 @@ class SendApplicationJob < ApplicationJob
     sender = GmailSenderService.new(user)
     sender.send_email(raw_email)
 
+    # Only now that Gmail has confirmed the send do we mark it applied.
+    application.update!(status: "applied", applied_at: Time.current)
+
   rescue StandardError => e
     # If something fails (e.g., token revoked), log it so Sidekiq can retry
     Rails.logger.error "Failed to send application: #{e.message}"

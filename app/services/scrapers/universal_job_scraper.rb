@@ -34,8 +34,11 @@ module Scrapers
           # 2. Go to the URL (Ferrum will wait for the basic HTML to load)
           browser.goto(current_url)
 
-          # 3. Wait 4 full seconds to guarantee React has painted the DOM
-          sleep(4.0)
+          # 3. Wait for network activity (XHR/fetch calls that hydrate the page) to settle,
+          # rather than guessing a fixed delay that's too short for slow SPAs and wastes
+          # time on fast ones.
+          browser.network.wait_for_idle(timeout: 10)
+          sleep(0.5)
 
           # 4. Extract HTML
           doc = Nokogiri::HTML(browser.body)
@@ -54,7 +57,7 @@ module Scrapers
             job_url = relative_url.start_with?("http") ? relative_url : "#{base_url.scheme}://#{base_url.host}#{relative_url}"
 
             company = Company.find_or_create_by!(name: company_name)
-            job = Job.find_or_initialize_by(url: job_url)‚‚‚‚
+            job = Job.find_or_initialize_by(url: job_url)
             job.title = title
             job.company = company
             job.description = "Scraped via Headless Chrome from #{@config.site_name}"
