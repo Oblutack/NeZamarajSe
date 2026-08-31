@@ -1,5 +1,12 @@
 require "test_helper"
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
-  driven_by :selenium, using: :headless_chrome, screen_size: [ 1400, 1400 ]
+  # --no-sandbox/--disable-dev-shm-usage: same flags the Ferrum scraper
+  # already needs for headless Chrome on Linux CI runners (see CLAUDE.md) -
+  # without them Chrome fails to launch under GitHub Actions' root/container
+  # environment even though it launches fine on a local dev machine.
+  driven_by :selenium, using: :headless_chrome, screen_size: [ 1400, 1400 ] do |driver_option|
+    driver_option.add_argument("--no-sandbox")
+    driver_option.add_argument("--disable-dev-shm-usage")
+  end
 end
