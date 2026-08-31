@@ -9,4 +9,10 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     driver_option.add_argument("--no-sandbox")
     driver_option.add_argument("--disable-dev-shm-usage")
   end
+
+  # The default 2s wait is fine on a local machine but too tight on a colder/
+  # shared GitHub Actions runner - confirmed by a CI failure where a page
+  # still showed its pre-click state (the redirect just hadn't landed yet
+  # when Capybara re-checked), not any real app bug.
+  Capybara.default_max_wait_time = 5
 end
