@@ -25,13 +25,19 @@ ScraperConfig.create!(
   next_page_selector: "a[rel='next']"
 )
 
-# 3. MojPosao.ba (IT search results). Single page - after the real IT matches run
-# out, MojPosao backfills the same list with unrelated "recommended" jobs sharing
-# the exact same .job-card markup, so card_selector is scoped to the results
-# wrapper that only contains genuine matches.
+# 3. MojPosao.ba - unfiltered, all industries. This is the general-market source:
+# Dzobs and ITBase are both IT-only by nature of the site, so this is the one
+# config responsible for non-IT jobs existing at all. Per-user keyword matching
+# (UserPreference#keyword_array, used by JobsController#index and
+# SendDailyRadarJob) is what actually narrows this down for each user - it
+# already supports arbitrary keywords, it just had nothing but IT jobs to match
+# against before. Single page (~70 jobs, no pagination control found on this
+# endpoint); card_selector is scoped to the results wrapper since on a narrower
+# filtered search MojPosao backfills exhausted results with unrelated
+# "recommended" jobs sharing the exact same .job-card markup.
 ScraperConfig.create!(
-  site_name: "MojPosao IT",
-  url: "https://www.mojposao.ba/pretraga-poslova?positions=IT&sortBy=adtype",
+  site_name: "MojPosao",
+  url: "https://www.mojposao.ba/pretraga-poslova",
   card_selector: ".search-results-ad-type .job-card",
   title_selector: "[data-test='job-card-content-title']",
   company_selector: ".mp-text__default--semibold, .logo-container__image",
