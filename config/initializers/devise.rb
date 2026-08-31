@@ -278,9 +278,24 @@ Devise.setup do |config|
 
   # config/initializers/devise.rb
   # Find the OmniAuth section and paste this:
+  #
+  # Rails.application.credentials raises ActiveSupport::EncryptedFile::MissingKeyError
+  # if RAILS_MASTER_KEY/config/master.key isn't available (e.g. CI without the secret
+  # configured) - and since this runs inside Devise.setup, an unhandled raise here
+  # would stop the whole app from booting, not just break Google sign-in. Fall back to
+  # nil so boot succeeds everywhere; only the omniauth strategy itself is unusable
+  # without real credentials.
+  google_credentials = begin
+    [
+      Rails.application.credentials.dig(:google, :client_id),
+      Rails.application.credentials.dig(:google, :client_secret)
+    ]
+  rescue ActiveSupport::EncryptedFile::MissingKeyError
+    [ nil, nil ]
+  end
+
   config.omniauth :google_oauth2,
-    Rails.application.credentials.dig(:google, :client_id),
-    Rails.application.credentials.dig(:google, :client_secret),
+    *google_credentials,
     {
       access_type: "offline",
       prompt: "consent",
