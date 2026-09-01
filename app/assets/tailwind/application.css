@@ -30,15 +30,25 @@ trix-editor:focus {
   outline-offset: -1px;
 }
 
-/* A static, faint dot grid for the header band of the app's inner pages -
-   the quiet, non-animated counterpart to the home hero's moving dot
-   network (dot_network_controller.js). Fades to nothing via the mask so it
-   never reads as a hard-edged box behind the page title. */
-.dot-pattern-band {
-  background-image: radial-gradient(circle, var(--color-zinc-300) 1px, transparent 1px);
-  background-size: 18px 18px;
-  mask-image: linear-gradient(to bottom, black, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+/* A static, faint dot grid on the page canvas itself (not a boxed-off
+   decoration) - the quiet, non-animated counterpart to the home hero's
+   moving dot network (dot_network_controller.js). Every card, column, and
+   the navbar are opaque, so this only ever shows through in the actual
+   empty space around them: page margins, the gutter between grid cards,
+   the open area below a short column in the CRM board, and so on - it
+   reads as texture on the canvas rather than a decoration behind any one
+   element. */
+/* Applied to <main>, not <body>: when body has any background and html
+   doesn't, browsers propagate it to the root/viewport canvas, which paints
+   outside the normal document stacking order and can bleed through
+   descendant elements' own opaque backgrounds instead of being obscured by
+   them. <main> is a normal descendant, so its background behaves exactly
+   like every other element's. */
+@layer base {
+  main {
+    background-image: radial-gradient(circle, var(--color-zinc-300) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
 }
 
 /* Geist: a minimal, geometric grotesk (Vercel's typeface) - replaces the

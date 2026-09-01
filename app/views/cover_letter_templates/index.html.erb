@@ -1,7 +1,5 @@
-<div class="relative overflow-hidden max-w-4xl mx-auto py-8">
-  <%= render "shared/dot_pattern_band" %>
-
-  <div class="relative flex items-center justify-between mb-8">
+<div class="max-w-4xl mx-auto py-8">
+  <div class="flex items-center justify-between mb-8">
     <div>
       <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Cover Letters</h2>
       <p class="mt-1.5 text-[13.5px] text-zinc-500">Create templates with smart tags for automated emailing.</p>
@@ -10,7 +8,7 @@
   </div>
 
   <% if @templates.any? %>
-    <div class="relative grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       <% @templates.each do |template| %>
         <div class="bg-white rounded-lg border border-zinc-200 flex flex-col hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition">
           <div class="px-4 py-4 flex-grow">

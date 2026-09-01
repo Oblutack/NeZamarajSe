@@ -28,7 +28,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-zinc-50 min-h-screen">
+  <body>
     <!-- 1. Render the Navbar at the very top -->
     <%= render "shared/navbar" %>
 
@@ -62,7 +62,7 @@
     </div>
     <!-- END FLOATING TOAST CONTAINER -->
 
-    <main class="container mx-auto px-5 flex flex-col">
+    <main class="container mx-auto px-5 flex flex-col bg-zinc-50 min-h-screen">
       <%= yield %>
     </main>
   </body>
