@@ -34,6 +34,7 @@ Rails.application.routes.draw do
     end
   end
   get "/crm", to: "applications#index", as: :crm
+  get "/dashboard", to: "dashboard#show", as: :dashboard
 
   root "home#index"
 end

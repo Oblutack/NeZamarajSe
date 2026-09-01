@@ -19,6 +19,7 @@
       <!-- Right side navigation -->
       <div class="flex items-center space-x-7">
         <% if user_signed_in? %>
+          <%= link_to "Dashboard", dashboard_path, class: nav_link_class.call(dashboard_path) %>
           <%= link_to "Job Market", jobs_path, class: nav_link_class.call(jobs_path) %>
           <%= link_to "My CRM", crm_path, class: nav_link_class.call(crm_path) %>
           <%= link_to "Radar Settings", edit_user_preference_path, class: nav_link_class.call(edit_user_preference_path) %>
