@@ -1,5 +1,12 @@
 <!-- app/views/home/index.html.erb -->
-<div class="relative bg-zinc-50 min-h-[70vh] flex flex-col justify-center items-center mt-8 overflow-hidden">
+<%# bg-white, not bg-zinc-50 (which would visually blend better with the
+    page canvas behind it): confirmed via computed-style/hit-testing that
+    Tailwind's oklch-based zinc-50 does not reliably composite as fully
+    opaque here, so the .page-canvas dot pattern behind this section still
+    showed through it. Plain white does not have that problem. Only
+    matters here because this is the one place something needs to
+    actively occlude the pattern - cards elsewhere already use bg-white. %>
+<div class="relative bg-white min-h-[70vh] flex flex-col justify-center items-center mt-8 overflow-hidden">
   <canvas data-controller="dot-network" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
 
   <div class="relative z-10 max-w-2xl text-center px-4">

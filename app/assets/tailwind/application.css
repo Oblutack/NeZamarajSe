@@ -37,18 +37,26 @@ trix-editor:focus {
    empty space around them: page margins, the gutter between grid cards,
    the open area below a short column in the CRM board, and so on - it
    reads as texture on the canvas rather than a decoration behind any one
-   element. */
-/* Applied to <main>, not <body>: when body has any background and html
-   doesn't, browsers propagate it to the root/viewport canvas, which paints
-   outside the normal document stacking order and can bleed through
-   descendant elements' own opaque backgrounds instead of being obscured by
-   them. <main> is a normal descendant, so its background behaves exactly
-   like every other element's. */
-@layer base {
-  main {
-    background-image: radial-gradient(circle, var(--color-zinc-300) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
+   element.
+
+   Lives on its own full-bleed div (see application.html.erb), not on
+   <main> or <body>:
+   - <main> has Tailwind's `container` class, which caps its width well
+     short of the viewport on larger screens (e.g. 1280px at the xl
+     breakpoint) - putting the canvas background there left the pattern
+     boxed in with visible unpainted margins on the sides instead of
+     reaching the edges.
+   - <body> would work width-wise, but when body has any background and
+     <html> doesn't, browsers propagate it to the root/viewport canvas,
+     which paints outside the normal document stacking order and can
+     bleed through descendant elements' own opaque backgrounds instead of
+     being obscured by them - confirmed by inspecting computed styles and
+     element hit-testing, not just visually. A plain descendant div is not
+     subject to that special-case rule. */
+.page-canvas {
+  background-color: var(--color-zinc-50);
+  background-image: radial-gradient(circle, var(--color-zinc-300) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
 /* Geist: a minimal, geometric grotesk (Vercel's typeface) - replaces the

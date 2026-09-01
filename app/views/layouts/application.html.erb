@@ -28,7 +28,15 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body class="relative">
+    <!-- Full-bleed page canvas: a plain descendant (not <body> itself, which
+         would propagate its background to the root and break normal
+         stacking - see application.css) sized to the full document via
+         position:relative on <body> + inset-0 here, not to <main>, which
+         Tailwind's `container` class caps at a max-width well short of the
+         viewport on larger screens. -->
+    <div class="absolute inset-0 -z-10 page-canvas" aria-hidden="true"></div>
+
     <!-- 1. Render the Navbar at the very top -->
     <%= render "shared/navbar" %>
 
@@ -62,7 +70,7 @@
     </div>
     <!-- END FLOATING TOAST CONTAINER -->
 
-    <main class="container mx-auto px-5 flex flex-col bg-zinc-50 min-h-screen">
+    <main class="container mx-auto px-5 flex flex-col min-h-screen">
       <%= yield %>
     </main>
   </body>

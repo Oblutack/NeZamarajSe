@@ -1,6 +1,17 @@
 <!-- app/views/jobs/index.html.erb -->
-<div class="max-w-7xl mx-auto py-8">
-  <div class="md:flex md:items-center md:justify-between mb-8 gap-6">
+<div class="relative max-w-7xl mx-auto py-8">
+  <%# Fades the page-canvas dot pattern out as it approaches the job
+      listings, instead of the header's dots ending in a hard edge right
+      above the grid. white, not zinc-50, at the solid end - see the note
+      on bg-white in home/index.html.erb for why. The header content below
+      needs `relative` (it already has one on the search box, and gets one
+      here on the row + grid/empty-state) so it stacks above this: an
+      absolutely positioned element paints above non-positioned siblings
+      regardless of DOM order, so without that this fade would sit on top
+      of the title and search field rather than behind them. %>
+  <div class="absolute inset-x-0 top-0 h-52 pointer-events-none" style="background: linear-gradient(to bottom, transparent, white 90%)" aria-hidden="true"></div>
+
+  <div class="relative md:flex md:items-center md:justify-between mb-8 gap-6">
     <div class="flex-1 min-w-0">
       <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Job Market</h2>
       <p class="mt-1.5 text-[13.5px] text-zinc-500">
@@ -18,14 +29,14 @@
     <%= form_with url: jobs_path, method: :get, class: "mt-4 md:mt-0" do %>
       <div class="relative">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <%= text_field_tag :q, @query, placeholder: "Search title or company…", class: "w-full md:w-64 pl-9 pr-3 py-2 text-[13px] rounded-md border border-zinc-300 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-400" %>
+        <%= text_field_tag :q, @query, placeholder: "Search title or company…", class: "relative w-full md:w-64 pl-9 pr-3 py-2 text-[13px] rounded-md border border-zinc-300 bg-white focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-400" %>
       </div>
     <% end %>
   </div>
 
   <% if @jobs.empty? %>
     <!-- EMPTY STATE -->
-    <div class="text-center py-20 bg-white rounded-lg border border-dashed border-zinc-300">
+    <div class="relative text-center py-20 bg-white rounded-lg border border-dashed border-zinc-300">
       <svg class="mx-auto w-8 h-8 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
       <% if @query.present? %>
         <h3 class="mt-4 text-[14.5px] font-semibold text-zinc-900">No jobs match &ldquo;<%= @query %>&rdquo;</h3>
@@ -43,7 +54,7 @@
     </div>
   <% else %>
     <!-- JOB GRID -->
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="relative grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       <% @jobs.each do |job| %>
         <div class="bg-white rounded-lg border border-zinc-200 flex flex-col relative hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition">
 
