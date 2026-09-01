@@ -1,4 +1,34 @@
 @import "tailwindcss";
+@import "../stylesheets/actiontext.css";
+
+/* Trix ships styled for its own defaults (gray #bbb borders, a blue
+   #cbeefa active-button highlight, 3px corners) - restyle it to the app's
+   monochrome zinc palette instead of leaving a visibly different widget
+   dropped into an otherwise consistent design system. */
+trix-toolbar .trix-button-group {
+  border-color: var(--color-zinc-300);
+  border-radius: var(--radius-md);
+}
+trix-toolbar .trix-button {
+  color: var(--color-zinc-600);
+}
+trix-toolbar .trix-button:not(:first-child) {
+  border-left-color: var(--color-zinc-300);
+}
+trix-toolbar .trix-button.trix-active {
+  background: var(--color-zinc-100);
+  color: var(--color-zinc-950);
+}
+trix-editor {
+  border-color: var(--color-zinc-300);
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  min-height: 12em;
+}
+trix-editor:focus {
+  outline: 2px solid var(--color-zinc-500);
+  outline-offset: -1px;
+}
 
 /* Geist: a minimal, geometric grotesk (Vercel's typeface) - replaces the
    system font stack app-wide. Loaded via Google Fonts in the layout head;

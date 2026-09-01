@@ -13,7 +13,7 @@
         <div class="bg-white rounded-lg border border-zinc-200 flex flex-col hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition">
           <div class="px-4 py-4 flex-grow">
             <h3 class="text-[14px] font-semibold text-zinc-900 truncate" title="<%= template.name %>"><%= template.name %></h3>
-            <p class="mt-2 text-[11.5px] text-zinc-500 font-mono line-clamp-4"><%= template.body %></p>
+            <p class="mt-2 text-[11.5px] text-zinc-500 font-mono line-clamp-4"><%= template.body.to_plain_text %></p>
           </div>
           <div class="px-4 py-3 flex justify-between items-center border-t border-zinc-100">
             <%= link_to "Edit", edit_cover_letter_template_path(template), class: "text-zinc-700 hover:text-zinc-950 text-[12.5px] font-semibold" %>

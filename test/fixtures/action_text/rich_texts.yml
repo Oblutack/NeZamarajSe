@@ -1,0 +1,9 @@
+one:
+  record: one (CoverLetterTemplate)
+  name: body
+  body: "Dear {{company_name}}, I'm applying for {{job_title}} in {{location}}."
+
+two:
+  record: two (CoverLetterTemplate)
+  name: body
+  body: "Dear {{company_name}}, I'm applying for {{job_title}} in {{location}}."

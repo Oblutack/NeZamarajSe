@@ -3,9 +3,7 @@
 one:
   user: one
   name: Standard Application
-  body: "Dear {{company_name}}, I'm applying for {{job_title}} in {{location}}."
 
 two:
   user: two
   name: Standard Application
-  body: "Dear {{company_name}}, I'm applying for {{job_title}} in {{location}}."
