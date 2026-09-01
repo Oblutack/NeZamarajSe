@@ -42,6 +42,7 @@ module Scrapers
           next if title.blank? || company_name.blank? || job_url.blank?
 
           company = Company.find_or_create_by!(name: company_name)
+          backfill_website!(company, job_url)
 
           # Same aggregator-style dedup fallback UniversalJobScraper uses -
           # a company reposting the same title shouldn't create a duplicate.
@@ -67,6 +68,24 @@ module Scrapers
       puts "✅ Finished scraping IT Karijera."
     rescue StandardError => e
       puts "❌ IT Karijera scraper failed: #{e.message}"
+    end
+
+    private
+
+    # EmailFinderService prefers company.website when present, over guessing
+    # a domain from the company name via Clearbit - and Clearbit's name-based
+    # autocomplete has no country awareness, so a generic name (e.g. "Klika")
+    # can resolve to an unrelated same-named company abroad instead of the
+    # real Bosnian one. We already know the company's real domain here (the
+    # host of its own apply page), so record it - once, without overwriting a
+    # website some other source may have already set.
+    def backfill_website!(company, job_url)
+      return if company.website.present?
+
+      host = URI.parse(job_url).host
+      company.update!(website: host) if host.present?
+    rescue URI::InvalidURIError
+      nil
     end
   end
 end
