@@ -1,4 +1,12 @@
 <!-- app/views/home/index.html.erb -->
+<%# The hero runs edge to edge and fills the viewport below the navbar, so
+    none of the page canvas (the dot pattern) shows around it - the moving
+    dot network is the only texture on this page. That means opting out of
+    the layout's centered `container` column: -mt-8 cancels the navbar's
+    margin so the hero starts flush under it, and 65px is the navbar's
+    measured height. %>
+<% content_for :main_class, "flex flex-col -mt-8 min-h-[calc(100vh-65px)]" %>
+
 <%# bg-white, not bg-zinc-50 (which would visually blend better with the
     page canvas behind it): confirmed via computed-style/hit-testing that
     Tailwind's oklch-based zinc-50 does not reliably composite as fully
@@ -6,7 +14,7 @@
     showed through it. Plain white does not have that problem. Only
     matters here because this is the one place something needs to
     actively occlude the pattern - cards elsewhere already use bg-white. %>
-<div class="relative bg-white min-h-[70vh] flex flex-col justify-center items-center mt-8 overflow-hidden">
+<div class="relative bg-white flex-1 flex flex-col justify-center items-center overflow-hidden">
   <canvas data-controller="dot-network" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
 
   <div class="relative z-10 max-w-2xl text-center px-4">

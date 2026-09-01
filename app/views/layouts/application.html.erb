@@ -70,7 +70,12 @@
     </div>
     <!-- END FLOATING TOAST CONTAINER -->
 
-    <main class="container mx-auto px-5 flex flex-col min-h-screen">
+    <%# Pages that want to break out of the centered `container` column (the
+        home hero, which runs edge to edge) override this via
+        `content_for :main_class`. The default min-height subtracts the
+        navbar (65px) plus its 32px margin so a short page fills exactly
+        one viewport instead of forcing ~97px of pointless scroll. %>
+    <main class="<%= content_for(:main_class).presence || "container mx-auto px-5 flex flex-col min-h-[calc(100vh-97px)]" %>">
       <%= yield %>
     </main>
   </body>
