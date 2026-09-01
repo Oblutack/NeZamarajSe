@@ -1,6 +1,8 @@
 <!-- app/views/resumes/index.html.erb -->
-<div class="max-w-4xl mx-auto py-8">
-  <div class="md:flex md:items-center md:justify-between mb-8">
+<div class="relative overflow-hidden max-w-4xl mx-auto py-8">
+  <%= render "shared/dot_pattern_band" %>
+
+  <div class="relative md:flex md:items-center md:justify-between mb-8">
     <div class="flex-1 min-w-0">
       <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">
         Asset Library
@@ -10,7 +12,7 @@
   </div>
 
   <!-- Upload Form -->
-  <div class="bg-white border border-zinc-200 rounded-lg mb-8">
+  <div class="relative bg-white border border-zinc-200 rounded-lg mb-8">
     <div class="px-5 py-5">
       <h3 class="text-[14.5px] font-semibold text-zinc-900">Upload new resume</h3>
       <div class="mt-1.5 max-w-xl text-[13px] text-zinc-500">

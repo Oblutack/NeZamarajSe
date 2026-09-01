@@ -1,11 +1,13 @@
 <!-- app/views/dashboard/show.html.erb -->
-<div class="max-w-4xl mx-auto py-8">
-  <div class="mb-8">
+<div class="relative overflow-hidden max-w-4xl mx-auto py-8">
+  <%= render "shared/dot_pattern_band" %>
+
+  <div class="relative mb-8">
     <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Dashboard</h2>
     <p class="mt-1.5 text-[13.5px] text-zinc-500">Your job hunt, at a glance.</p>
   </div>
 
-  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="relative grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
     <div class="bg-white border border-zinc-200 rounded-lg p-5">
       <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide">Jobs Saved</p>
       <p class="mt-2 text-[32px] font-bold text-zinc-950 tracking-tight"><%= number_with_delimiter(@jobs_saved_count) %></p>

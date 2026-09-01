@@ -1,6 +1,8 @@
 <!-- app/views/jobs/index.html.erb -->
-<div class="max-w-7xl mx-auto py-8">
-  <div class="md:flex md:items-center md:justify-between mb-8 gap-6">
+<div class="relative overflow-hidden max-w-7xl mx-auto py-8">
+  <%= render "shared/dot_pattern_band" %>
+
+  <div class="relative md:flex md:items-center md:justify-between mb-8 gap-6">
     <div class="flex-1 min-w-0">
       <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Job Market</h2>
       <p class="mt-1.5 text-[13.5px] text-zinc-500">
@@ -25,7 +27,7 @@
 
   <% if @jobs.empty? %>
     <!-- EMPTY STATE -->
-    <div class="text-center py-20 bg-white rounded-lg border border-dashed border-zinc-300">
+    <div class="relative text-center py-20 bg-white rounded-lg border border-dashed border-zinc-300">
       <svg class="mx-auto w-8 h-8 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
       <% if @query.present? %>
         <h3 class="mt-4 text-[14.5px] font-semibold text-zinc-900">No jobs match &ldquo;<%= @query %>&rdquo;</h3>
@@ -43,7 +45,7 @@
     </div>
   <% else %>
     <!-- JOB GRID -->
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="relative grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       <% @jobs.each do |job| %>
         <div class="bg-white rounded-lg border border-zinc-200 flex flex-col relative hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition">
 

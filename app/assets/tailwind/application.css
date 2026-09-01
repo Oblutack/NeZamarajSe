@@ -30,6 +30,17 @@ trix-editor:focus {
   outline-offset: -1px;
 }
 
+/* A static, faint dot grid for the header band of the app's inner pages -
+   the quiet, non-animated counterpart to the home hero's moving dot
+   network (dot_network_controller.js). Fades to nothing via the mask so it
+   never reads as a hard-edged box behind the page title. */
+.dot-pattern-band {
+  background-image: radial-gradient(circle, var(--color-zinc-300) 1px, transparent 1px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(to bottom, black, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+}
+
 /* Geist: a minimal, geometric grotesk (Vercel's typeface) - replaces the
    system font stack app-wide. Loaded via Google Fonts in the layout head;
    this is what actually makes every font-sans/default-text element in the

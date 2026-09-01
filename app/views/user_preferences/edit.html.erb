@@ -1,8 +1,10 @@
 <!-- app/views/user_preferences/edit.html.erb -->
-<div class="max-w-2xl mx-auto py-8">
-  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-6">Radar Settings</h1>
+<div class="relative overflow-hidden max-w-2xl mx-auto py-8">
+  <%= render "shared/dot_pattern_band" %>
 
-  <div class="bg-white border border-zinc-200 rounded-lg p-6">
+  <h1 class="relative text-[22px] font-bold text-zinc-950 tracking-tight mb-6">Radar Settings</h1>
+
+  <div class="relative bg-white border border-zinc-200 rounded-lg p-6">
     <%= form_with model: @preference, url: user_preference_path, method: :patch, class: "space-y-6" do |f| %>
 
       <div>
