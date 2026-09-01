@@ -9,10 +9,12 @@
     </p>
 
     <% if user_signed_in? %>
-      <div class="border border-emerald-200 bg-emerald-50 text-emerald-800 px-5 py-4 rounded-lg inline-block">
-        <p class="text-[13.5px] font-semibold">You are authenticated and ready to go.</p>
-        <p class="text-[12.5px] text-emerald-700 mt-0.5">Next, we will build your CRM dashboard.</p>
-      </div>
+      <%= link_to dashboard_path, class: "inline-flex items-center gap-2 border border-emerald-200 bg-emerald-50 text-emerald-800 px-5 py-4 rounded-lg hover:bg-emerald-100 transition" do %>
+        <div class="text-left">
+          <p class="text-[13.5px] font-semibold">You are authenticated and ready to go.</p>
+          <p class="text-[12.5px] text-emerald-700 mt-0.5">Go to your dashboard →</p>
+        </div>
+      <% end %>
     <% else %>
       <%= button_to "Login with Google", user_google_oauth2_omniauth_authorize_path,
             data: { turbo: false },
