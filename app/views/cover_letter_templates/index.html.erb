@@ -7,18 +7,26 @@
     <%= link_to "New Template", new_cover_letter_template_path, class: "inline-flex items-center justify-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
   </div>
 
-  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-    <% @templates.each do |template| %>
-      <div class="bg-white rounded-lg border border-zinc-200 flex flex-col hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition">
-        <div class="px-4 py-4 flex-grow">
-          <h3 class="text-[14px] font-semibold text-zinc-900 truncate" title="<%= template.name %>"><%= template.name %></h3>
-          <p class="mt-2 text-[11.5px] text-zinc-500 font-mono line-clamp-4"><%= template.body %></p>
+  <% if @templates.any? %>
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <% @templates.each do |template| %>
+        <div class="bg-white rounded-lg border border-zinc-200 flex flex-col hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition">
+          <div class="px-4 py-4 flex-grow">
+            <h3 class="text-[14px] font-semibold text-zinc-900 truncate" title="<%= template.name %>"><%= template.name %></h3>
+            <p class="mt-2 text-[11.5px] text-zinc-500 font-mono line-clamp-4"><%= template.body %></p>
+          </div>
+          <div class="px-4 py-3 flex justify-between items-center border-t border-zinc-100">
+            <%= link_to "Edit", edit_cover_letter_template_path(template), class: "text-zinc-700 hover:text-zinc-950 text-[12.5px] font-semibold" %>
+            <%= button_to "Delete", cover_letter_template_path(template), method: :delete, data: { turbo_confirm: "Delete this template?" }, class: "cursor-pointer text-zinc-500 hover:text-red-600 text-[12.5px] font-semibold" %>
+          </div>
         </div>
-        <div class="px-4 py-3 flex justify-between items-center border-t border-zinc-100">
-          <%= link_to "Edit", edit_cover_letter_template_path(template), class: "text-zinc-700 hover:text-zinc-950 text-[12.5px] font-semibold" %>
-          <%= button_to "Delete", cover_letter_template_path(template), method: :delete, data: { turbo_confirm: "Delete this template?" }, class: "cursor-pointer text-zinc-500 hover:text-red-600 text-[12.5px] font-semibold" %>
-        </div>
-      </div>
-    <% end %>
-  </div>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render "shared/empty_state",
+          icon_path: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+          title: "No templates yet",
+          description: "Create a cover letter template with smart tags like {{company_name}} to start sending automated applications.",
+          cta: link_to("New Template", new_cover_letter_template_path, class: "inline-flex items-center justify-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]") %>
+  <% end %>
 </div>

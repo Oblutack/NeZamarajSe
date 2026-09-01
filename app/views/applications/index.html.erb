@@ -24,8 +24,23 @@
         </div>
 
         <div class="flex-1 pr-3 overflow-y-auto space-y-2.5">
-          <% applications.each do |app| %>
-            <%= render "applications/application_card", app: app %>
+          <% if applications.any? %>
+            <% applications.each do |app| %>
+              <%= render "applications/application_card", app: app %>
+            <% end %>
+          <% else %>
+            <div class="flex flex-col items-center text-center py-8 px-3 border border-dashed border-zinc-200 rounded-lg">
+              <svg class="w-6 h-6 text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0l-2.586 2.586a2 2 0 01-1.414.586H10a2 2 0 01-1.414-.586L6 13m14 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5"></path>
+              </svg>
+              <% if status == "wishlist" %>
+                <p class="mt-2.5 text-[12px] text-zinc-500">Save jobs from the</p>
+                <%= link_to "Job Market", jobs_path, class: "text-[12px] font-semibold text-zinc-700 hover:text-zinc-950" %>
+                <p class="text-[12px] text-zinc-500">to get started.</p>
+              <% else %>
+                <p class="mt-2.5 text-[12px] text-zinc-500">Nothing here yet.</p>
+              <% end %>
+            </div>
           <% end %>
         </div>
       </div>
