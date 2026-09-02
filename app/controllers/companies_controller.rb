@@ -25,7 +25,15 @@ class CompaniesController < ApplicationController
     # that instead of a column that's always blank.
     @companies = @companies.where("address ILIKE ?", "%#{params[:city]}%") if params[:city].present?
 
-    @companies = @companies.left_joins(:jobs).select("companies.*, COUNT(jobs.id) AS jobs_count").group("companies.id").to_a
+    # Paginate the plain filtered relation first (so Pagy's own .count call
+    # gets a straightforward Integer back), then layer the jobs_count
+    # annotation onto just that page - grouping the already limit/offset
+    # relation directly would make Pagy try to .count a SELECT with a raw
+    # SQL column in it, which Postgres rejects (see CompaniesController's
+    # git history / ROADMAP.md Track C for the exact error this avoids).
+    @pagy, companies_page = pagy(@companies)
+    @companies = companies_page.left_joins(:jobs).select("companies.*, COUNT(jobs.id) AS jobs_count").group("companies.id").to_a
+
     @industry_codes = Company.distinct.where.not(industry_code: [ nil, "" ]).order(:industry_code).pluck(:industry_code)
   end
 

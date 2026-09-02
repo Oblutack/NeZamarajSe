@@ -4,6 +4,8 @@ require "ferrum"
 
 module Scrapers
   class UniversalJobScraper
+    include CrossPostingRecordable
+
     def initialize(config)
       @config = config
     end
@@ -61,9 +63,7 @@ module Scrapers
             # Aggregators (e.g. Jooble) link to their own redirect URL rather than the
             # original posting, so the same job re-appears under a different job_url.
             # Exact-URL dedup above can't catch that - fall back to title+company.
-            if Job.exists?(company_id: company.id, title: title)
-              next
-            end
+            next if record_or_skip_duplicate?(company, title, @config.site_name, job_url)
 
             job = Job.find_or_initialize_by(url: job_url)
             job.title = title
@@ -86,6 +86,8 @@ module Scrapers
             elsif job.changed?
               job.save!
             end
+
+            record_job_source!(job, @config.site_name, job_url)
           end
 
           # PAGINATION

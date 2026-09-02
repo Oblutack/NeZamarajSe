@@ -11,28 +11,69 @@
       of the title and search field rather than behind them. %>
   <div class="absolute inset-x-0 top-0 h-52 pointer-events-none" style="background: linear-gradient(to bottom, transparent, white 90%)" aria-hidden="true"></div>
 
-  <div class="relative md:flex md:items-center md:justify-between mb-8 gap-6">
-    <div class="flex-1 min-w-0">
-      <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Job Market</h2>
-      <p class="mt-1.5 text-[13.5px] text-zinc-500">
-        <% if @query.present? %>
-          Showing results for: <span class="font-semibold text-zinc-900">&ldquo;<%= @query %>&rdquo;</span>
-          <%= link_to "Clear", jobs_path, class: "ml-1 text-zinc-400 hover:text-zinc-700 underline" %>
-        <% elsif current_user.user_preference&.keyword_array&.any? %>
-          Showing jobs matching: <span class="font-semibold text-zinc-900"><%= current_user.user_preference.keywords %></span>
-        <% else %>
-          Latest jobs scraped from Bosnian job boards.
-        <% end %>
-      </p>
-    </div>
+  <div class="relative mb-6">
+    <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Job Market</h2>
+    <p class="mt-1.5 text-[13.5px] text-zinc-500">
+      <% if @query.present? %>
+        Showing results for: <span class="font-semibold text-zinc-900">&ldquo;<%= @query %>&rdquo;</span>
+      <% elsif current_user.user_preference&.keyword_array&.any? %>
+        Showing jobs matching: <span class="font-semibold text-zinc-900"><%= current_user.user_preference.keywords %></span>
+      <% else %>
+        Latest jobs scraped from Bosnian job boards.
+      <% end %>
+      &middot; <%= raw pagy_info(@pagy) if @pagy.count.positive? %>
+    </p>
+  </div>
 
-    <%= form_with url: jobs_path, method: :get, class: "mt-4 md:mt-0" do %>
+  <%= form_with url: jobs_path, method: :get, class: "relative mb-8 bg-white border border-zinc-200 rounded-lg p-4 flex flex-wrap items-end gap-4" do %>
+    <div class="flex-1 min-w-[200px]">
+      <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Search</label>
       <div class="relative">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <%= text_field_tag :q, @query, placeholder: "Search title or company…", class: "relative w-full md:w-64 pl-9 pr-3 py-2 text-[13px] rounded-md border border-zinc-300 bg-white focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-400" %>
+        <%= text_field_tag :q, @query, placeholder: "Title or company…", class: "w-full pl-9 pr-3 py-2 text-[13px] rounded-md border border-zinc-300 bg-white focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-400" %>
       </div>
-    <% end %>
-  </div>
+    </div>
+
+    <div>
+      <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Location</label>
+      <%= select_tag :location, options_for_select([ [ "Any", "" ] ] + @locations.map { |l| [ l, l ] }, params[:location]),
+            class: "rounded-md border-zinc-300 text-[13px] p-2 border" %>
+    </div>
+
+    <div>
+      <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Source</label>
+      <%= select_tag :source, options_for_select([ [ "Any", "" ] ] + @sources.map { |s| [ s, s ] }, params[:source]),
+            class: "rounded-md border-zinc-300 text-[13px] p-2 border" %>
+    </div>
+
+    <div>
+      <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Posted within</label>
+      <%= select_tag :posted_within, options_for_select([ [ "Any time", "" ], [ "24 hours", "1" ], [ "3 days", "3" ], [ "7 days", "7" ], [ "30 days", "30" ] ], params[:posted_within]),
+            class: "rounded-md border-zinc-300 text-[13px] p-2 border" %>
+    </div>
+
+    <div>
+      <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Sort by</label>
+      <%= select_tag :sort, options_for_select([ [ "Newest", "" ], [ "Deadline", "deadline" ], [ "Company", "company" ] ], params[:sort]),
+            class: "rounded-md border-zinc-300 text-[13px] p-2 border" %>
+    </div>
+
+    <div class="flex items-center gap-4 pb-2">
+      <label class="flex items-center gap-1.5 text-[13px] text-zinc-700 cursor-pointer">
+        <%= check_box_tag :has_contact, "1", params[:has_contact] == "1", class: "rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500" %>
+        Has contact email
+      </label>
+      <label class="flex items-center gap-1.5 text-[13px] text-zinc-700 cursor-pointer">
+        <%= check_box_tag :expiring_soon, "1", params[:expiring_soon] == "1", class: "rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500" %>
+        Expiring soon
+      </label>
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit" class="cursor-pointer inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]">Filter</button>
+      <%= link_to "Clear", jobs_path, class: "inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-zinc-600 hover:bg-zinc-50 border border-zinc-200" %>
+    </div>
+  <% end %>
 
   <% if @jobs.empty? %>
     <!-- EMPTY STATE -->
@@ -40,13 +81,13 @@
       <svg class="mx-auto w-8 h-8 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
       <% if @query.present? %>
         <h3 class="mt-4 text-[14.5px] font-semibold text-zinc-900">No jobs match &ldquo;<%= @query %>&rdquo;</h3>
-        <p class="mt-1.5 text-[13px] text-zinc-500">Try a different title or company name.</p>
+        <p class="mt-1.5 text-[13px] text-zinc-500">Try a different title, company name, or loosen a filter.</p>
         <div class="mt-6">
           <%= link_to "Clear search", jobs_path, class: "inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
         </div>
       <% else %>
-        <h3 class="mt-4 text-[14.5px] font-semibold text-zinc-900">No jobs match your radar</h3>
-        <p class="mt-1.5 text-[13px] text-zinc-500">Try adjusting your keywords in the Radar Settings.</p>
+        <h3 class="mt-4 text-[14.5px] font-semibold text-zinc-900">No jobs match your filters</h3>
+        <p class="mt-1.5 text-[13px] text-zinc-500">Try adjusting your keywords in the Radar Settings, or loosening a filter above.</p>
         <div class="mt-6">
           <%= link_to "Update Settings", edit_user_preference_path, class: "inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
         </div>
@@ -81,7 +122,9 @@
           </div>
 
           <div class="px-4 py-4 flex-grow pr-28">
-            <h3 class="text-[14px] font-semibold text-zinc-900 leading-snug mb-1"><%= job.title %></h3>
+            <h3 class="text-[14px] font-semibold text-zinc-900 leading-snug mb-1">
+              <%= link_to job.title, job_path(job), class: "hover:underline" %>
+            </h3>
             <p class="text-[12.5px] text-zinc-500 mb-3"><%= job.company.name %></p>
 
             <div class="text-[11.5px] text-zinc-400 flex items-center gap-1.5">
@@ -89,10 +132,21 @@
               <span>&middot;</span>
               <span>Scraped <%= time_ago_in_words(job.created_at) %> ago</span>
             </div>
+
+            <% if job.job_sources.size > 1 %>
+              <div class="mt-1.5 text-[11px] font-semibold text-zinc-500 flex items-center gap-1">
+                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                Also posted on <%= job.job_sources.size - 1 %> other board<%= "s" if job.job_sources.size > 2 %>
+              </div>
+            <% end %>
           </div>
 
           <div class="px-4 py-3 flex justify-between items-center border-t border-zinc-100">
-            <%= link_to "View Original", job.url, target: "_blank", class: "text-[12px] font-semibold text-zinc-500 hover:text-zinc-900" %>
+            <% if (safe_url = safe_external_url(job.url)) %>
+              <%= link_to "View Original", safe_url, target: "_blank", class: "text-[12px] font-semibold text-zinc-500 hover:text-zinc-900" %>
+            <% else %>
+              <span></span>
+            <% end %>
 
             <% if @saved_job_ids.include?(job.id) %>
               <span class="inline-flex items-center px-2.5 py-1 text-[11.5px] font-semibold rounded text-emerald-700 bg-emerald-50">
@@ -105,5 +159,7 @@
         </div>
       <% end %>
     </div>
+
+    <%= render "shared/pagination", pagy: @pagy %>
   <% end %>
 </div>

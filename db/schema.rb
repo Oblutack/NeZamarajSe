@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_02_123858) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_02_134500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -111,6 +111,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_123858) do
     t.index ["user_id"], name: "index_cover_letter_templates_on_user_id"
   end
 
+  create_table "job_sources", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "job_id", null: false
+    t.string "source_name", null: false
+    t.string "url"
+    t.index ["job_id", "source_name"], name: "index_job_sources_on_job_id_and_source_name", unique: true
+    t.index ["job_id"], name: "index_job_sources_on_job_id"
+  end
+
   create_table "jobs", force: :cascade do |t|
     t.bigint "company_id", null: false
     t.datetime "created_at", null: false
@@ -177,6 +186,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_123858) do
   add_foreign_key "applications", "users"
   add_foreign_key "companies", "users", column: "last_contacted_by_id"
   add_foreign_key "cover_letter_templates", "users"
+  add_foreign_key "job_sources", "jobs"
   add_foreign_key "jobs", "companies"
   add_foreign_key "user_preferences", "users"
 end

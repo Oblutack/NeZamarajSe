@@ -90,3 +90,5 @@ gem "ruby-openai", "~> 8.3"
 gem "ferrum", "~> 0.17.2"
 
 gem "honeybadger", "~> 5.0"
+
+gem "pagy", "~> 9.3"

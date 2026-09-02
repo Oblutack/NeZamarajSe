@@ -29,6 +29,17 @@ class CompaniesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "index paginates beyond the first page and still shows the jobs_count annotation" do
+    26.times { |n| Company.create!(name: "Generated Company #{n}") }
+
+    get companies_url
+    assert_response :success
+    assert_select "nav[aria-label=Pagination]"
+
+    get companies_url, params: { page: 2 }
+    assert_response :success
+  end
+
   test "index filters by has_email" do
     @company.update!(primary_email: "hr@vertexsolutions.example")
     companies(:two).update!(primary_email: nil)

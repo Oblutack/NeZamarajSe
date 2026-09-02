@@ -13,8 +13,11 @@ module Scrapers
   # unauthenticated JSON API instead (found via the network tab while the SPA
   # loaded), which is both easier and more reliable to read directly.
   class ItKarijeraScraper
+    include CrossPostingRecordable
+
     API_URL = "https://api.itkarijera.ba/api/industry/CompanyJob/getlistbyquery"
     PAGE_SIZE = 40
+    SOURCE_NAME = "IT Karijera"
 
     def call
       puts "🕷️ Starting IT Karijera API Scraper..."
@@ -44,9 +47,10 @@ module Scrapers
           company = Company.find_or_create_by!(name: company_name)
           backfill_website!(company, job_url)
 
-          # Same aggregator-style dedup fallback UniversalJobScraper uses -
-          # a company reposting the same title shouldn't create a duplicate.
-          next if Job.exists?(company_id: company.id, title: title)
+          # Same aggregator-style dedup fallback UniversalJobScraper uses - a
+          # company reposting the same title shouldn't create a duplicate Job,
+          # but is worth recording as a cross-posting rather than discarding.
+          next if record_or_skip_duplicate?(company, title, SOURCE_NAME, job_url)
 
           job = Job.find_or_initialize_by(url: job_url)
           job.title = title
@@ -62,6 +66,8 @@ module Scrapers
           elsif job.changed?
             job.save!
           end
+
+          record_job_source!(job, SOURCE_NAME, job_url)
         end
 
         page += 1

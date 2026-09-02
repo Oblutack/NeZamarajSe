@@ -1,0 +1,33 @@
+<%# app/views/shared/_pagination.html.erb
+    Expects a local `pagy` (a Pagy instance). Hand-rolled rather than using
+    Pagy's own pagy_nav helper, to match the rest of the app's plain
+    Tailwind-zinc styling instead of Pagy's own default markup/classes. %>
+<% if pagy.pages > 1 %>
+  <nav class="flex items-center justify-between mt-8 text-[13px]" aria-label="Pagination">
+    <p class="text-zinc-500"><%= raw pagy_info(pagy) %></p>
+
+    <div class="flex items-center gap-1">
+      <% if pagy.prev %>
+        <%= link_to "Prev", url_for(request.query_parameters.merge(page: pagy.prev)), class: "px-3 py-1.5 rounded-md font-semibold text-zinc-600 hover:bg-zinc-100" %>
+      <% else %>
+        <span class="px-3 py-1.5 rounded-md font-semibold text-zinc-300 cursor-not-allowed">Prev</span>
+      <% end %>
+
+      <% pagy.series.each do |item| %>
+        <% if item == :gap %>
+          <span class="px-2 text-zinc-400">&hellip;</span>
+        <% elsif item.is_a?(String) %>
+          <span class="px-3 py-1.5 rounded-md font-bold text-white bg-zinc-900"><%= item %></span>
+        <% else %>
+          <%= link_to item, url_for(request.query_parameters.merge(page: item)), class: "px-3 py-1.5 rounded-md font-semibold text-zinc-600 hover:bg-zinc-100" %>
+        <% end %>
+      <% end %>
+
+      <% if pagy.next %>
+        <%= link_to "Next", url_for(request.query_parameters.merge(page: pagy.next)), class: "px-3 py-1.5 rounded-md font-semibold text-zinc-600 hover:bg-zinc-100" %>
+      <% else %>
+        <span class="px-3 py-1.5 rounded-md font-semibold text-zinc-300 cursor-not-allowed">Next</span>
+      <% end %>
+    </div>
+  </nav>
+<% end %>

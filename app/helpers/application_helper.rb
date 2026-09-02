@@ -1,4 +1,6 @@
 module ApplicationHelper
+  include Pagy::Frontend
+
   # Companies and Jobs both store URLs scraped from external sites -
   # refuse anything that isn't plain http(s) before it ever reaches a
   # link_to href, so a scraped javascript: URI can't execute on click.
