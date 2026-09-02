@@ -69,11 +69,22 @@ module Scrapers
             job.title = title
             job.company = company
             job.description = "Scraped via Headless Chrome from #{@config.site_name}"
+            job.location = extract_text(card, @config.location_selector)
+
+            # The listing itself is the source of truth for its own deadline -
+            # more reliable than AiJobAnalyzerService guessing from prose, and
+            # free. Re-set on every scrape (not just job.new_record?) so an
+            # extended deadline on a re-encountered listing stays current;
+            # harmless no-op when the date hasn't changed.
+            expiry = extract_expiry_date(card, @config.date_selector)
+            job.expires_at = expiry if expiry.present?
 
             if job.new_record?
               puts "   ✨ New Job: #{title} @ #{company.name}"
               job.save!
               ::AnalyzeJob.perform_later(job.id)
+            elsif job.changed?
+              job.save!
             end
           end
 
@@ -123,6 +134,28 @@ module Scrapers
       return card["href"] if selector == "self"
       element = card.at_css(selector)
       element ? element["href"] : nil
+    end
+
+    # Two formats seen in the wild: a <time datetime="2026-09-04T21:59:59Z">
+    # element (MojPosao - machine-readable, just parse the attribute), or a
+    # plain-text date range like Klix's "02.09. – 02.10.2026" (take the
+    # *last* DD.MM.YYYY in the text - the range's end, i.e. the deadline).
+    def extract_expiry_date(card, selector)
+      return nil if selector.blank?
+      element = card.at_css(selector)
+      return nil unless element
+
+      if element.name == "time" && element["datetime"].present?
+        return Date.parse(element["datetime"])
+      end
+
+      match = element.text.scan(/(\d{2})\.(\d{2})\.(\d{4})/).last
+      return nil unless match
+
+      day, month, year = match
+      Date.new(year.to_i, month.to_i, day.to_i)
+    rescue ArgumentError
+      nil
     end
   end
 end

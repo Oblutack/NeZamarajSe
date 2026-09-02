@@ -52,11 +52,15 @@ module Scrapers
           job.title = title
           job.company = company
           job.description = "Scraped via IT Karijera API"
+          job.location = item["cityName"].presence
+          job.expires_at = parse_due_date(item["dueDate"]) || job.expires_at
 
           if job.new_record?
             puts "   ✨ New Job: #{title} @ #{company.name}"
             job.save!
             ::AnalyzeJob.perform_later(job.id)
+          elsif job.changed?
+            job.save!
           end
         end
 
@@ -85,6 +89,17 @@ module Scrapers
       host = URI.parse(job_url).host
       company.update!(website: host) if host.present?
     rescue URI::InvalidURIError
+      nil
+    end
+
+    # dueDate comes back as "2026-06-30T22:00:00" (no timezone suffix) or
+    # null. The API is the source of truth here - more reliable than
+    # AiJobAnalyzerService guessing from the posting's own text.
+    def parse_due_date(due_date)
+      return nil if due_date.blank?
+
+      Date.parse(due_date)
+    rescue ArgumentError
       nil
     end
   end

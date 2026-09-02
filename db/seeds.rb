@@ -4,6 +4,11 @@ puts "🌱 Seeding Scraper Configurations..."
 ScraperConfig.destroy_all # Clear old configs to avoid duplicates
 
 # 1. Dzobs IT Jobs
+# location_selector: each card's location pin+text sits in the first
+# span.flex.items-center.gap-1 within the .text-xs.text-gray-500 meta row
+# (a second such span holds the job-type badge, but is never first). No
+# deadline shown on the card itself, so date_selector stays unset - AI
+# enrichment is still the only source of expires_at for this site.
 ScraperConfig.create!(
   site_name: "Dzobs IT",
   url: "https://dzobs.com/poslovi/it-software",
@@ -11,7 +16,8 @@ ScraperConfig.create!(
   title_selector: "h4",
   company_selector: "p.text-sm",
   link_selector: "self",
-  next_page_selector: "a[rel='next']" # Assuming this is their standard next button
+  next_page_selector: "a[rel='next']", # Assuming this is their standard next button
+  location_selector: ".text-xs.text-gray-500 span"
 )
 
 # 2. Dzobs Management/Marketing Jobs
@@ -22,7 +28,8 @@ ScraperConfig.create!(
   title_selector: "h4",
   company_selector: "p.text-sm",
   link_selector: "self",
-  next_page_selector: "a[rel='next']"
+  next_page_selector: "a[rel='next']",
+  location_selector: ".text-xs.text-gray-500 span"
 )
 
 # 3. MojPosao.ba - unfiltered, all industries. This is the general-market source:
@@ -35,6 +42,14 @@ ScraperConfig.create!(
 # endpoint); card_selector is scoped to the results wrapper since on a narrower
 # filtered search MojPosao backfills exhausted results with unrelated
 # "recommended" jobs sharing the exact same .job-card markup.
+# location_selector/date_selector: each card's `.content__info` row holds two
+# `.info__child` spans - location first, then a second one (with the extra
+# class .info__end-date) wrapping a `<time datetime="...">` for the deadline.
+# `.info__child .mp-text` resolves to the *first* such span in document order
+# (location); extract_expiry_date special-cases a matched <time> element and
+# reads its datetime attribute directly rather than trying to parse the
+# "Prijava do DD. MM. YYYY." prose around it - MojPosao is the one source
+# where the deadline is already machine-readable, no guessing needed.
 ScraperConfig.create!(
   site_name: "MojPosao",
   url: "https://www.mojposao.ba/pretraga-poslova",
@@ -42,10 +57,15 @@ ScraperConfig.create!(
   title_selector: "[data-test='job-card-content-title']",
   company_selector: ".mp-text__default--semibold, .logo-container__image",
   link_selector: "a",
-  next_page_selector: nil
+  next_page_selector: nil,
+  location_selector: ".info__child .mp-text",
+  date_selector: ".info__end-date time"
 )
 
 # 4. ITBase.ba - niche Bosnian IT-only board, real <a rel="next"> pagination.
+# location_selector: the location pin+text sits in the card's own
+# .col-span-5.text-right column, opposite the company name's .col-span-7. No
+# deadline shown on the card.
 ScraperConfig.create!(
   site_name: "ITBase.ba",
   url: "https://itbase.ba/poslovi",
@@ -53,7 +73,8 @@ ScraperConfig.create!(
   title_selector: "h3",
   company_selector: "h4",
   link_selector: "a",
-  next_page_selector: "a[rel='next']"
+  next_page_selector: "a[rel='next']",
+  location_selector: ".col-span-5 span"
 )
 
 # 5. Klix Posao - job board run by Klix.ba, BiH's most-visited news site. General
@@ -64,6 +85,13 @@ ScraperConfig.create!(
 # you're on - matched on visible text instead via Nokogiri's :contains()
 # extension, which is stable across the whole listing (228+ live postings as
 # of testing) and correctly returns nothing on the last page.
+# location_selector targets the visible "grad" link rather than the
+# favorite-btn's data-job-location attribute - simpler, since extract_text
+# only reads element text/alt, not arbitrary data attributes, and the link
+# text is exactly the same value. date_selector (".mb-3", unique within a
+# card) holds a plain-text range like "02.09. – 02.10.2026" -
+# extract_expiry_date takes the *last* date in it (the deadline, not the
+# posting date).
 ScraperConfig.create!(
   site_name: "Klix Posao",
   url: "https://posao.klix.ba/oglasi",
@@ -71,7 +99,9 @@ ScraperConfig.create!(
   title_selector: "h4 a",
   company_selector: ".text-sm.text-gray-500.font-light.min-w-0.truncate a",
   link_selector: "h4 a",
-  next_page_selector: "a:contains('Sljedeća')"
+  next_page_selector: "a:contains('Sljedeća')",
+  location_selector: "a[href*='/grad/']",
+  date_selector: ".mb-3"
 )
 
 # 6. Jooble (aggregator) - selectors mapped and verified against the live DOM, but
