@@ -8,7 +8,7 @@ Rails.application.routes.draw do
   }
 
   # --- ADMIN / DASHBOARDS ---
-  authenticate :user do
+  authenticate :user, ->(user) { user.admin? } do
     mount Sidekiq::Web => "/sidekiq"
   end
 

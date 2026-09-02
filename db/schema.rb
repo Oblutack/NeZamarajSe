@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_02_134500) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_02_154112) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -111,6 +111,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_134500) do
     t.index ["user_id"], name: "index_cover_letter_templates_on_user_id"
   end
 
+  create_table "dead_domains", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "failure_count", default: 0, null: false
+    t.string "host", null: false
+    t.datetime "last_failed_at"
+    t.datetime "updated_at", null: false
+    t.index ["host"], name: "index_dead_domains_on_host", unique: true
+  end
+
+  create_table "hunter_lookups", force: :cascade do |t|
+    t.bigint "company_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["company_id"], name: "index_hunter_lookups_on_company_id"
+  end
+
   create_table "job_sources", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "job_id", null: false
@@ -163,6 +178,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_134500) do
 
   create_table "users", force: :cascade do |t|
     t.string "access_token"
+    t.boolean "admin", default: false, null: false
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -186,6 +202,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_134500) do
   add_foreign_key "applications", "users"
   add_foreign_key "companies", "users", column: "last_contacted_by_id"
   add_foreign_key "cover_letter_templates", "users"
+  add_foreign_key "hunter_lookups", "companies"
   add_foreign_key "job_sources", "jobs"
   add_foreign_key "jobs", "companies"
   add_foreign_key "user_preferences", "users"

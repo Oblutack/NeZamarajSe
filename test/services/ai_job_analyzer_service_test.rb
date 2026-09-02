@@ -75,6 +75,44 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test "records a DeadDomain failure on a fetch error" do
+    job = jobs(:one)
+    host = URI.parse(job.url).host
+
+    stub_class_method(URI, :open, ->(*) { raise "connection refused" }) do
+      AiJobAnalyzerService.call(job)
+    end
+
+    domain = DeadDomain.find_by(host: host)
+    assert_not_nil domain
+    assert_equal 1, domain.failure_count
+  end
+
+  test "skips fetching entirely once a host has hit the failure threshold" do
+    job = jobs(:one)
+    host = URI.parse(job.url).host
+    DeadDomain.create!(host: host, failure_count: DeadDomain::THRESHOLD, last_failed_at: Time.current)
+
+    stub_class_method(URI, :open, ->(*) { raise "should not be called - host is marked dead" }) do
+      assert_nothing_raised { AiJobAnalyzerService.call(job) }
+    end
+  end
+
+  test "a successful fetch resets a host's failure count" do
+    job = jobs(:one)
+    host = URI.parse(job.url).host
+    DeadDomain.create!(host: host, failure_count: 2, last_failed_at: 1.day.ago)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    stub_class_method(URI, :open, ->(*) { "<html><body>Job description</body></html>" }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal 0, DeadDomain.find_by(host: host).failure_count
+  end
+
   test "uses a mailto: link on the page instead of asking the AI" do
     job = jobs(:one)
     fake_client = stub_ai_response({ hr_email: "wrong@example.com", expiration_date: nil }.to_json)

@@ -21,6 +21,9 @@ class DashboardController < ApplicationController
     @cold_ready_to_contact_count = cold.where.not(primary_email: [ nil, "" ]).where(last_contacted_at: nil).count
     @cold_contacted_count = cold.where.not(last_contacted_at: nil).count
 
+    @hunter_lookups_this_month = HunterLookup.where(created_at: Time.current.all_month).count
+    @hunter_monthly_quota = Rails.application.config.hunter_monthly_quota
+
     build_funnel(applications)
     build_response_rate(applications)
 

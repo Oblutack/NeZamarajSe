@@ -47,4 +47,44 @@ class EmailFinderServiceTest < ActiveSupport::TestCase
 
     assert_nil company.reload.primary_email
   end
+
+  test "records a HunterLookup for every Hunter.io call actually made" do
+    company = companies(:one)
+    company.update!(website: "https://www.vertexsolutions.example")
+    hunter_response = { data: { emails: [ { value: "careers@vertexsolutions.example" } ] } }.to_json
+
+    assert_difference("HunterLookup.count", 1) do
+      stub_class_method(Net::HTTP, :get, ->(*) { hunter_response }) do
+        EmailFinderService.call(company)
+      end
+    end
+
+    assert_equal company, HunterLookup.last.company
+  end
+
+  def with_hunter_quota(value)
+    original = Rails.application.config.hunter_monthly_quota
+    Rails.application.config.hunter_monthly_quota = value
+    yield
+  ensure
+    Rails.application.config.hunter_monthly_quota = original
+  end
+
+  test "skips the Hunter.io call once this month's quota is reached" do
+    company = companies(:one)
+    company.update!(website: "https://www.vertexsolutions.example")
+    other = companies(:two)
+    other.update!(website: "https://www.northbridgesystems.example")
+    HunterLookup.create!(company: other)
+
+    with_hunter_quota(1) do
+      assert_no_difference("HunterLookup.count") do
+        stub_class_method(Net::HTTP, :get, ->(*) { raise "should not call Hunter" }) do
+          EmailFinderService.call(company)
+        end
+      end
+    end
+
+    assert_nil company.reload.primary_email
+  end
 end

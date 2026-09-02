@@ -150,7 +150,13 @@
   </div>
 
   <div class="mt-5 bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
-    <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-3 dark:text-zinc-400">Cold Outreach Pipeline</p>
+    <div class="flex items-center justify-between mb-3">
+      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide dark:text-zinc-400">Cold Outreach Pipeline</p>
+      <% hunter_near_limit = @hunter_lookups_this_month >= @hunter_monthly_quota %>
+      <span class="text-[11.5px] font-semibold <%= hunter_near_limit ? "text-red-700 dark:text-red-400" : "text-zinc-400 dark:text-zinc-600" %>" title="Hunter.io domain-search calls made this calendar month">
+        Hunter.io: <%= @hunter_lookups_this_month %> / <%= @hunter_monthly_quota %> this month
+      </span>
+    </div>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <%= link_to companies_path(cold: "1", has_email: "0"), class: "block rounded-md border border-zinc-200 p-4 hover:border-zinc-300 hover:bg-zinc-50 transition dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-800" do %>
         <p class="text-[24px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= number_with_delimiter(@cold_needs_email_count) %></p>

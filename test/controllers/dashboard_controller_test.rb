@@ -10,6 +10,23 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "shows this month's Hunter.io lookup count against the quota" do
+    HunterLookup.create!(company: companies(:one))
+    HunterLookup.create!(company: companies(:two))
+
+    get dashboard_url
+
+    assert_match(/Hunter\.io: 2 \/ 25 this month/, response.body)
+  end
+
+  test "Hunter.io lookups from a previous month don't count toward this month's total" do
+    HunterLookup.create!(company: companies(:one), created_at: 2.months.ago)
+
+    get dashboard_url
+
+    assert_match(/Hunter\.io: 0 \/ 25 this month/, response.body)
+  end
+
   test "counts the current user's saved jobs and this month's sent applications" do
     other_job = Job.create!(company: companies(:one), title: "Another Role", url: "https://jobs.example.com/another-role")
     users(:one).applications.create!(job: other_job, status: "applied", applied_at: Time.current)

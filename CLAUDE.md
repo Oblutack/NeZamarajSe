@@ -17,7 +17,7 @@ NeZamarajSe is a Rails 8 job-hunting SaaS / personal CRM for the Bosnian IT mark
 - Scraping: Ferrum (headless Chrome) + Nokogiri
 - AI: `ruby-openai` gem pointed at Groq's OpenAI-compatible endpoint (`config/initializers/openai.rb`), model `openai/gpt-oss-20b` (the original `llama-3.1-8b-instant` was retired by Groq and started 404ing - see `AiJobAnalyzerService`)
 - Company/domain enrichment: Clearbit Autocomplete (free, no key) → Hunter.io (keyed) for HR email guesses
-- Error tracking: Honeybadger — every background job rescues, calls `Honeybadger.notify` with job-specific context, then re-raises so Sidekiq still retries. Follow this pattern in any new job.
+- Error tracking: Honeybadger (API key live in `config/credentials.yml.enc` as of Track G - was missing before, every `notify` call silently no-op'd) — every background job rescues, calls `Honeybadger.notify` with job-specific context, then re-raises so Sidekiq still retries. Follow this pattern in any new job.
 - Deploy: Kamal (`config/deploy.yml`, `.kamal/`)
 
 ## Commands
@@ -95,10 +95,13 @@ Database credentials/name are in `config/database.yml` (local Postgres, `ne_zama
 - `UserPreference` (1:1 with `User`) stores freeform `keywords` (comma-separated, parsed via `keyword_array`) and `receive_daily_alerts`. `Job#index` and the radar job both build the same `title ILIKE` OR-chain from `keyword_array` — if you change the matching logic, update both call sites (`JobsController#index` and `SendDailyRadarJob#perform`).
 - `SendDailyRadarJob` (`app/jobs/send_daily_radar_job.rb`) runs daily (scheduled in `config/initializers/sidekiq.rb`'s `Sidekiq.configure_server` hash) and emails opted-in users a digest of jobs matching their keywords from the last 24h via `RadarMailer`.
 
-### Scheduling has two independent mechanisms
-- `config/initializers/sidekiq.rb` loads a hash into `Sidekiq::Cron::Job` at boot (`scrape_job_boards_daily`, `send_radar_emails`, `scrape_company_wall_weekly`, `scrape_it_karijera_daily`).
-- `config/recurring.yml` is Solid Queue's own recurring-task config (currently only a production `clear_solid_queue_finished_jobs` cleanup).
-These are separate systems (Sidekiq vs. Solid Queue) — check both when adding or debugging a scheduled task.
+### Scheduling: Sidekiq-cron is the only mechanism
+`config/initializers/sidekiq.rb` loads a hash into `Sidekiq::Cron::Job` at boot (`scrape_job_boards_daily`, `send_radar_emails`, `scrape_company_wall_weekly`, `scrape_it_karijera_daily`, `check_for_replies`). **There used to be a second, competing system here** - Solid Queue (`config/recurring.yml`, plus `config.active_job.queue_adapter = :solid_queue` in `production.rb`) was still `rails new`'s default scaffolding, never updated when the app switched to Sidekiq. That meant production was configured to route jobs through a queue backend that nothing was actually consuming — the sidekiq-cron schedule above only loads into a running Sidekiq server process, and production wasn't starting one, so in a real deploy none of these five schedules would ever have fired. Removed entirely in Track G (gem, `recurring.yml`, `bin/jobs`, `db/queue_schema.rb`, the `queue:` database, the `SOLID_QUEUE_IN_PUMA` puma plugin line) - `production.rb` now sets `:sidekiq`, matching development. `solid_cache`/`solid_cable` are unrelated, separate concerns and are untouched. If you ever see `:solid_queue` mentioned again anywhere in this codebase, that's a regression, not a second legitimate system to "keep in sync."
+
+### Operational hygiene (Track G)
+- `/sidekiq` is restricted to admins: `authenticate :user, ->(user) { user.admin? }` in `config/routes.rb`, backed by a plain `admin` boolean column on `User` (default false). A non-admin gets a 404, not a redirect - the route constraint just doesn't match, so it doesn't even confirm the route exists.
+- `DeadDomain` (per-host failure count + `last_failed_at`) makes `AiJobAnalyzerService` skip fetching a job's URL entirely once a host has failed 3 times recently, rather than paying the 8s/12s timeout again on the next job from the same dead source - `DeadDomain.dead?` has a 7-day cooldown, so a host gets a real retry after a week rather than being blacklisted forever, and any successful fetch resets its count via `DeadDomain.record_success!`.
+- `HunterLookup` (one row per Hunter.io domain-search call actually made) backs a hard quota gate in `EmailFinderService` - it skips the Hunter call once this month's count reaches `Rails.application.config.hunter_monthly_quota` (env `HUNTER_MONTHLY_QUOTA`, default 25 - `config/initializers/enrichment_quota.rb`, same permanent env-driven pattern as `sending_safety.rb`/`crm_settings.rb`). Clearbit's free domain-resolution step is unmetered and unaffected. The dashboard's Cold Outreach Pipeline card header shows "Hunter.io: X / 25 this month" (red at/over the cap).
 
 ### Multi-tenancy
 All CRM data is scoped through `current_user.applications` / `current_user.cover_letter_templates` / `current_user.resumes` in controllers — there is no soft global admin bypass. Jobs and Companies are shared/global (scraped once, visible to all users); Applications, CoverLetterTemplates, and Resumes are per-user.

@@ -7,7 +7,10 @@ class AiJobAnalyzerService
   # regional job-aggregator redirect) and were eating a full 60s each - the
   # default Net::HTTP open/read timeout - before failing. 8s to connect, 12s
   # to read is generous for a job posting page and keeps a bad link from
-  # stalling the whole enrichment queue behind it.
+  # stalling the whole enrichment queue behind it. DeadDomain (see #call)
+  # goes further for a host that keeps failing - after 3 recent failures it
+  # skips the fetch entirely rather than paying even this reduced timeout
+  # again on the next job from the same dead source.
   OPEN_TIMEOUT = 8
   READ_TIMEOUT = 12
 
@@ -27,9 +30,21 @@ class AiJobAnalyzerService
   def call
     puts "🤖 AI analyzing job: #{@job.title}..."
 
+    host = begin
+      URI.parse(@job.url).host
+    rescue URI::InvalidURIError
+      nil
+    end
+
+    if DeadDomain.dead?(host)
+      puts "⏭️ Skipping #{@job.url} - #{host} has failed #{DeadDomain::THRESHOLD}+ times recently"
+      return
+    end
+
     # 1. Fetch the actual job posting page
     begin
       html = URI.open(@job.url, "User-Agent" => "Mozilla/5.0", open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT)
+      DeadDomain.record_success!(host)
       doc = Nokogiri::HTML(html)
 
       # Strip noisy HTML tags so we don't confuse the AI (and save tokens) -
@@ -56,6 +71,7 @@ class AiJobAnalyzerService
       # if the AI call below fails, this part of the job was still worth doing.
       @job.update!(description: text_to_analyze) if text_to_analyze.present?
     rescue StandardError => e
+      DeadDomain.record_failure!(host)
       puts "❌ Failed to fetch inner job URL: #{e.message}"
       Honeybadger.notify(e, context: { job_id: @job.id, url: @job.url })
       return

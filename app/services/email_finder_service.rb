@@ -22,9 +22,17 @@ class EmailFinderService
       return
     end
 
+    if quota_exhausted?
+      puts "⏸️ Hunter.io monthly quota (#{Rails.application.config.hunter_monthly_quota}) reached - skipping lookup for #{@company.name}"
+      return
+    end
+
     puts "🔍 Searching Hunter.io for verified domain: #{domain}..."
 
-    # 2. Ask Hunter.io for the emails for that specific domain
+    # 2. Ask Hunter.io for the emails for that specific domain - record the
+    # attempt regardless of what it returns, since a lookup that comes back
+    # empty still spent one of Hunter's metered calls.
+    HunterLookup.create!(company: @company)
     url = URI("https://api.hunter.io/v2/domain-search?domain=#{domain}&api_key=#{@hunter_api_key}")
     response = Net::HTTP.get(url)
     data = JSON.parse(response)
@@ -45,6 +53,10 @@ class EmailFinderService
   end
 
   private
+
+  def quota_exhausted?
+    HunterLookup.where(created_at: Time.current.all_month).count >= Rails.application.config.hunter_monthly_quota
+  end
 
   def resolve_domain
     if @company.website.present?

@@ -49,9 +49,14 @@ Rails.application.configure do
   # Replace the default in-process memory cache store with a durable alternative.
   config.cache_store = :solid_cache_store
 
-  # Replace the default in-process and non-durable queuing backend for Active Job.
-  config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
+  # Sidekiq (Redis-backed), matching development - every scheduled job
+  # (sidekiq-cron, config/initializers/sidekiq.rb) and worker process
+  # (Procfile.dev) already assumes this. This used to say :solid_queue (the
+  # Rails-generated default, never updated when Sidekiq was added) - see
+  # ROADMAP.md Track G. Deploying for real still needs a Sidekiq worker
+  # process + Redis wired into Kamal, which hasn't happened yet (deployment
+  # itself is parked).
+  config.active_job.queue_adapter = :sidekiq
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

@@ -25,9 +25,13 @@ gem "jbuilder"
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
+# Use the database-backed adapters for Rails.cache and Action Cable. Active
+# Job uses Sidekiq (below), not Solid Queue - see ROADMAP.md Track G for why
+# that gem was removed: production.rb had it configured as the queue
+# adapter while every actual scheduled job (sidekiq-cron) and worker
+# process (Procfile.dev) assumed Sidekiq, so in a real deploy the cron
+# schedule would have silently never run.
 gem "solid_cache"
-gem "solid_queue"
 gem "solid_cable"
 
 # Reduces boot times through caching; required in config/boot.rb
