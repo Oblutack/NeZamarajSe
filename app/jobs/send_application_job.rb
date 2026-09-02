@@ -14,14 +14,26 @@ class SendApplicationJob < ApplicationJob
     resume = user.resumes.find { |r| r.blob_id == resume_blob_id.to_i }
 
     # Generate the raw email
-    raw_email = JobApplicationMailer.apply(user, job, template, resume).message.to_s
+    mail = JobApplicationMailer.apply(user, job, template, resume)
+    raw_email = mail.message.to_s
 
     # Send it via Google API
     sender = GmailSenderService.new(user)
-    sender.send_email(raw_email)
+    response = sender.send_email(raw_email)
 
-    # Only now that Gmail has confirmed the send do we mark it applied.
-    application.update!(status: "applied", applied_at: Time.current)
+    # Only now that Gmail has confirmed the send do we mark it applied - and
+    # record what was actually sent. sent_recipient is the *intended* target
+    # (application.intended_recipient), not necessarily mail.to: while
+    # dry_run_emails is on, mail.to is the user's own inbox regardless, but
+    # that's not the meaningful thing to show on the CRM card.
+    application.update!(
+      status: "applied",
+      applied_at: Time.current,
+      sent_recipient: application.intended_recipient,
+      sent_subject: mail.subject,
+      sent_body: template.render_content(job),
+      gmail_message_id: response.id
+    )
 
   rescue StandardError => e
     # If something fails (e.g., token revoked), log it so Sidekiq can retry

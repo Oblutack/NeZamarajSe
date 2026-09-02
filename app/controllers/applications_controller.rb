@@ -39,6 +39,11 @@ class ApplicationsController < ApplicationController
     @application = current_user.applications.find(params[:id])
     @templates = current_user.cover_letter_templates
     @resumes = current_user.resumes
+
+    # Drives the live preview (see the compose view's turbo_frame) - nil
+    # until the visitor has picked both, same as a fresh page load.
+    @selected_template = @templates.find_by(id: params[:template_id])
+    @selected_resume = @resumes.find { |r| r.blob_id == params[:resume_blob_id].to_i } if params[:resume_blob_id].present?
   end
 
   def dispatch_email
@@ -46,18 +51,36 @@ class ApplicationsController < ApplicationController
     template_id = params[:template_id]
     resume_blob_id = params[:resume_blob_id]
 
-    if template_id.present? && resume_blob_id.present?
-      # 1. Move it to queued immediately so the UI feels instant; SendApplicationJob
-      # flips it to "applied" only once Gmail actually confirms the send.
-      @application.update!(status: "queued")
-
-      # 2. Fire off the background job!
-      SendApplicationJob.perform_later(@application.id, template_id, resume_blob_id)
-
-      redirect_to crm_path, notice: "Application queued! The email is being sent in the background."
-    else
-      redirect_to compose_application_path(@application), alert: "Please select both a template and a resume."
+    unless Rails.application.config.sending_enabled
+      redirect_to compose_application_path(@application), alert: "Sending is currently disabled for the whole app - nothing was queued."
+      return
     end
+
+    if template_id.blank? || resume_blob_id.blank?
+      redirect_to compose_application_path(@application), alert: "Please select both a template and a resume."
+      return
+    end
+
+    unless sendable?(@application)
+      redirect_to compose_application_path(@application),
+        alert: "#{@application.job.title} has no known contact email, and dry-run mode is off - there's nowhere to send this."
+      return
+    end
+
+    if remaining_daily_sends <= 0
+      redirect_to compose_application_path(@application),
+        alert: "You've hit today's limit of #{Rails.application.config.daily_send_cap} applications - try again tomorrow."
+      return
+    end
+
+    # 1. Move it to queued immediately so the UI feels instant; SendApplicationJob
+    # flips it to "applied" only once Gmail actually confirms the send.
+    @application.update!(status: "queued", queued_at: Time.current)
+
+    # 2. Fire off the background job!
+    SendApplicationJob.perform_later(@application.id, template_id, resume_blob_id)
+
+    redirect_to crm_path, notice: "Application queued! The email is being sent in the background."
   end
 
   def bulk_compose
@@ -78,35 +101,64 @@ class ApplicationsController < ApplicationController
     template_id = params[:template_id]
     resume_blob_id = params[:resume_blob_id]
 
-    if template_id.present? && resume_blob_id.present?
-
-      @applications.each_with_index do |application, index|
-        # 1. Move it to queued immediately; SendApplicationJob flips it to "applied"
-        # only once Gmail actually confirms the send.
-        application.update!(status: "queued")
-
-        # 2. THE ANTI-SPAM DELAY ENGINE
-        # App 0 -> waits 0 minutes (sends now)
-        # App 1 -> waits 5 minutes
-        # App 2 -> waits 10 minutes
-        delay_time = (index * 5).minutes
-
-        SendApplicationJob.set(wait: delay_time).perform_later(
-          application.id,
-          template_id,
-          resume_blob_id
-        )
-      end
-
-      redirect_to crm_path, notice: "Campaign Launched! 🚀 #{@applications.count} applications are securely queued."
-    else
-      redirect_to crm_path, alert: "Campaign failed: Please select a template and resume."
+    unless Rails.application.config.sending_enabled
+      redirect_to crm_path, alert: "Sending is currently disabled for the whole app - nothing was queued."
+      return
     end
+
+    if template_id.blank? || resume_blob_id.blank?
+      redirect_to crm_path, alert: "Campaign failed: Please select a template and resume."
+      return
+    end
+
+    sendable, unsendable = @applications.partition { |application| sendable?(application) }
+
+    # The cap applies to the whole campaign, not just this action - truncate
+    # rather than reject outright, so a big batch still sends as much of
+    # itself as today's allowance covers instead of sending nothing.
+    allowance = remaining_daily_sends
+    over_cap = sendable.drop(allowance)
+    sendable = sendable.first(allowance)
+
+    sendable.each_with_index do |application, index|
+      # 1. Move it to queued immediately; SendApplicationJob flips it to "applied"
+      # only once Gmail actually confirms the send.
+      application.update!(status: "queued", queued_at: Time.current)
+
+      # 2. THE ANTI-SPAM DELAY ENGINE
+      # App 0 -> waits 0 minutes (sends now)
+      # App 1 -> waits 5 minutes
+      # App 2 -> waits 10 minutes
+      delay_time = (index * 5).minutes
+
+      SendApplicationJob.set(wait: delay_time).perform_later(
+        application.id,
+        template_id,
+        resume_blob_id
+      )
+    end
+
+    notice = "Campaign Launched! 🚀 #{sendable.count} applications are securely queued."
+    notice += " Skipped #{unsendable.count} with no known contact email." if unsendable.any?
+    notice += " Skipped #{over_cap.count} over today's limit of #{Rails.application.config.daily_send_cap}." if over_cap.any?
+    redirect_to crm_path, notice: notice
   end
 
   private
 
   def application_params
     params.require(:application).permit(:status)
+  end
+
+  # dry_run_emails on means every send lands in the user's own inbox
+  # regardless of whether we know a real contact - safe to try even with no
+  # recipient. Only refuse for real, once that safety net is off.
+  def sendable?(application)
+    Rails.application.config.dry_run_emails || application.intended_recipient.present?
+  end
+
+  def remaining_daily_sends
+    sent_today = current_user.applications.where(queued_at: Time.current.all_day).count
+    [ Rails.application.config.daily_send_cap - sent_today, 0 ].max
   end
 end

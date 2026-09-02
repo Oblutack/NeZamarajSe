@@ -17,6 +17,14 @@ class Application < ApplicationRecord
 
   after_update_commit -> { broadcast_status_update }, if: :saved_change_to_status?
 
+  # The real target this application would go to - shared by the compose
+  # preview and the mailer, so they can never say different things about who
+  # this is "for". Independent of dry_run_emails: this is who it's *for*,
+  # not necessarily where the bytes go (see JobApplicationMailer#apply).
+  def intended_recipient
+    job.hr_email.presence || job.company.primary_email.presence
+  end
+
   private
 
   def broadcast_status_update

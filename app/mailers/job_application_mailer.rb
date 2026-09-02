@@ -1,20 +1,31 @@
 # app/mailers/job_application_mailer.rb
 class JobApplicationMailer < ApplicationMailer
+  # A job with no known hr_email/company email can still be sent while
+  # dry_run_emails is on (it just goes to your own inbox regardless, so
+  # nothing is actually lost by trying) - but never for a real send. Raised
+  # from #apply, not checked ahead of time by the caller, so this can never
+  # drift out of sync with what #apply actually does.
+  class NoRecipientError < StandardError; end
+
+  def self.subject_for(job)
+    "Application: #{job.title}"
+  end
+
   def apply(user, job, template, resume)
     @body = template.render_content(job)
     attachments[resume.filename.to_s] = resume.download
 
-    # Figure out who we *want* to email
-    intended_target = job.hr_email || job.company.primary_email || "NO_EMAIL_FOUND"
+    recipient = job.hr_email.presence || job.company.primary_email.presence
+    dry_run = Rails.application.config.dry_run_emails
 
-    # TRAINING WHEELS: Force the email to go to YOU, but tag the subject line
-    # so you can see who it was supposed to go to.
-    safe_to_address = user.email
+    if recipient.blank? && !dry_run
+      raise NoRecipientError, "Job ##{job.id} has no hr_email and #{job.company.name} has no primary_email"
+    end
 
-    mail(
-      to: safe_to_address,
-      from: user.email,
-      subject: "[TEST: Intended for #{intended_target}] Application: #{job.title}"
-    )
+    to_address = dry_run ? user.email : recipient
+    subject = self.class.subject_for(job)
+    subject = "[DRY RUN] #{subject}" if dry_run
+
+    mail(to: to_address, from: user.email, subject: subject)
   end
 end
