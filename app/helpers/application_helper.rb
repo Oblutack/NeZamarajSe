@@ -18,14 +18,14 @@ module ApplicationHelper
   # destructive/non-GET actions (sign out, delete) in here.
   def command_palette_items
     [
-      { label: "Dashboard", url: dashboard_path },
-      { label: "Job Market", url: jobs_path },
-      { label: "Companies", url: companies_path },
-      { label: "My CRM", url: crm_path },
-      { label: "Templates", url: cover_letter_templates_path },
-      { label: "Asset Library", url: resumes_path },
-      { label: "Radar Settings", url: edit_user_preference_path },
-      { label: "New Cover Letter Template", url: new_cover_letter_template_path }
+      { label: t("navbar.dashboard"), url: dashboard_path },
+      { label: t("navbar.job_market"), url: jobs_path },
+      { label: t("navbar.companies"), url: companies_path },
+      { label: t("navbar.my_crm"), url: crm_path },
+      { label: t("navbar.templates"), url: cover_letter_templates_path },
+      { label: t("navbar.asset_library"), url: resumes_path },
+      { label: t("navbar.radar_settings"), url: edit_user_preference_path },
+      { label: t("shared.command_palette.new_template"), url: new_cover_letter_template_path }
     ]
   end
 end

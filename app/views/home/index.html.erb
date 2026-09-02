@@ -19,21 +19,21 @@
 
   <div class="relative z-10 max-w-2xl text-center px-4">
     <h1 class="text-[40px] leading-[1.1] font-bold tracking-tight mb-4">
-      <span class="text-zinc-400 dark:text-zinc-600">Ne Zamaraj Se.</span> <span class="text-zinc-950 dark:text-zinc-50">Automate your job hunt.</span>
+      <span class="text-zinc-400 dark:text-zinc-600">Ne Zamaraj Se.</span> <span class="text-zinc-950 dark:text-zinc-50"><%= t(".tagline") %></span>
     </h1>
     <p class="text-[15px] text-zinc-500 mb-8 dark:text-zinc-400">
-      Your personal CRM, cover letter generator, and automated job scraper for the Bosnian IT market.
+      <%= t(".subtitle") %>
     </p>
 
     <% if user_signed_in? %>
       <%= link_to dashboard_path, class: "inline-flex items-center gap-2 border border-emerald-200 bg-emerald-50 text-emerald-800 px-5 py-4 rounded-lg hover:bg-emerald-100 transition dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/40" do %>
         <div class="text-left">
-          <p class="text-[13.5px] font-semibold">You are authenticated and ready to go.</p>
-          <p class="text-[12.5px] text-emerald-700 mt-0.5 dark:text-emerald-400">Go to your dashboard →</p>
+          <p class="text-[13.5px] font-semibold"><%= t(".authenticated") %></p>
+          <p class="text-[12.5px] text-emerald-700 mt-0.5 dark:text-emerald-400"><%= t(".go_to_dashboard") %></p>
         </div>
       <% end %>
     <% else %>
-      <%= button_to "Login with Google", user_google_oauth2_omniauth_authorize_path,
+      <%= button_to t(".login_with_google"), user_google_oauth2_omniauth_authorize_path,
             data: { turbo: false },
             class: "cursor-pointer bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white text-[13.5px] font-semibold py-3 px-7 rounded-lg transition dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900" %>
     <% end %>

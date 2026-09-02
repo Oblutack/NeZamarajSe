@@ -4,13 +4,15 @@
     Tailwind-zinc styling instead of Pagy's own default markup/classes. %>
 <% if pagy.pages > 1 %>
   <nav class="flex items-center justify-between mt-8 text-[13px]" aria-label="Pagination">
-    <p class="text-zinc-500 dark:text-zinc-400"><%= raw pagy_info(pagy) %></p>
+    <%# Rails' own t(), not Pagy's pagy_info - Pagy ships no Bosnian
+        locale, and this is the only string it would be needed for. %>
+    <p class="text-zinc-500 dark:text-zinc-400"><%= t("shared.pagination.info", from: pagy.from, to: pagy.to, count: pagy.count) %></p>
 
     <div class="flex items-center gap-1">
       <% if pagy.prev %>
-        <%= link_to "Prev", url_for(request.query_parameters.merge(page: pagy.prev)), class: "px-3 py-1.5 rounded-md font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800" %>
+        <%= link_to t("shared.pagination.prev"), url_for(request.query_parameters.merge(page: pagy.prev)), class: "px-3 py-1.5 rounded-md font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800" %>
       <% else %>
-        <span class="px-3 py-1.5 rounded-md font-semibold text-zinc-300 cursor-not-allowed dark:text-zinc-700">Prev</span>
+        <span class="px-3 py-1.5 rounded-md font-semibold text-zinc-300 cursor-not-allowed dark:text-zinc-700"><%= t("shared.pagination.prev") %></span>
       <% end %>
 
       <% pagy.series.each do |item| %>
@@ -24,9 +26,9 @@
       <% end %>
 
       <% if pagy.next %>
-        <%= link_to "Next", url_for(request.query_parameters.merge(page: pagy.next)), class: "px-3 py-1.5 rounded-md font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800" %>
+        <%= link_to t("shared.pagination.next"), url_for(request.query_parameters.merge(page: pagy.next)), class: "px-3 py-1.5 rounded-md font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800" %>
       <% else %>
-        <span class="px-3 py-1.5 rounded-md font-semibold text-zinc-300 cursor-not-allowed dark:text-zinc-700">Next</span>
+        <span class="px-3 py-1.5 rounded-md font-semibold text-zinc-300 cursor-not-allowed dark:text-zinc-700"><%= t("shared.pagination.next") %></span>
       <% end %>
     </div>
   </nav>

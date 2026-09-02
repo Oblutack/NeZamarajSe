@@ -21,7 +21,7 @@ class ApplicationsController < ApplicationController
     @application = current_user.applications.find_or_create_by(job: @job) do |app|
       app.status = "wishlist"
     end
-    redirect_to jobs_path, notice: "#{@job.title} added to your CRM Wishlist!"
+    redirect_to jobs_path, notice: t("flash.applications.added_to_wishlist", job: @job.title)
   end
 
   def show
@@ -55,7 +55,7 @@ class ApplicationsController < ApplicationController
   def destroy
     @application = current_user.applications.find(params[:id])
     @application.destroy
-    redirect_to crm_path, notice: "Removed from CRM.", status: :see_other
+    redirect_to crm_path, notice: t("flash.applications.removed_from_crm"), status: :see_other
   end
 
   def compose
@@ -75,24 +75,24 @@ class ApplicationsController < ApplicationController
     resume_blob_id = params[:resume_blob_id]
 
     unless Rails.application.config.sending_enabled
-      redirect_to compose_application_path(@application), alert: "Sending is currently disabled for the whole app - nothing was queued."
+      redirect_to compose_application_path(@application), alert: t("flash.applications.sending_disabled")
       return
     end
 
     if template_id.blank? || resume_blob_id.blank?
-      redirect_to compose_application_path(@application), alert: "Please select both a template and a resume."
+      redirect_to compose_application_path(@application), alert: t("flash.applications.select_template_and_resume")
       return
     end
 
     unless sendable?(@application)
       redirect_to compose_application_path(@application),
-        alert: "#{@application.job.title} has no known contact email, and dry-run mode is off - there's nowhere to send this."
+        alert: t("flash.applications.no_contact_email", job: @application.job.title)
       return
     end
 
     if current_user.remaining_daily_sends <= 0
       redirect_to compose_application_path(@application),
-        alert: "You've hit today's limit of #{Rails.application.config.daily_send_cap} applications - try again tomorrow."
+        alert: t("flash.applications.daily_limit_reached", cap: Rails.application.config.daily_send_cap)
       return
     end
 
@@ -101,9 +101,9 @@ class ApplicationsController < ApplicationController
     @application.update!(status: "queued", queued_at: Time.current)
 
     # 2. Fire off the background job!
-    SendApplicationJob.perform_later(@application.id, template_id, resume_blob_id)
+    SendApplicationJob.perform_later(@application.id, template_id, resume_blob_id, I18n.locale.to_s)
 
-    redirect_to crm_path, notice: "Application queued! The email is being sent in the background."
+    redirect_to crm_path, notice: t("flash.applications.queued")
   end
 
   def compose_follow_up
@@ -121,30 +121,30 @@ class ApplicationsController < ApplicationController
     resume_blob_id = params[:resume_blob_id]
 
     unless Rails.application.config.sending_enabled
-      redirect_to compose_follow_up_application_path(@application), alert: "Sending is currently disabled for the whole app - nothing was queued."
+      redirect_to compose_follow_up_application_path(@application), alert: t("flash.applications.sending_disabled")
       return
     end
 
     if template_id.blank? || resume_blob_id.blank?
-      redirect_to compose_follow_up_application_path(@application), alert: "Please select both a template and a resume."
+      redirect_to compose_follow_up_application_path(@application), alert: t("flash.applications.select_template_and_resume")
       return
     end
 
     unless sendable?(@application)
       redirect_to compose_follow_up_application_path(@application),
-        alert: "#{@application.job.title} has no known contact email, and dry-run mode is off - there's nowhere to send this."
+        alert: t("flash.applications.no_contact_email", job: @application.job.title)
       return
     end
 
     if current_user.remaining_daily_sends <= 0
       redirect_to compose_follow_up_application_path(@application),
-        alert: "You've hit today's limit of #{Rails.application.config.daily_send_cap} sends - try again tomorrow."
+        alert: t("flash.applications.follow_up_daily_limit_reached", cap: Rails.application.config.daily_send_cap)
       return
     end
 
-    SendFollowUpJob.perform_later(@application.id, template_id, resume_blob_id)
+    SendFollowUpJob.perform_later(@application.id, template_id, resume_blob_id, I18n.locale.to_s)
 
-    redirect_to application_path(@application), notice: "Follow-up queued! The email is being sent in the background."
+    redirect_to application_path(@application), notice: t("flash.applications.follow_up_queued")
   end
 
   def bulk_compose
@@ -152,7 +152,7 @@ class ApplicationsController < ApplicationController
     @applications = current_user.applications.where(id: params[:application_ids])
 
     if @applications.empty?
-      redirect_to crm_path, alert: "No applications selected."
+      redirect_to crm_path, alert: t("flash.applications.no_applications_selected")
       return
     end
 
@@ -166,12 +166,12 @@ class ApplicationsController < ApplicationController
     resume_blob_id = params[:resume_blob_id]
 
     unless Rails.application.config.sending_enabled
-      redirect_to crm_path, alert: "Sending is currently disabled for the whole app - nothing was queued."
+      redirect_to crm_path, alert: t("flash.applications.sending_disabled")
       return
     end
 
     if template_id.blank? || resume_blob_id.blank?
-      redirect_to crm_path, alert: "Campaign failed: Please select a template and resume."
+      redirect_to crm_path, alert: t("flash.applications.campaign_failed_select")
       return
     end
 
@@ -198,13 +198,14 @@ class ApplicationsController < ApplicationController
       SendApplicationJob.set(wait: delay_time).perform_later(
         application.id,
         template_id,
-        resume_blob_id
+        resume_blob_id,
+        I18n.locale.to_s
       )
     end
 
-    notice = "Campaign Launched! 🚀 #{sendable.count} applications are securely queued."
-    notice += " Skipped #{unsendable.count} with no known contact email." if unsendable.any?
-    notice += " Skipped #{over_cap.count} over today's limit of #{Rails.application.config.daily_send_cap}." if over_cap.any?
+    notice = t("flash.applications.campaign_launched", count: sendable.count)
+    notice += " " + t("flash.applications.skipped_no_email", count: unsendable.count) if unsendable.any?
+    notice += " " + t("flash.applications.skipped_over_limit", count: over_cap.count, cap: Rails.application.config.daily_send_cap) if over_cap.any?
     redirect_to crm_path, notice: notice
   end
 

@@ -57,36 +57,36 @@ class CompaniesController < ApplicationController
     resume_blob_id = params[:resume_blob_id]
 
     unless Rails.application.config.sending_enabled
-      redirect_to compose_outreach_company_path(@company), alert: "Sending is currently disabled for the whole app - nothing was queued."
+      redirect_to compose_outreach_company_path(@company), alert: t("flash.applications.sending_disabled")
       return
     end
 
     if template_id.blank? || resume_blob_id.blank?
-      redirect_to compose_outreach_company_path(@company), alert: "Please select both a template and a resume."
+      redirect_to compose_outreach_company_path(@company), alert: t("flash.applications.select_template_and_resume")
       return
     end
 
     unless sendable?(@company)
       redirect_to compose_outreach_company_path(@company),
-        alert: "#{@company.name} has no known contact email, and dry-run mode is off - there's nowhere to send this."
+        alert: t("flash.companies.no_contact_email", company: @company.name)
       return
     end
 
     if current_user.remaining_daily_sends <= 0
       redirect_to compose_outreach_company_path(@company),
-        alert: "You've hit today's limit of #{Rails.application.config.daily_send_cap} sends - try again tomorrow."
+        alert: t("flash.applications.follow_up_daily_limit_reached", cap: Rails.application.config.daily_send_cap)
       return
     end
 
-    SendColdOutreachJob.perform_later(current_user.id, @company.id, template_id, resume_blob_id)
+    SendColdOutreachJob.perform_later(current_user.id, @company.id, template_id, resume_blob_id, I18n.locale.to_s)
 
-    redirect_to company_path(@company), notice: "Outreach email to #{@company.name} is being sent in the background."
+    redirect_to company_path(@company), notice: t("flash.companies.outreach_sending", company: @company.name)
   end
 
   def refresh_email
     @company = Company.find(params[:id])
     FindCompanyEmailJob.perform_later(@company.id)
-    redirect_to company_path(@company), notice: "Looking up a contact email for #{@company.name} - refresh in a moment."
+    redirect_to company_path(@company), notice: t("flash.companies.looking_up_email", company: @company.name)
   end
 
   private

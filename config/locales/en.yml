@@ -1,31 +1,415 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
 en:
-  hello: "Hello world"
+  navbar:
+    dashboard: "Dashboard"
+    job_market: "Job Market"
+    companies: "Companies"
+    my_crm: "My CRM"
+    manage: "Manage"
+    templates: "Templates"
+    asset_library: "Asset Library"
+    radar_settings: "Radar Settings"
+    command_palette: "Command palette"
+    toggle_dark_mode: "Toggle dark mode"
+    sign_out: "Sign out"
+    sign_in: "Sign in"
+
+  shared:
+    pagination:
+      info: "Displaying items %{from}-%{to} of %{count} in total"
+      prev: "Prev"
+      next: "Next"
+    command_palette:
+      placeholder: "Jump to…"
+      no_matches: "No matches"
+      new_template: "New Cover Letter Template"
+    compose:
+      select_template: "Select Cover Letter Template"
+      select_resume: "Select CV / Resume"
+      choose_template: "Choose a template..."
+      choose_resume: "Choose a resume..."
+      preview_title: "Preview - exactly what would be sent"
+      to: "To"
+      subject: "Subject"
+      attachment: "Attachment"
+      body: "Body"
+      no_email_found: "No email found for this company yet"
+      cancel: "Cancel"
+      pick_template_and_resume: "Pick a template and a resume above to see a preview."
+      dry_run_title: "Dry-run mode is on."
+      dry_run_body: "This will actually be delivered to your own inbox (%{email}), not the recipient shown below - safe to send as a test."
+    application_statuses:
+      wishlist: "Wishlist"
+      queued: "Queued"
+      applied: "Applied"
+      interviewing: "Interviewing"
+      rejected: "Rejected"
+      offered: "Offered"
+    application_events:
+      status_change: "Moved from %{from} to %{to}"
+      follow_up_sent: "Follow-up email sent"
+      reply_detected: "Reply detected in Gmail thread"
+
+  home:
+    index:
+      tagline: "Automate your job hunt."
+      subtitle: "Your personal CRM, cover letter generator, and automated job scraper for the Bosnian IT market."
+      authenticated: "You are authenticated and ready to go."
+      go_to_dashboard: "Go to your dashboard →"
+      login_with_google: "Login with Google"
+
+  dashboard:
+    show:
+      title: "Dashboard"
+      subtitle: "Your job hunt, at a glance."
+      onboarding:
+        title: "Finish setting up"
+        template: "Create a cover letter template"
+        resume: "Upload a resume"
+        keywords: "Set your radar keywords"
+      jobs_saved: "Jobs Saved"
+      jobs_saved_hint: "Across every column of your CRM"
+      applications_sent: "Applications Sent This Month"
+      response_rate: "Response Rate"
+      no_applications_sent: "No applications sent yet"
+      of_sent: "Of %{count} sent"
+      cold_vs_warm: "Cold vs. Warm Outreach"
+      no_company_data: "No company data yet."
+      warm: "Warm"
+      cold: "Cold"
+      pipeline_funnel: "Pipeline Funnel"
+      funnel:
+        saved: "Saved"
+        applied: "Applied"
+        interviewing: "Interviewing"
+        offered: "Offered"
+      deadlines_this_week: "Deadlines This Week"
+      no_deadlines: "Nothing expiring in the next 7 days."
+      recent_activity: "Recent Activity"
+      no_activity: "Nothing yet - your activity will show up here."
+      time_ago: "%{time} ago"
+      cold_outreach_pipeline: "Cold Outreach Pipeline"
+      hunter_title: "Hunter.io domain-search calls made this calendar month"
+      hunter_usage: "Hunter.io: %{used} / %{quota} this month"
+      needs_email_lookup: "Need an email lookup"
+      ready_to_contact: "Ready to contact - have an email, never reached out"
+      already_contacted: "Already contacted"
+
+  jobs:
+    index:
+      title: "Job Market"
+      showing_results_for: "Showing results for:"
+      showing_jobs_matching: "Showing jobs matching:"
+      latest_jobs: "Latest jobs scraped from Bosnian job boards."
+      search: "Search"
+      search_placeholder: "Title or company…"
+      location: "Location"
+      any: "Any"
+      source: "Source"
+      posted_within: "Posted within"
+      any_time: "Any time"
+      hours_24: "24 hours"
+      days_3: "3 days"
+      days_7: "7 days"
+      days_30: "30 days"
+      sort_by: "Sort by"
+      newest: "Newest"
+      deadline: "Deadline"
+      company: "Company"
+      has_contact_email: "Has contact email"
+      expiring_soon: "Expiring soon"
+      filter: "Filter"
+      clear: "Clear"
+      no_jobs_match_query: 'No jobs match "%{query}"'
+      try_different_search: "Try a different title, company name, or loosen a filter."
+      clear_search: "Clear search"
+      no_jobs_match_filters: "No jobs match your filters"
+      try_adjusting_filters: "Try adjusting your keywords in the Radar Settings, or loosening a filter above."
+      update_settings: "Update Settings"
+      email_found: "Email found"
+      ends: "Ends %{date}"
+      analyzing: "Analyzing…"
+      bosnia_and_herzegovina: "Bosnia and Herzegovina"
+      scraped_ago: "Scraped %{time} ago"
+      also_posted:
+        one: "Also posted on %{count} other board"
+        other: "Also posted on %{count} other boards"
+      view_original: "View Original"
+      saved_in_crm: "Saved in CRM"
+      save_to_wishlist: "Save to Wishlist"
+    show:
+      back_to_job_market: "Back to Job Market"
+      bosnia_and_herzegovina: "Bosnia and Herzegovina"
+      saved_in_crm: "Saved in CRM"
+      save_to_wishlist: "Save to Wishlist"
+      deadline: "Deadline %{date}"
+      scraped_ago: "Scraped %{time} ago"
+      posted_on_boards:
+        one: "Posted on %{count} board"
+        other: "Posted on %{count} boards"
+      description: "Description"
+      no_description: "No description available yet - still being analyzed."
+      view_original_posting: "View Original Posting"
+
+  companies:
+    index:
+      title: "Companies"
+      subtitle: "Every company scraped from a job board or found via directory outreach -"
+      total: "total."
+      email: "Email"
+      any: "Any"
+      has_email: "Has email"
+      no_email: "No email"
+      outreach_type: "Outreach type"
+      warm_option: "Warm - posted a job"
+      cold_option: "Cold - directory only"
+      industry_code: "Industry code"
+      city: "City"
+      city_placeholder: "e.g. Sarajevo"
+      filter: "Filter"
+      clear: "Clear"
+      no_companies_match: "No companies match these filters"
+      try_loosening: "Try loosening one of the filters above."
+      name: "Name"
+      type: "Type"
+      jobs: "Jobs"
+      contact_email: "Contact email"
+      last_contacted: "Last contacted"
+      cold: "Cold"
+      warm: "Warm"
+      ago: "%{time} ago"
+      never: "Never"
+    show:
+      all_companies: "All Companies"
+      cold_target: "Cold outreach target"
+      warm_target: "Warm - posted a job"
+      send_outreach_email: "Send outreach email"
+      contact_email: "Contact email"
+      not_found_yet: "Not found yet"
+      find_email: "Find email"
+      website: "Website"
+      address: "Address"
+      last_contacted: "Last contacted"
+      ago: "%{time} ago"
+      by: "by %{email}"
+      never: "Never"
+      rerun_email_lookup: "Re-run email lookup"
+      jobs_posted:
+        one: "Job posted (%{count})"
+        other: "Jobs posted (%{count})"
+      no_jobs_yet: "No job postings from this company yet - it was found via directory outreach."
+      bosnia_and_herzegovina: "Bosnia and Herzegovina"
+      scraped_ago: "Scraped %{time} ago"
+      email_found: "Email found"
+    compose_outreach:
+      title: "Prepare Cold Outreach"
+      reaching_out_to: "You are reaching out to"
+      directly: "directly - not tied to a specific job posting."
+      template_hint: "Cold outreach only substitutes {{company_name}} - a template that also uses {{job_title}} or {{location}} will just drop them blank."
+      send_email: "Send Email via Gmail"
+
+  applications:
+    compose:
+      title: "Prepare Application"
+      applying_for: "You are applying for"
+      at: "at"
+      send_email: "Send Email via Gmail"
+    compose_follow_up:
+      title: "Send a Follow-up"
+      following_up_on: "Following up on"
+      send_follow_up: "Send Follow-up via Gmail"
+    bulk_compose:
+      title: "Campaign Setup"
+      about_to_automate: "You are about to automate applications to"
+      companies_count:
+        one: "%{count} company"
+        other: "%{count} companies"
+      dry_run_title: "Dry-run mode is on."
+      dry_run_body: "Every email below will actually be delivered to your own inbox (%{email}), not the recipient shown - safe to launch as a test."
+      target_jobs_and_recipients: "Target Jobs & Recipients"
+      no_email_found: "No email found"
+      no_email_found_will_skip: "No email found - will be skipped"
+      select_smart_template: "Select Smart Template"
+      smart_tags_hint: "Smart tags (e.g. {{company_name}}) will be dynamically injected for each email."
+      select_attached_resume: "Select Attached Resume"
+      choose_a_pdf: "Choose a PDF..."
+      launch_campaign: "Launch Campaign"
+      stagger_notice: "Emails will be staggered by 5 minutes to bypass Google Spam Filters."
+    index:
+      title: "My CRM"
+      subtitle: "Track every application from wishlist to offer."
+      save_jobs_from_the: "Save jobs from the"
+      to_get_started: "to get started."
+      nothing_here_yet: "Nothing here yet."
+      jobs_selected: "jobs selected"
+      prepare_campaign: "Prepare Campaign"
+    application_card:
+      bosnia_and_herzegovina: "Bosnia and Herzegovina"
+      no_reply_follow_up: "No reply - worth a follow-up"
+      apply_individually: "Apply"
+      details: "Details"
+    show:
+      back_to_crm: "Back to CRM"
+      send_follow_up: "Send Follow-up"
+      no_reply_in_days:
+        one: "No reply in over %{count} day."
+        other: "No reply in over %{count} days."
+      worth_a_follow_up: "Might be worth a follow-up."
+      details: "Details"
+      contact_person: "Contact person"
+      contact_person_placeholder: "e.g. Jane Doe, HR"
+      salary: "Salary"
+      salary_placeholder: "e.g. 2,500 BAM/month"
+      interview_date: "Interview date"
+      rejection_reason: "Rejection reason"
+      rejection_reason_placeholder: "e.g. Position filled internally"
+      save_details: "Save Details"
+      timeline: "Timeline"
+      add_a_note: "Add a note..."
+      add: "Add"
+      no_activity_yet: "No activity yet."
+
+  cover_letter_templates:
+    index:
+      title: "Cover Letters"
+      subtitle: "Create templates with smart tags for automated emailing."
+      new_template: "New Template"
+      edit: "Edit"
+      delete: "Delete"
+      delete_confirm: "Delete this template?"
+      no_templates_yet: "No templates yet"
+      no_templates_description: "Create a cover letter template with smart tags like {{company_name}} to start sending automated applications."
+    new:
+      title: "New Cover Letter Template"
+    edit:
+      title: "Edit Template"
+    form:
+      template_name: "Template Name (e.g., 'Senior Backend Role')"
+      email_body: "Email Body"
+      tags_label: "Tags"
+      create_template: "Create Template"
+      update_template: "Update Template"
+
+  resumes:
+    index:
+      title: "Asset Library"
+      subtitle: "Manage your CVs and cover letters to use in automated campaigns."
+      upload_new_resume: "Upload new resume"
+      upload_hint: "Please upload your CV in PDF format. We will use this to apply to jobs on your behalf."
+      upload: "Upload"
+      uploaded_time_ago: "Uploaded %{time} ago"
+      delete: "Delete"
+      delete_confirm: "Are you sure you want to delete this CV?"
+      no_resumes_yet: "No resumes uploaded yet"
+      no_resumes_description: "Upload a PDF above so we can attach it automatically when you dispatch an application."
+
+  devise:
+    sessions:
+      new:
+        title: "Log in"
+        log_in: "Log in"
+    registrations:
+      new:
+        title: "Sign up"
+        sign_up: "Sign up"
+        characters_minimum:
+          one: "%{count} character minimum"
+          other: "%{count} characters minimum"
+      edit:
+        title: "Edit Profile"
+        waiting_confirmation_for: "Currently waiting confirmation for: %{email}"
+        leave_blank_if_you_dont_want_to_change_it: "Leave blank if you don't want to change it"
+        characters_minimum:
+          one: "%{count} character minimum"
+          other: "%{count} characters minimum"
+        need_current_password: "We need your current password to confirm your changes"
+        update: "Update"
+        cancel_my_account: "Cancel my account"
+        unhappy_notice: "Unhappy? You can cancel your account at any time."
+        are_you_sure: "Are you sure?"
+        back: "Back"
+    passwords:
+      new:
+        title: "Forgot your password?"
+        send_reset_instructions: "Send me password reset instructions"
+      edit:
+        title: "Change your password"
+        new_password: "New password"
+        characters_minimum:
+          one: "%{count} character minimum"
+          other: "%{count} characters minimum"
+        confirm_new_password: "Confirm new password"
+        change_my_password: "Change my password"
+    shared:
+      links:
+        log_in: "Log in"
+        sign_up: "Sign up"
+        forgot_your_password: "Forgot your password?"
+        didnt_receive_confirmation_instructions: "Didn't receive confirmation instructions?"
+        didnt_receive_unlock_instructions: "Didn't receive unlock instructions?"
+        sign_in_with: "Sign in with %{provider}"
+
+  user_preferences:
+    edit:
+      title: "Radar Settings"
+      job_keywords: "Job Keywords (Comma separated)"
+      keywords_placeholder: "e.g. Ruby, React, Marketing, Manager"
+      keywords_hint: "Our AI and scraper will only show you jobs matching these words."
+      preferred_location: "Preferred Location"
+      location_placeholder: "e.g. Sarajevo, Remote"
+      enable_daily_radar_email: "Enable Daily Radar Email"
+      daily_summary_hint: "Receive a daily summary at 8:00 AM of new jobs matching your keywords."
+      save_radar_settings: "Save Radar Settings"
+
+  flash:
+    resumes:
+      uploaded: "Resume uploaded successfully!"
+      select_a_pdf: "Please select a PDF to upload."
+      deleted: "Resume deleted."
+    cover_letter_templates:
+      created: "Template created successfully."
+      updated: "Template updated successfully."
+      deleted: "Template deleted."
+    applications:
+      added_to_wishlist: "%{job} added to your CRM Wishlist!"
+      removed_from_crm: "Removed from CRM."
+      sending_disabled: "Sending is currently disabled for the whole app - nothing was queued."
+      select_template_and_resume: "Please select both a template and a resume."
+      no_contact_email: "%{job} has no known contact email, and dry-run mode is off - there's nowhere to send this."
+      daily_limit_reached: "You've hit today's limit of %{cap} applications - try again tomorrow."
+      queued: "Application queued! The email is being sent in the background."
+      follow_up_daily_limit_reached: "You've hit today's limit of %{cap} sends - try again tomorrow."
+      follow_up_queued: "Follow-up queued! The email is being sent in the background."
+      no_applications_selected: "No applications selected."
+      campaign_failed_select: "Campaign failed: Please select a template and resume."
+      campaign_launched:
+        one: "Campaign Launched! 🚀 %{count} application is securely queued."
+        other: "Campaign Launched! 🚀 %{count} applications are securely queued."
+      skipped_no_email: "Skipped %{count} with no known contact email."
+      skipped_over_limit: "Skipped %{count} over today's limit of %{cap}."
+    companies:
+      no_contact_email: "%{company} has no known contact email, and dry-run mode is off - there's nowhere to send this."
+      outreach_sending: "Outreach email to %{company} is being sent in the background."
+      looking_up_email: "Looking up a contact email for %{company} - refresh in a moment."
+    user_preferences:
+      updated: "Radar preferences updated! 🎯"
+    omniauth:
+      google_login_failed: "Something went wrong with Google Login."
+
+  activerecord:
+    errors:
+      models:
+        user:
+          attributes:
+            resumes:
+              content_type_invalid: "must be a valid PDF format"
+              file_too_large: "must be under 5MB"
+        application:
+          attributes:
+            user_id:
+              already_saved: "has already saved this job"
+
+  mailers:
+    job_application:
+      subject: "Application: %{title}"
+      cold_outreach_subject: "Interested in opportunities at %{company}"
+      follow_up_subject: "Following up on my application for %{title}"

@@ -14,7 +14,7 @@ class Application < ApplicationRecord
     offered: "offered"
   }
 
-  validates :user_id, uniqueness: { scope: :job_id, message: "has already saved this job" }
+  validates :user_id, uniqueness: { scope: :job_id, message: ->(_object, _data) { I18n.t("activerecord.errors.models.application.attributes.user_id.already_saved") } }
 
   after_update_commit -> { broadcast_status_update }, if: :saved_change_to_status?
   after_update_commit -> { record_status_change_event }, if: :saved_change_to_status?

@@ -11,22 +11,22 @@
   <% end %>
 
   <div>
-    <%= f.label :name, "Template Name (e.g., 'Senior Backend Role')", class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
+    <%= f.label :name, t(".template_name"), class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
     <%= f.text_field :name, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
   </div>
 
   <div>
     <div class="flex justify-between items-end">
-      <%= f.label :body, "Email Body", class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
+      <%= f.label :body, t(".email_body"), class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
       <span class="text-[11px] text-zinc-500 font-mono bg-zinc-100 px-1.5 py-0.5 rounded dark:text-zinc-400 dark:bg-zinc-800">
-        Tags: {{company_name}}, {{job_title}}, {{location}}
+        <%= t(".tags_label") %>: {{company_name}}, {{job_title}}, {{location}}
       </span>
     </div>
     <%= f.rich_text_area :body, class: "mt-1.5" %>
   </div>
 
   <div class="flex justify-end space-x-3">
-    <%= link_to "Cancel", cover_letter_templates_path, class: "bg-white py-2 px-4 border border-zinc-300 rounded-md text-[13px] font-semibold text-zinc-700 hover:bg-zinc-50 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800" %>
-    <%= f.submit class: "cursor-pointer inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
+    <%= link_to t("shared.compose.cancel"), cover_letter_templates_path, class: "bg-white py-2 px-4 border border-zinc-300 rounded-md text-[13px] font-semibold text-zinc-700 hover:bg-zinc-50 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800" %>
+    <%= f.submit template.persisted? ? t(".update_template") : t(".create_template"), class: "cursor-pointer inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
   </div>
 <% end %>

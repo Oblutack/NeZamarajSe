@@ -2,6 +2,7 @@
   nav_link_class = ->(path) {
     current_page?(path) ? "text-[13px] font-semibold text-zinc-950 dark:text-zinc-50" : "text-[13px] font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
   }
+  dropdown_item_class = "block px-3.5 py-2 text-[13px] font-medium text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
 %>
 <nav class="bg-white border-b border-zinc-200 mb-8 dark:bg-zinc-900 dark:border-zinc-800">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -17,29 +18,36 @@
       </div>
 
       <!-- Right side navigation -->
-      <div class="flex items-center space-x-7">
+      <div class="flex items-center space-x-6">
         <% if user_signed_in? %>
-          <%= link_to "Dashboard", dashboard_path, class: nav_link_class.call(dashboard_path) %>
-          <%= link_to "Job Market", jobs_path, class: nav_link_class.call(jobs_path) %>
-          <%= link_to "Companies", companies_path, class: nav_link_class.call(companies_path) %>
-          <%= link_to "My CRM", crm_path, class: nav_link_class.call(crm_path) %>
-          <%= link_to "Radar Settings", edit_user_preference_path, class: nav_link_class.call(edit_user_preference_path) %>
-          <%= link_to "Asset Library", resumes_path, class: nav_link_class.call(resumes_path) %>
-          <%= link_to "Templates", cover_letter_templates_path, class: nav_link_class.call(cover_letter_templates_path) %>
+          <%= link_to t("navbar.dashboard"), dashboard_path, class: nav_link_class.call(dashboard_path) %>
+          <%= link_to t("navbar.job_market"), jobs_path, class: nav_link_class.call(jobs_path) %>
+          <%= link_to t("navbar.companies"), companies_path, class: nav_link_class.call(companies_path) %>
+          <%= link_to t("navbar.my_crm"), crm_path, class: nav_link_class.call(crm_path) %>
+
+          <!-- "Manage" dropdown: less-frequent destinations, always one ⌘K away regardless -->
+          <div class="relative" data-controller="dropdown">
+            <button type="button" data-action="click->dropdown#toggle" class="cursor-pointer flex items-center gap-1 text-[13px] font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition">
+              <%= t("navbar.manage") %>
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div data-dropdown-target="menu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-zinc-200 rounded-lg shadow-lg py-1.5 z-20 dark:bg-zinc-900 dark:border-zinc-800">
+              <%= link_to t("navbar.templates"), cover_letter_templates_path, class: dropdown_item_class %>
+              <%= link_to t("navbar.asset_library"), resumes_path, class: dropdown_item_class %>
+              <%= link_to t("navbar.radar_settings"), edit_user_preference_path, class: dropdown_item_class %>
+            </div>
+          </div>
 
           <div class="w-px h-4 bg-zinc-200 dark:bg-zinc-700"></div>
 
           <!-- Command palette trigger -->
-          <button type="button" data-action="click->command-palette#open" title="Command palette" aria-label="Open command palette" class="cursor-pointer flex items-center gap-1.5 text-zinc-400 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-300 transition">
+          <button type="button" data-action="click->command-palette#open" title="<%= t("navbar.command_palette") %>" aria-label="<%= t("navbar.command_palette") %>" class="cursor-pointer flex items-center gap-1.5 text-zinc-400 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-300 transition">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             <kbd class="hidden sm:inline text-[10.5px] font-semibold border border-zinc-200 dark:border-zinc-700 rounded px-1.5 py-0.5">&#8984;K</kbd>
           </button>
 
-          <!-- Theme toggle -->
-          <button type="button" data-controller="theme" data-action="click->theme#toggle" title="Toggle dark mode" aria-label="Toggle dark mode" class="cursor-pointer text-zinc-400 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-300 transition">
-            <svg data-theme-target="sunIcon" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-            <svg data-theme-target="moonIcon" class="w-4 h-4 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
-          </button>
+          <%= render "shared/theme_toggle" %>
+          <%= render "shared/locale_switcher" %>
 
           <div class="w-px h-4 bg-zinc-200 dark:bg-zinc-700"></div>
 
@@ -48,18 +56,15 @@
           </span>
 
           <!-- Logout Button -->
-          <%= button_to "Sign out", destroy_user_session_path,
+          <%= button_to t("navbar.sign_out"), destroy_user_session_path,
                 method: :delete,
                 class: "text-[13px] font-semibold text-zinc-900 hover:text-red-600 transition cursor-pointer dark:text-zinc-100 dark:hover:text-red-400" %>
         <% else %>
-          <!-- Theme toggle -->
-          <button type="button" data-controller="theme" data-action="click->theme#toggle" title="Toggle dark mode" aria-label="Toggle dark mode" class="cursor-pointer text-zinc-400 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-300 transition">
-            <svg data-theme-target="sunIcon" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-            <svg data-theme-target="moonIcon" class="w-4 h-4 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
-          </button>
+          <%= render "shared/theme_toggle" %>
+          <%= render "shared/locale_switcher" %>
 
           <!-- Login Link for Navbar -->
-          <%= button_to "Sign in", user_google_oauth2_omniauth_authorize_path,
+          <%= button_to t("navbar.sign_in"), user_google_oauth2_omniauth_authorize_path,
                 data: { turbo: false },
                 class: "text-[13px] font-semibold text-zinc-900 hover:text-zinc-600 transition cursor-pointer dark:text-zinc-100 dark:hover:text-zinc-400" %>
         <% end %>

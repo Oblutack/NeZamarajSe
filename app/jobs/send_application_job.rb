@@ -3,7 +3,7 @@ class SendApplicationJob < ApplicationJob
   # We use the 'mailers' queue so it doesn't block our scraping jobs
   queue_as :mailers
 
-  def perform(application_id, template_id, resume_blob_id)
+  def perform(application_id, template_id, resume_blob_id, locale = I18n.default_locale.to_s)
     application = Application.find(application_id)
     user = application.user
     job = application.job
@@ -13,8 +13,10 @@ class SendApplicationJob < ApplicationJob
     # ActiveStorage lookup by blob ID
     resume = user.resumes.find { |r| r.blob_id == resume_blob_id.to_i }
 
-    # Generate the raw email
-    mail = JobApplicationMailer.apply(user, job, template, resume)
+    # Generate the raw email - locale scoped to whatever the user had active
+    # when they hit send, so the subject line matches what they previewed
+    # (a background job otherwise runs outside any request's session locale).
+    mail = I18n.with_locale(locale) { JobApplicationMailer.apply(user, job, template, resume) }
     raw_email = mail.message.to_s
 
     # Send it via Google API

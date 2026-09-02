@@ -1,19 +1,19 @@
 <!-- app/views/user_preferences/edit.html.erb -->
 <div class="max-w-2xl mx-auto py-8">
-  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-6 dark:text-zinc-50">Radar Settings</h1>
+  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-6 dark:text-zinc-50"><%= t(".title") %></h1>
 
   <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
     <%= form_with model: @preference, url: user_preference_path, method: :patch, class: "space-y-6" do |f| %>
 
       <div>
-        <%= f.label :keywords, "Job Keywords (Comma separated)", class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
-        <%= f.text_field :keywords, placeholder: "e.g. Ruby, React, Marketing, Manager", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
-        <p class="text-[12px] text-zinc-500 mt-1.5 dark:text-zinc-400">Our AI and scraper will only show you jobs matching these words.</p>
+        <%= f.label :keywords, t(".job_keywords"), class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
+        <%= f.text_field :keywords, placeholder: t(".keywords_placeholder"), class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+        <p class="text-[12px] text-zinc-500 mt-1.5 dark:text-zinc-400"><%= t(".keywords_hint") %></p>
       </div>
 
       <div>
-        <%= f.label :location, "Preferred Location", class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
-        <%= f.text_field :location, placeholder: "e.g. Sarajevo, Remote", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+        <%= f.label :location, t(".preferred_location"), class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
+        <%= f.text_field :location, placeholder: t(".location_placeholder"), class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
       </div>
 
       <div class="flex items-start pt-1">
@@ -21,13 +21,13 @@
           <%= f.check_box :receive_daily_alerts, class: "focus:ring-zinc-500 h-3.5 w-3.5 text-zinc-900 border-zinc-300 rounded dark:focus:ring-zinc-400 dark:text-zinc-100 dark:border-zinc-700" %>
         </div>
         <div class="ml-2.5 text-[13px]">
-          <%= f.label :receive_daily_alerts, "Enable Daily Radar Email", class: "font-semibold text-zinc-700 dark:text-zinc-300" %>
-          <p class="text-zinc-500 text-[12px] mt-0.5 dark:text-zinc-400">Receive a daily summary at 8:00 AM of new jobs matching your keywords.</p>
+          <%= f.label :receive_daily_alerts, t(".enable_daily_radar_email"), class: "font-semibold text-zinc-700 dark:text-zinc-300" %>
+          <p class="text-zinc-500 text-[12px] mt-0.5 dark:text-zinc-400"><%= t(".daily_summary_hint") %></p>
         </div>
       </div>
 
       <div class="flex justify-end pt-4 border-t border-zinc-100 dark:border-zinc-800">
-        <%= f.submit "Save Radar Settings", class: "cursor-pointer inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
+        <%= f.submit t(".save_radar_settings"), class: "cursor-pointer inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
       </div>
     <% end %>
   </div>

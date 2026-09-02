@@ -8,7 +8,7 @@ class UserPreferencesController < ApplicationController
   def update
     @preference = current_user.user_preference
     if @preference.update(preference_params)
-      redirect_to edit_user_preference_path, notice: "Radar preferences updated! 🎯"
+      redirect_to edit_user_preference_path, notice: t("flash.user_preferences.updated")
     else
       render :edit, status: :unprocessable_entity
     end

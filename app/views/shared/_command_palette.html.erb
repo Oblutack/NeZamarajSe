@@ -3,7 +3,7 @@
   <div class="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-lg shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
     <div class="flex items-center gap-2.5 px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
       <svg class="w-4 h-4 text-zinc-400 dark:text-zinc-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input data-command-palette-target="input" data-action="input->command-palette#filter" type="text" placeholder="Jump to…" autocomplete="off" class="flex-1 text-[14px] outline-none bg-transparent text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600">
+      <input data-command-palette-target="input" data-action="input->command-palette#filter" type="text" placeholder="<%= t("shared.command_palette.placeholder") %>" autocomplete="off" class="flex-1 text-[14px] outline-none bg-transparent text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600">
       <kbd class="text-[10.5px] font-semibold text-zinc-400 dark:text-zinc-600 border border-zinc-200 dark:border-zinc-700 rounded px-1.5 py-0.5">Esc</kbd>
     </div>
 
@@ -14,6 +14,6 @@
         </li>
       <% end %>
     </ul>
-    <p data-command-palette-target="empty" class="hidden px-4 py-6 text-center text-[13px] text-zinc-400 dark:text-zinc-600">No matches</p>
+    <p data-command-palette-target="empty" class="hidden px-4 py-6 text-center text-[13px] text-zinc-400 dark:text-zinc-600"><%= t("shared.command_palette.no_matches") %></p>
   </div>
 </div>

@@ -1,5 +1,5 @@
 <div class="max-w-md mx-auto py-10">
-  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-6 text-center dark:text-zinc-50">Log in</h1>
+  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-6 text-center dark:text-zinc-50"><%= t(".title") %></h1>
 
   <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
     <%= render "devise/shared/error_messages", resource: resource %>
@@ -23,7 +23,7 @@
       <% end %>
 
       <div>
-        <%= f.submit "Log in", class: "cursor-pointer w-full inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
+        <%= f.submit t(".log_in"), class: "cursor-pointer w-full inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
       </div>
     <% end %>
 

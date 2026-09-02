@@ -8,15 +8,15 @@ class JobApplicationMailer < ApplicationMailer
   class NoRecipientError < StandardError; end
 
   def self.subject_for(job)
-    "Application: #{job.title}"
+    I18n.t("mailers.job_application.subject", title: job.title)
   end
 
   def self.cold_outreach_subject_for(company)
-    "Interested in opportunities at #{company.name}"
+    I18n.t("mailers.job_application.cold_outreach_subject", company: company.name)
   end
 
   def self.follow_up_subject_for(job)
-    "Following up on my application for #{job.title}"
+    I18n.t("mailers.job_application.follow_up_subject", title: job.title)
   end
 
   def apply(user, job, template, resume)

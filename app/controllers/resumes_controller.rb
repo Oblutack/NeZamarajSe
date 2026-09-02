@@ -13,9 +13,9 @@ class ResumesController < ApplicationController
     if params[:resume].present?
       # Active Storage Magic: .attach saves the file to disk and creates the DB records
       current_user.resumes.attach(params[:resume])
-      redirect_to resumes_path, notice: "Resume uploaded successfully!"
+      redirect_to resumes_path, notice: t("flash.resumes.uploaded")
     else
-      redirect_to resumes_path, alert: "Please select a PDF to upload."
+      redirect_to resumes_path, alert: t("flash.resumes.select_a_pdf")
     end
   end
 
@@ -25,6 +25,6 @@ class ResumesController < ApplicationController
     @resume.purge
 
     # In Rails 7/Hotwire, redirects after a DELETE request must include status: :see_other (303)
-    redirect_to resumes_path, notice: "Resume deleted.", status: :see_other
+    redirect_to resumes_path, notice: t("flash.resumes.deleted"), status: :see_other
   end
 end

@@ -73,6 +73,10 @@ end
 
 gem "devise", "~> 5.0"
 
+gem "devise-i18n", "~> 1.13"
+
+gem "rails-i18n", "~> 8.1"
+
 gem "omniauth", "~> 2.1"
 
 gem "omniauth-google-oauth2", "~> 1.2"

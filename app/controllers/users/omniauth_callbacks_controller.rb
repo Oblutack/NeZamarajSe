@@ -11,7 +11,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
     else
       # If something went wrong, send them back to the registration page
       session["devise.google_data"] = request.env["omniauth.auth"].except(:extra)
-      redirect_to new_user_registration_url, alert: "Something went wrong with Google Login."
+      redirect_to new_user_registration_url, alert: t("flash.omniauth.google_login_failed")
     end
   end
 

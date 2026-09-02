@@ -1,11 +1,11 @@
 <!-- app/views/companies/compose_outreach.html.erb -->
 <div class="max-w-2xl mx-auto py-8">
-  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-1.5 dark:text-zinc-50">Prepare Cold Outreach</h1>
-  <p class="text-[13.5px] text-zinc-500 mb-6 dark:text-zinc-400">You are reaching out to <span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= @company.name %></span> directly - not tied to a specific job posting.</p>
+  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-1.5 dark:text-zinc-50"><%= t(".title") %></h1>
+  <p class="text-[13.5px] text-zinc-500 mb-6 dark:text-zinc-400"><%= t(".reaching_out_to") %> <span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= @company.name %></span> <%= t(".directly") %></p>
 
   <% if Rails.application.config.dry_run_emails %>
     <div class="mb-5 border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 rounded-lg text-[13px] dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-400">
-      <span class="font-semibold">Dry-run mode is on.</span> This will actually be delivered to your own inbox (<%= current_user.email %>), not the recipient shown below - safe to send as a test.
+      <span class="font-semibold"><%= t("shared.compose.dry_run_title") %></span> <%= t("shared.compose.dry_run_body", email: current_user.email) %>
     </div>
   <% end %>
 
@@ -13,20 +13,20 @@
     <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
       <%= form_with url: compose_outreach_company_path(@company), method: :get, data: { turbo_frame: "compose_outreach_preview" }, class: "space-y-5" do %>
         <div>
-          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300">Select Cover Letter Template</label>
+          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t("shared.compose.select_template") %></label>
           <%= select_tag :template_id,
                 options_from_collection_for_select(@templates, :id, :name, @selected_template&.id),
-                include_blank: "Choose a template...",
+                include_blank: t("shared.compose.choose_template"),
                 onchange: "this.form.requestSubmit()",
                 class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
-          <p class="text-[11.5px] text-zinc-500 mt-1.5 dark:text-zinc-400">Cold outreach only substitutes {{company_name}} - a template that also uses {{job_title}} or {{location}} will just drop them blank.</p>
+          <p class="text-[11.5px] text-zinc-500 mt-1.5 dark:text-zinc-400"><%= t(".template_hint") %></p>
         </div>
 
         <div>
-          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300">Select CV / Resume</label>
+          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t("shared.compose.select_resume") %></label>
           <%= select_tag :resume_blob_id,
                 options_for_select(@resumes.map { |r| [ r.filename.to_s, r.blob.id ] }, @selected_resume&.blob&.id),
-                include_blank: "Choose a resume...",
+                include_blank: t("shared.compose.choose_resume"),
                 onchange: "this.form.requestSubmit()",
                 class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
         </div>
@@ -35,30 +35,30 @@
 
     <% if @selected_template && @selected_resume %>
       <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
-        <h2 class="text-[13px] font-semibold text-zinc-700 mb-3 dark:text-zinc-300">Preview - exactly what would be sent</h2>
+        <h2 class="text-[13px] font-semibold text-zinc-700 mb-3 dark:text-zinc-300"><%= t("shared.compose.preview_title") %></h2>
 
         <dl class="space-y-3 text-[13px]">
           <div>
-            <dt class="text-zinc-500 dark:text-zinc-400">To</dt>
+            <dt class="text-zinc-500 dark:text-zinc-400"><%= t("shared.compose.to") %></dt>
             <% if @company.primary_email.present? %>
               <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100"><%= @company.primary_email %></dd>
             <% else %>
               <dd class="mt-0.5 inline-flex items-center gap-1.5 font-medium text-red-700 dark:text-red-400">
                 <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
-                No email found for this company yet
+                <%= t("shared.compose.no_email_found") %>
               </dd>
             <% end %>
           </div>
           <div>
-            <dt class="text-zinc-500 dark:text-zinc-400">Subject</dt>
+            <dt class="text-zinc-500 dark:text-zinc-400"><%= t("shared.compose.subject") %></dt>
             <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100"><%= JobApplicationMailer.cold_outreach_subject_for(@company) %></dd>
           </div>
           <div>
-            <dt class="text-zinc-500 dark:text-zinc-400">Attachment</dt>
+            <dt class="text-zinc-500 dark:text-zinc-400"><%= t("shared.compose.attachment") %></dt>
             <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100"><%= @selected_resume.filename %></dd>
           </div>
           <div>
-            <dt class="text-zinc-500 dark:text-zinc-400">Body</dt>
+            <dt class="text-zinc-500 dark:text-zinc-400"><%= t("shared.compose.body") %></dt>
             <dd class="mt-1.5 whitespace-pre-wrap font-mono text-[12px] text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-md p-3 max-h-64 overflow-y-auto dark:text-zinc-300 dark:bg-zinc-800 dark:border-zinc-800"><%= @selected_template.render_content_for_company(@company) %></dd>
           </div>
         </dl>
@@ -66,12 +66,12 @@
         <%= form_with url: dispatch_outreach_company_path(@company), method: :post, data: { turbo_frame: "_top" }, class: "flex justify-end pt-5 mt-5 border-t border-zinc-100 dark:border-zinc-800" do |f| %>
           <%= hidden_field_tag :template_id, @selected_template.id %>
           <%= hidden_field_tag :resume_blob_id, @selected_resume.blob.id %>
-          <%= link_to "Cancel", company_path(@company), class: "mr-3 bg-white py-2 px-4 border border-zinc-300 rounded-md text-[13px] font-semibold text-zinc-700 hover:bg-zinc-50 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800" %>
-          <%= f.submit "Send Email via Gmail", class: "cursor-pointer inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
+          <%= link_to t("shared.compose.cancel"), company_path(@company), class: "mr-3 bg-white py-2 px-4 border border-zinc-300 rounded-md text-[13px] font-semibold text-zinc-700 hover:bg-zinc-50 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800" %>
+          <%= f.submit t(".send_email"), class: "cursor-pointer inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
         <% end %>
       </div>
     <% else %>
-      <p class="text-[13px] text-zinc-400 text-center py-4 dark:text-zinc-600">Pick a template and a resume above to see a preview.</p>
+      <p class="text-[13px] text-zinc-400 text-center py-4 dark:text-zinc-600"><%= t("shared.compose.pick_template_and_resume") %></p>
     <% end %>
   </turbo-frame>
 </div>

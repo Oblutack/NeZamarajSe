@@ -8,8 +8,8 @@ class User < ApplicationRecord
   has_many :jobs, through: :applications
   has_many_attached :resumes
   validates :resumes,
-            content_type: { in: "application/pdf", message: "must be a valid PDF format" },
-            size: { less_than: 5.megabytes, message: "must be under 5MB" }
+            content_type: { in: "application/pdf", message: ->(_object, _data) { I18n.t("activerecord.errors.models.user.attributes.resumes.content_type_invalid") } },
+            size: { less_than: 5.megabytes, message: ->(_object, _data) { I18n.t("activerecord.errors.models.user.attributes.resumes.file_too_large") } }
 
   # --- SECURITY: ENCRYPT OAUTH TOKENS IN THE DB ---
   encrypts :access_token, :refresh_token

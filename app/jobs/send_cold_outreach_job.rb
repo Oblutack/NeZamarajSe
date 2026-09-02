@@ -2,13 +2,13 @@
 class SendColdOutreachJob < ApplicationJob
   queue_as :mailers
 
-  def perform(user_id, company_id, template_id, resume_blob_id)
+  def perform(user_id, company_id, template_id, resume_blob_id, locale = I18n.default_locale.to_s)
     user = User.find(user_id)
     company = Company.find(company_id)
     template = user.cover_letter_templates.find(template_id)
     resume = user.resumes.find { |r| r.blob_id == resume_blob_id.to_i }
 
-    mail = JobApplicationMailer.cold_outreach(user, company, template, resume)
+    mail = I18n.with_locale(locale) { JobApplicationMailer.cold_outreach(user, company, template, resume) }
     raw_email = mail.message.to_s
 
     sender = GmailSenderService.new(user)

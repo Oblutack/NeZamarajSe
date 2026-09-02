@@ -45,6 +45,7 @@ Rails.application.routes.draw do
   end
   get "/crm", to: "applications#index", as: :crm
   get "/dashboard", to: "dashboard#show", as: :dashboard
+  get "/locale/:locale", to: "locales#update", as: :set_locale, constraints: { locale: /en|bs/ }
 
   root "home#index"
 end

@@ -2,7 +2,7 @@
 class SendFollowUpJob < ApplicationJob
   queue_as :mailers
 
-  def perform(application_id, template_id, resume_blob_id)
+  def perform(application_id, template_id, resume_blob_id, locale = I18n.default_locale.to_s)
     application = Application.find(application_id)
     user = application.user
     job = application.job
@@ -10,7 +10,7 @@ class SendFollowUpJob < ApplicationJob
     template = user.cover_letter_templates.find(template_id)
     resume = user.resumes.find { |r| r.blob_id == resume_blob_id.to_i }
 
-    mail = JobApplicationMailer.follow_up(user, job, template, resume)
+    mail = I18n.with_locale(locale) { JobApplicationMailer.follow_up(user, job, template, resume) }
     raw_email = mail.message.to_s
 
     sender = GmailSenderService.new(user)

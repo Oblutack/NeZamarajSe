@@ -15,7 +15,7 @@ class CoverLetterTemplatesController < ApplicationController
     @template = current_user.cover_letter_templates.build(template_params)
 
     if @template.save
-      redirect_to cover_letter_templates_path, notice: "Template created successfully."
+      redirect_to cover_letter_templates_path, notice: t("flash.cover_letter_templates.created")
     else
       render :new, status: :unprocessable_entity
     end
@@ -26,7 +26,7 @@ class CoverLetterTemplatesController < ApplicationController
 
   def update
     if @template.update(template_params)
-      redirect_to cover_letter_templates_path, notice: "Template updated successfully."
+      redirect_to cover_letter_templates_path, notice: t("flash.cover_letter_templates.updated")
     else
       render :edit, status: :unprocessable_entity
     end
@@ -34,7 +34,7 @@ class CoverLetterTemplatesController < ApplicationController
 
   def destroy
     @template.destroy
-    redirect_to cover_letter_templates_path, notice: "Template deleted.", status: :see_other
+    redirect_to cover_letter_templates_path, notice: t("flash.cover_letter_templates.deleted"), status: :see_other
   end
 
   private

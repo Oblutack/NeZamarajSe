@@ -17,8 +17,8 @@
 
   <div class="relative mb-2 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
     <div>
-      <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50">My CRM</h2>
-      <p class="text-[13.5px] text-zinc-500 mt-1 dark:text-zinc-400">Drag and drop jobs to track your application pipeline.</p>
+      <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= t(".title") %></h2>
+      <p class="text-[13.5px] text-zinc-500 mt-1 dark:text-zinc-400"><%= t(".subtitle") %></p>
     </div>
   </div>
 
@@ -29,7 +29,7 @@
   <div class="relative sm:hidden flex gap-1.5 px-4 mb-3 overflow-x-auto">
     <% @grouped_applications.each_key do |status| %>
       <button type="button" data-mobile-crm-target="tab" data-status="<%= status %>" data-action="click->mobile-crm#switch" class="flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold text-zinc-600 dark:text-zinc-400 transition">
-        <%= status.titleize %> (<%= @grouped_applications[status].count %>)
+        <%= application_status_label(status) %> (<%= @grouped_applications[status].count %>)
       </button>
     <% end %>
   </div>
@@ -40,7 +40,7 @@
 
         <div class="pt-3.5 pb-3 pr-4">
           <h3 class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide flex justify-between items-center dark:text-zinc-400">
-            <%= status.titleize %>
+            <%= application_status_label(status) %>
             <span class="text-zinc-400 font-semibold dark:text-zinc-600"><%= applications.count %></span>
           </h3>
         </div>
@@ -56,11 +56,11 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0l-2.586 2.586a2 2 0 01-1.414.586H10a2 2 0 01-1.414-.586L6 13m14 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5"></path>
               </svg>
               <% if status == "wishlist" %>
-                <p class="mt-2.5 text-[12px] text-zinc-500 dark:text-zinc-400">Save jobs from the</p>
-                <%= link_to "Job Market", jobs_path, class: "text-[12px] font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50" %>
-                <p class="text-[12px] text-zinc-500 dark:text-zinc-400">to get started.</p>
+                <p class="mt-2.5 text-[12px] text-zinc-500 dark:text-zinc-400"><%= t(".save_jobs_from_the") %></p>
+                <%= link_to t("navbar.job_market"), jobs_path, class: "text-[12px] font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50" %>
+                <p class="text-[12px] text-zinc-500 dark:text-zinc-400"><%= t(".to_get_started") %></p>
               <% else %>
-                <p class="mt-2.5 text-[12px] text-zinc-500 dark:text-zinc-400">Nothing here yet.</p>
+                <p class="mt-2.5 text-[12px] text-zinc-500 dark:text-zinc-400"><%= t(".nothing_here_yet") %></p>
               <% end %>
             </div>
           <% end %>
@@ -74,11 +74,11 @@
     <div class="max-w-7xl mx-auto flex justify-between items-center px-4">
       <div class="flex items-center space-x-4">
         <span class="bg-zinc-700 text-white font-bold h-8 w-8 rounded-full flex items-center justify-center dark:bg-zinc-600 dark:text-zinc-900" data-bulk-campaign-target="countBadge">0</span>
-        <span class="font-medium text-lg">Jobs selected for Bulk Campaign</span>
+        <span class="font-medium text-lg"><%= t(".jobs_selected") %></span>
       </div>
       <!-- This button submits the form! -->
       <button type="submit" class="bg-white text-zinc-900 px-6 py-2.5 rounded-lg font-bold hover:bg-zinc-100 active:scale-[0.98] transition shadow dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800">
-        Prepare Campaign
+        <%= t(".prepare_campaign") %>
       </button>
     </div>
   </div>

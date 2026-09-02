@@ -1,15 +1,15 @@
 <!-- app/views/companies/show.html.erb -->
 <div class="max-w-3xl mx-auto py-8">
-  <%= link_to "&larr; All Companies".html_safe, companies_path, class: "text-[12.5px] font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100" %>
+  <%= link_to "&larr; #{t(".all_companies")}".html_safe, companies_path, class: "text-[12.5px] font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100" %>
 
   <div class="mt-3 mb-8 flex items-start justify-between gap-4">
     <div>
       <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= @company.name %></h1>
       <p class="mt-1.5 text-[13px] text-zinc-500 dark:text-zinc-400">
         <% if @company.is_cold_outreach %>
-          <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">Cold outreach target</span>
+          <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"><%= t(".cold_target") %></span>
         <% else %>
-          <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Warm - posted a job</span>
+          <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"><%= t(".warm_target") %></span>
         <% end %>
         <% if @company.industry_code.present? %>
           <span class="ml-1.5 text-zinc-400 dark:text-zinc-600">NACE <%= @company.industry_code %></span>
@@ -17,24 +17,24 @@
       </p>
     </div>
 
-    <%= link_to "Send outreach email", compose_outreach_company_path(@company), class: "flex-shrink-0 inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
+    <%= link_to t(".send_outreach_email"), compose_outreach_company_path(@company), class: "flex-shrink-0 inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
   </div>
 
   <div class="bg-white border border-zinc-200 rounded-lg p-6 mb-6 dark:bg-zinc-900 dark:border-zinc-800">
     <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px]">
       <div>
-        <dt class="text-zinc-500 dark:text-zinc-400">Contact email</dt>
+        <dt class="text-zinc-500 dark:text-zinc-400"><%= t(".contact_email") %></dt>
         <% if @company.primary_email.present? %>
           <dd class="font-medium text-emerald-700 mt-0.5 dark:text-emerald-400"><%= @company.primary_email %></dd>
         <% else %>
           <dd class="mt-0.5">
-            <span class="text-red-600 font-medium dark:text-red-400">Not found yet</span>
-            <%= button_to "Find email", refresh_email_company_path(@company), class: "cursor-pointer ml-2 inline-flex items-center px-2.5 py-1 text-[11.5px] font-semibold rounded text-zinc-700 bg-zinc-100 hover:bg-zinc-200 dark:text-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700" %>
+            <span class="text-red-600 font-medium dark:text-red-400"><%= t(".not_found_yet") %></span>
+            <%= button_to t(".find_email"), refresh_email_company_path(@company), class: "cursor-pointer ml-2 inline-flex items-center px-2.5 py-1 text-[11.5px] font-semibold rounded text-zinc-700 bg-zinc-100 hover:bg-zinc-200 dark:text-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700" %>
           </dd>
         <% end %>
       </div>
       <div>
-        <dt class="text-zinc-500 dark:text-zinc-400">Website</dt>
+        <dt class="text-zinc-500 dark:text-zinc-400"><%= t(".website") %></dt>
         <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100">
           <% if (safe_url = safe_external_url(@company.website)) %>
             <%= link_to @company.website, safe_url, target: "_blank", class: "text-zinc-900 hover:underline dark:text-zinc-100" %>
@@ -44,32 +44,32 @@
         </dd>
       </div>
       <div>
-        <dt class="text-zinc-500 dark:text-zinc-400">Address</dt>
+        <dt class="text-zinc-500 dark:text-zinc-400"><%= t(".address") %></dt>
         <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100"><%= @company.address.presence || "—" %></dd>
       </div>
       <div>
-        <dt class="text-zinc-500 dark:text-zinc-400">Last contacted</dt>
+        <dt class="text-zinc-500 dark:text-zinc-400"><%= t(".last_contacted") %></dt>
         <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100">
           <% if @company.last_contacted_at %>
-            <%= time_ago_in_words(@company.last_contacted_at) %> ago
-            <% if @company.last_contacted_by %> by <%= @company.last_contacted_by.email %><% end %>
+            <%= t(".ago", time: time_ago_in_words(@company.last_contacted_at)) %>
+            <% if @company.last_contacted_by %> <%= t(".by", email: @company.last_contacted_by.email) %><% end %>
           <% else %>
-            <span class="text-zinc-400 dark:text-zinc-600">Never</span>
+            <span class="text-zinc-400 dark:text-zinc-600"><%= t(".never") %></span>
           <% end %>
         </dd>
       </div>
     </dl>
 
     <% if @company.primary_email.present? %>
-      <%= button_to "Re-run email lookup", refresh_email_company_path(@company), class: "cursor-pointer mt-4 inline-flex items-center px-3 py-1.5 text-[11.5px] font-semibold rounded text-zinc-500 hover:bg-zinc-50 border border-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:border-zinc-800" %>
+      <%= button_to t(".rerun_email_lookup"), refresh_email_company_path(@company), class: "cursor-pointer mt-4 inline-flex items-center px-3 py-1.5 text-[11.5px] font-semibold rounded text-zinc-500 hover:bg-zinc-50 border border-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:border-zinc-800" %>
     <% end %>
   </div>
 
   <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
-    <h2 class="text-[13px] font-semibold text-zinc-700 mb-3 dark:text-zinc-300">Jobs posted (<%= @jobs.count %>)</h2>
+    <h2 class="text-[13px] font-semibold text-zinc-700 mb-3 dark:text-zinc-300"><%= t(".jobs_posted", count: @jobs.count) %></h2>
 
     <% if @jobs.empty? %>
-      <p class="text-[13px] text-zinc-400 dark:text-zinc-600">No job postings from this company yet - it was found via directory outreach.</p>
+      <p class="text-[13px] text-zinc-400 dark:text-zinc-600"><%= t(".no_jobs_yet") %></p>
     <% else %>
       <ul class="divide-y divide-zinc-100 dark:divide-zinc-800">
         <% @jobs.each do |job| %>
@@ -80,10 +80,10 @@
               <% else %>
                 <span class="text-[13px] font-medium text-zinc-900 truncate dark:text-zinc-100"><%= job.title %></span>
               <% end %>
-              <p class="text-[11.5px] text-zinc-400 dark:text-zinc-600"><%= job.location || "Bosnia and Herzegovina" %> &middot; Scraped <%= time_ago_in_words(job.created_at) %> ago</p>
+              <p class="text-[11.5px] text-zinc-400 dark:text-zinc-600"><%= job.location || t(".bosnia_and_herzegovina") %> &middot; <%= t(".scraped_ago", time: time_ago_in_words(job.created_at)) %></p>
             </div>
             <% if job.hr_email.present? %>
-              <span class="flex-shrink-0 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">Email found</span>
+              <span class="flex-shrink-0 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400"><%= t(".email_found") %></span>
             <% end %>
           </li>
         <% end %>
