@@ -67,7 +67,7 @@ class ApplicationsController < ApplicationController
       return
     end
 
-    if remaining_daily_sends <= 0
+    if current_user.remaining_daily_sends <= 0
       redirect_to compose_application_path(@application),
         alert: "You've hit today's limit of #{Rails.application.config.daily_send_cap} applications - try again tomorrow."
       return
@@ -116,7 +116,7 @@ class ApplicationsController < ApplicationController
     # The cap applies to the whole campaign, not just this action - truncate
     # rather than reject outright, so a big batch still sends as much of
     # itself as today's allowance covers instead of sending nothing.
-    allowance = remaining_daily_sends
+    allowance = current_user.remaining_daily_sends
     over_cap = sendable.drop(allowance)
     sendable = sendable.first(allowance)
 
@@ -155,10 +155,5 @@ class ApplicationsController < ApplicationController
   # recipient. Only refuse for real, once that safety net is off.
   def sendable?(application)
     Rails.application.config.dry_run_emails || application.intended_recipient.present?
-  end
-
-  def remaining_daily_sends
-    sent_today = current_user.applications.where(queued_at: Time.current.all_day).count
-    [ Rails.application.config.daily_send_cap - sent_today, 0 ].max
   end
 end

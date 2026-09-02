@@ -20,4 +20,15 @@ class CoverLetterTemplate < ApplicationRecord
     rendered.gsub!("{{location}}", job.location || "your office")
     rendered
   end
+
+  # Cold outreach has no specific job posting behind it, so {{job_title}}
+  # and {{location}} are blanked rather than left as literal unsubstituted
+  # tags - write cold-outreach templates that only lean on {{company_name}}.
+  def render_content_for_company(company)
+    rendered = body.to_plain_text.dup
+    rendered.gsub!("{{company_name}}", company.name)
+    rendered.gsub!("{{job_title}}", "")
+    rendered.gsub!("{{location}}", "")
+    rendered
+  end
 end

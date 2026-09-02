@@ -18,8 +18,21 @@ class User < ApplicationRecord
   # NEW: A user has exactly ONE preference profile
   has_one :user_preference, dependent: :destroy
 
+  has_many :contacted_companies, class_name: "Company", foreign_key: :last_contacted_by_id, dependent: :nullify
+
   # NEW: Automatically create preferences after Google OAuth
   after_create :create_default_preferences
+
+  # Shared by both job-application sends (ApplicationsController) and
+  # cold-outreach sends (CompaniesController) - both draw down the same
+  # daily allowance since they go out through the same Gmail account and
+  # carry the same spam-heuristic risk.
+  def remaining_daily_sends
+    today = Time.current.all_day
+    sent_today = applications.where(queued_at: today).count +
+      contacted_companies.where(last_contacted_at: today).count
+    [ Rails.application.config.daily_send_cap - sent_today, 0 ].max
+  end
 
   private
 

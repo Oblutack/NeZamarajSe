@@ -59,4 +59,31 @@ class UserTest < ActiveSupport::TestCase
     assert_equal "second-token", returning_user.access_token
     assert_equal "first-refresh-token", returning_user.refresh_token
   end
+
+  def with_daily_cap(value)
+    original = Rails.application.config.daily_send_cap
+    Rails.application.config.daily_send_cap = value
+    yield
+  ensure
+    Rails.application.config.daily_send_cap = original
+  end
+
+  test "remaining_daily_sends counts both queued applications and cold outreach sent today" do
+    user = users(:one)
+    user.applications.first.update!(queued_at: Time.current)
+    companies(:two).update!(last_contacted_at: Time.current, last_contacted_by: user)
+
+    with_daily_cap(10) do
+      assert_equal 8, user.remaining_daily_sends
+    end
+  end
+
+  test "remaining_daily_sends never drops below zero" do
+    user = users(:one)
+    user.applications.first.update!(queued_at: Time.current)
+
+    with_daily_cap(0) do
+      assert_equal 0, user.remaining_daily_sends
+    end
+  end
 end

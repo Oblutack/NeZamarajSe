@@ -43,4 +43,16 @@ class CoverLetterTemplateTest < ActiveSupport::TestCase
 
     assert_includes rendered, "your office"
   end
+
+  test "render_content_for_company substitutes the company name and blanks job-specific tags" do
+    template = cover_letter_templates(:one)
+    template.update!(body: "Dear {{company_name}}, I'm interested in {{job_title}} at {{location}}.")
+    company = companies(:one)
+
+    rendered = template.render_content_for_company(company)
+
+    assert_includes rendered, company.name
+    assert_not_includes rendered, "{{job_title}}"
+    assert_not_includes rendered, "{{location}}"
+  end
 end

@@ -63,4 +63,38 @@ class JobApplicationMailerTest < ActionMailer::TestCase
       assert_equal [ @user.email ], mail.to
     end
   end
+
+  test "cold_outreach while dry_run_emails is on sends to the user's own inbox with a tagged subject" do
+    company = companies(:two)
+
+    with_dry_run(true) do
+      mail = JobApplicationMailer.cold_outreach(@user, company, @template, @resume)
+
+      assert_equal [ @user.email ], mail.to
+      assert_equal "[DRY RUN] Interested in opportunities at #{company.name}", mail.subject
+    end
+  end
+
+  test "cold_outreach with dry_run_emails off sends to the company's primary_email" do
+    company = companies(:two)
+    company.update!(primary_email: "hr@coldcompany.example")
+
+    with_dry_run(false) do
+      mail = JobApplicationMailer.cold_outreach(@user, company, @template, @resume)
+
+      assert_equal [ "hr@coldcompany.example" ], mail.to
+      assert_equal "Interested in opportunities at #{company.name}", mail.subject
+    end
+  end
+
+  test "cold_outreach with dry_run_emails off and no known recipient refuses to send" do
+    company = companies(:two)
+    company.update!(primary_email: nil)
+
+    with_dry_run(false) do
+      assert_raises(JobApplicationMailer::NoRecipientError) do
+        JobApplicationMailer.cold_outreach(@user, company, @template, @resume).message
+      end
+    end
+  end
 end

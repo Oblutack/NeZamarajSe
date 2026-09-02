@@ -49,4 +49,22 @@
       <% end %>
     </div>
   </div>
+
+  <div class="mt-5 bg-white border border-zinc-200 rounded-lg p-5">
+    <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-3">Cold Outreach Pipeline</p>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <%= link_to companies_path(cold: "1", has_email: "0"), class: "block rounded-md border border-zinc-200 p-4 hover:border-zinc-300 hover:bg-zinc-50 transition" do %>
+        <p class="text-[24px] font-bold text-zinc-950 tracking-tight"><%= number_with_delimiter(@cold_needs_email_count) %></p>
+        <p class="mt-1 text-[12.5px] text-zinc-500">Need an email lookup</p>
+      <% end %>
+      <%= link_to companies_path(cold: "1", has_email: "1"), class: "block rounded-md border border-zinc-200 p-4 hover:border-zinc-300 hover:bg-zinc-50 transition" do %>
+        <p class="text-[24px] font-bold text-emerald-700 tracking-tight"><%= number_with_delimiter(@cold_ready_to_contact_count) %></p>
+        <p class="mt-1 text-[12.5px] text-zinc-500">Ready to contact - have an email, never reached out</p>
+      <% end %>
+      <%= link_to companies_path(cold: "1"), class: "block rounded-md border border-zinc-200 p-4 hover:border-zinc-300 hover:bg-zinc-50 transition" do %>
+        <p class="text-[24px] font-bold text-zinc-950 tracking-tight"><%= number_with_delimiter(@cold_contacted_count) %></p>
+        <p class="mt-1 text-[12.5px] text-zinc-500">Already contacted</p>
+      <% end %>
+    </div>
+  </div>
 </div>

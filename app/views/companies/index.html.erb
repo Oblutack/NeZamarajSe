@@ -1,0 +1,87 @@
+<!-- app/views/companies/index.html.erb -->
+<div class="max-w-7xl mx-auto py-8">
+  <div class="mb-8">
+    <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Companies</h2>
+    <p class="mt-1.5 text-[13.5px] text-zinc-500">Every company scraped from a job board or found via directory outreach - <span class="font-semibold text-zinc-900"><%= @companies.size %></span> shown.</p>
+  </div>
+
+  <%= form_with url: companies_path, method: :get, class: "mb-6 bg-white border border-zinc-200 rounded-lg p-4 flex flex-wrap items-end gap-4" do %>
+    <div>
+      <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Email</label>
+      <%= select_tag :has_email, options_for_select([ [ "Any", "" ], [ "Has email", "1" ], [ "No email", "0" ] ], params[:has_email]),
+            class: "rounded-md border-zinc-300 text-[13px] p-2 border" %>
+    </div>
+
+    <div>
+      <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Outreach type</label>
+      <%= select_tag :cold, options_for_select([ [ "Any", "" ], [ "Warm - posted a job", "0" ], [ "Cold - directory only", "1" ] ], params[:cold]),
+            class: "rounded-md border-zinc-300 text-[13px] p-2 border" %>
+    </div>
+
+    <div>
+      <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Industry code</label>
+      <%= select_tag :industry_code, options_for_select([ [ "Any", "" ] ] + @industry_codes.map { |c| [ c, c ] }, params[:industry_code]),
+            class: "rounded-md border-zinc-300 text-[13px] p-2 border" %>
+    </div>
+
+    <div>
+      <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1">City</label>
+      <%= text_field_tag :city, params[:city], placeholder: "e.g. Sarajevo", class: "rounded-md border-zinc-300 text-[13px] p-2 border placeholder:text-zinc-400" %>
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit" class="cursor-pointer inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]">Filter</button>
+      <%= link_to "Clear", companies_path, class: "inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-zinc-600 hover:bg-zinc-50 border border-zinc-200" %>
+    </div>
+  <% end %>
+
+  <% if @companies.empty? %>
+    <div class="text-center py-20 bg-white rounded-lg border border-dashed border-zinc-300">
+      <h3 class="text-[14.5px] font-semibold text-zinc-900">No companies match these filters</h3>
+      <p class="mt-1.5 text-[13px] text-zinc-500">Try loosening one of the filters above.</p>
+    </div>
+  <% else %>
+    <div class="bg-white border border-zinc-200 rounded-lg overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-[13px]">
+          <thead>
+            <tr class="border-b border-zinc-200 bg-zinc-50">
+              <th class="text-left font-semibold text-zinc-500 uppercase text-[11px] tracking-wide px-4 py-2.5">Name</th>
+              <th class="text-left font-semibold text-zinc-500 uppercase text-[11px] tracking-wide px-4 py-2.5">Type</th>
+              <th class="text-left font-semibold text-zinc-500 uppercase text-[11px] tracking-wide px-4 py-2.5">Jobs</th>
+              <th class="text-left font-semibold text-zinc-500 uppercase text-[11px] tracking-wide px-4 py-2.5">Contact email</th>
+              <th class="text-left font-semibold text-zinc-500 uppercase text-[11px] tracking-wide px-4 py-2.5">Last contacted</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-zinc-100">
+            <% @companies.each do |company| %>
+              <tr class="hover:bg-zinc-50">
+                <td class="px-4 py-2.5">
+                  <%= link_to company.name, company_path(company), class: "font-semibold text-zinc-900 hover:underline" %>
+                </td>
+                <td class="px-4 py-2.5">
+                  <% if company.is_cold_outreach %>
+                    <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded bg-zinc-100 text-zinc-600">Cold</span>
+                  <% else %>
+                    <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded bg-zinc-900 text-white">Warm</span>
+                  <% end %>
+                </td>
+                <td class="px-4 py-2.5 text-zinc-600"><%= company.jobs_count %></td>
+                <td class="px-4 py-2.5">
+                  <% if company.primary_email.present? %>
+                    <span class="text-emerald-700 font-medium"><%= company.primary_email %></span>
+                  <% else %>
+                    <span class="text-zinc-400">&mdash;</span>
+                  <% end %>
+                </td>
+                <td class="px-4 py-2.5 text-zinc-500">
+                  <%= company.last_contacted_at ? time_ago_in_words(company.last_contacted_at) + " ago" : "Never" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+</div>

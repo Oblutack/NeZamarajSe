@@ -11,6 +11,10 @@ class JobApplicationMailer < ApplicationMailer
     "Application: #{job.title}"
   end
 
+  def self.cold_outreach_subject_for(company)
+    "Interested in opportunities at #{company.name}"
+  end
+
   def apply(user, job, template, resume)
     @body = template.render_content(job)
     attachments[resume.filename.to_s] = resume.download
@@ -24,6 +28,24 @@ class JobApplicationMailer < ApplicationMailer
 
     to_address = dry_run ? user.email : recipient
     subject = self.class.subject_for(job)
+    subject = "[DRY RUN] #{subject}" if dry_run
+
+    mail(to: to_address, from: user.email, subject: subject)
+  end
+
+  def cold_outreach(user, company, template, resume)
+    @body = template.render_content_for_company(company)
+    attachments[resume.filename.to_s] = resume.download
+
+    recipient = company.primary_email.presence
+    dry_run = Rails.application.config.dry_run_emails
+
+    if recipient.blank? && !dry_run
+      raise NoRecipientError, "#{company.name} has no primary_email"
+    end
+
+    to_address = dry_run ? user.email : recipient
+    subject = self.class.cold_outreach_subject_for(company)
     subject = "[DRY RUN] #{subject}" if dry_run
 
     mail(to: to_address, from: user.email, subject: subject)

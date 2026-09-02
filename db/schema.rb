@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_02_091020) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_02_095332) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -76,10 +76,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_091020) do
     t.string "domain"
     t.string "industry_code"
     t.boolean "is_cold_outreach", default: false
+    t.datetime "last_contacted_at"
+    t.bigint "last_contacted_by_id"
     t.string "name", null: false
     t.string "primary_email"
     t.datetime "updated_at", null: false
     t.string "website"
+    t.index ["last_contacted_by_id"], name: "index_companies_on_last_contacted_by_id"
     t.index ["name"], name: "index_companies_on_name", unique: true
   end
 
@@ -155,6 +158,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_091020) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "applications", "jobs"
   add_foreign_key "applications", "users"
+  add_foreign_key "companies", "users", column: "last_contacted_by_id"
   add_foreign_key "cover_letter_templates", "users"
   add_foreign_key "jobs", "companies"
   add_foreign_key "user_preferences", "users"

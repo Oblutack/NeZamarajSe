@@ -20,6 +20,13 @@ Rails.application.routes.draw do
 
   # --- PHASE 4 ROUTES (The Job Market & CRM) ---
   resources :jobs, only: [ :index ]
+  resources :companies, only: [ :index, :show ] do
+    member do
+      get :compose_outreach
+      post :dispatch_outreach
+      post :refresh_email
+    end
+  end
   resources :applications, only: [ :create, :update, :destroy ] do
     # Member routes apply to ONE specific record (e.g. /applications/5/compose)
     member do
