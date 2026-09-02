@@ -60,6 +60,38 @@ class UserTest < ActiveSupport::TestCase
     assert_equal "first-refresh-token", returning_user.refresh_token
   end
 
+  test "re-authenticating a user whose tokens predate encryption (stored as plaintext) doesn't raise" do
+    auth = OmniAuth::AuthHash.new(
+      provider: "google_oauth2",
+      uid: "legacy-plaintext-uid",
+      info: { email: "legacy@example.com" },
+      credentials: { token: "first-token", refresh_token: "first-refresh", expires_at: 1.hour.from_now.to_i }
+    )
+    existing_user = User.from_omniauth(auth)
+
+    # Bypasses the model layer entirely, writing a raw plaintext value into
+    # the encrypted column the way a pre-encryption row actually looked -
+    # ActiveRecord::Encryption would otherwise try to decrypt this "old"
+    # value for dirty-checking on the next save and raise
+    # ActiveRecord::Encryption::Errors::Decryption. See
+    # config.active_record.encryption.support_unencrypted_data in
+    # config/application.rb.
+    ActiveRecord::Base.connection.execute(
+      "UPDATE users SET access_token = 'ya29.legacy-plaintext-token' WHERE id = #{existing_user.id}"
+    )
+
+    reauth = OmniAuth::AuthHash.new(
+      provider: "google_oauth2",
+      uid: "legacy-plaintext-uid",
+      info: { email: "legacy@example.com" },
+      credentials: { token: "brand-new-token", refresh_token: "brand-new-refresh", expires_at: 1.hour.from_now.to_i }
+    )
+
+    updated_user = assert_nothing_raised { User.from_omniauth(reauth) }
+    assert_equal existing_user.id, updated_user.id
+    assert_equal "brand-new-token", updated_user.access_token
+  end
+
   def with_daily_cap(value)
     original = Rails.application.config.daily_send_cap
     Rails.application.config.daily_send_cap = value

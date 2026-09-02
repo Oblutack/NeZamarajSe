@@ -10,7 +10,7 @@ NeZamarajSe is a Rails 8 job-hunting SaaS / personal CRM for the Bosnian IT mark
 
 ## Stack
 
-- Rails 8.1 / Ruby 3.3.4, PostgreSQL, Active Record Encryption for OAuth tokens
+- Rails 8.1 / Ruby 3.3.4, PostgreSQL, Active Record Encryption for OAuth tokens (`User#access_token`/`refresh_token`). `config.active_record.encryption.support_unencrypted_data = true` (`config/application.rb`) is load-bearing, not optional boilerplate: at least one real user's tokens predate `encrypts` being added to the model and are still plaintext in the DB - without this setting, `ActiveRecord::Encryption` tries to decrypt that old plaintext for dirty-checking on every save (e.g. every OAuth re-login) and raises `ActiveRecord::Encryption::Errors::Decryption`. See `test/models/user_test.rb`'s "re-authenticating a user whose tokens predate encryption" test, which reproduces this exact failure if the setting is ever removed.
 - Hotwire (Turbo Drive/Streams/Frames) + Stimulus, Tailwind CSS v4 (`tailwindcss-rails`), Propshaft, Importmap (no Node/bundler JS toolchain)
 - Sidekiq + `sidekiq-cron` for background jobs and scheduling (see `config/initializers/sidekiq.rb` and `config/recurring.yml` — two overlapping scheduling mechanisms exist, see below)
 - Devise + OmniAuth (`omniauth-google-oauth2`) for auth; Google OAuth also supplies the Gmail-send scope

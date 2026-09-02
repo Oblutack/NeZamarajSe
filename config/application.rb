@@ -24,5 +24,17 @@ module NeZamarajSe
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
     config.middleware.use Rack::Attack
+
+    # `encrypts :access_token, :refresh_token` (User) was added after some
+    # users already had plaintext tokens saved from before encryption
+    # existed. Without this, ActiveRecord::Encryption tries to decrypt that
+    # old plaintext for dirty-checking on save (e.g. every OAuth re-login)
+    # and raises ActiveRecord::Encryption::Errors::Decryption. This makes it
+    # fall back to treating anything that isn't valid ciphertext as legacy
+    # plaintext instead of raising - the standard Rails-recommended setting
+    # for rolling out encryption onto a column that already has data. Every
+    # write still gets properly encrypted; this only affects reading old
+    # unencrypted values.
+    config.active_record.encryption.support_unencrypted_data = true
   end
 end
