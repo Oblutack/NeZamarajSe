@@ -199,4 +199,81 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_not_nil @application.reload.queued_at
   end
+
+  test "should get show" do
+    get application_url(@application)
+    assert_response :success
+    assert_select "h1", text: @application.job.title
+  end
+
+  test "updating status redirects to the CRM board" do
+    patch application_url(@application), params: { application: { status: "interviewing" } }
+    assert_redirected_to crm_path
+  end
+
+  test "updating CRM-depth fields redirects to the application's own detail page" do
+    patch application_url(@application), params: { application: { contact_person: "Amila Hodžić", salary: "2500-3000 BAM" } }
+
+    assert_redirected_to application_path(@application)
+    @application.reload
+    assert_equal "Amila Hodžić", @application.contact_person
+    assert_equal "2500-3000 BAM", @application.salary
+  end
+
+  test "add_note creates a note event and redirects to the detail page" do
+    assert_difference("@application.application_events.count", 1) do
+      post add_note_application_url(@application), params: { body: "Called to check in, no answer." }
+    end
+
+    assert_redirected_to application_path(@application)
+    assert_equal "note", @application.application_events.first.event_type
+    assert_equal "Called to check in, no answer.", @application.application_events.first.body
+  end
+
+  test "add_note ignores a blank body" do
+    assert_no_difference("@application.application_events.count") do
+      post add_note_application_url(@application), params: { body: "   " }
+    end
+  end
+
+  test "compose_follow_up previews the resolved recipient, subject, and rendered body once both are picked" do
+    @application.job.update!(hr_email: "hr@realcompany.example")
+    template = cover_letter_templates(:one)
+    blob_id = attach_resume
+
+    get compose_follow_up_application_url(@application), params: { template_id: template.id, resume_blob_id: blob_id }
+
+    assert_response :success
+    assert_select "dd", text: "hr@realcompany.example"
+    assert_select "dd", text: JobApplicationMailer.follow_up_subject_for(@application.job)
+  end
+
+  test "dispatch_follow_up queues SendFollowUpJob without changing status" do
+    @application.update!(status: "applied", applied_at: 10.days.ago)
+
+    assert_enqueued_with(job: SendFollowUpJob) do
+      post dispatch_follow_up_application_url(@application), params: {
+        template_id: cover_letter_templates(:one).id,
+        resume_blob_id: 1
+      }
+    end
+
+    assert_redirected_to application_path(@application)
+    assert @application.reload.applied?
+  end
+
+  test "dispatch_follow_up refuses once the daily send cap is reached" do
+    @application.update!(status: "applied", applied_at: 10.days.ago)
+
+    with_config(:daily_send_cap, 0) do
+      assert_no_enqueued_jobs(only: SendFollowUpJob) do
+        post dispatch_follow_up_application_url(@application), params: {
+          template_id: cover_letter_templates(:one).id,
+          resume_blob_id: 1
+        }
+      end
+
+      assert_redirected_to compose_follow_up_application_path(@application)
+    end
+  end
 end

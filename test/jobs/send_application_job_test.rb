@@ -16,9 +16,10 @@ class SendApplicationJobTest < ActiveJob::TestCase
     @blob_id = @user.resumes.first.blob_id
   end
 
-  def fake_sender(gmail_id: "gmail-msg-123")
+  def fake_sender(gmail_id: "gmail-msg-123", thread_id: "gmail-thread-123")
     fake_response = Object.new
     fake_response.define_singleton_method(:id) { gmail_id }
+    fake_response.define_singleton_method(:thread_id) { thread_id }
 
     sender = Object.new
     sender.define_singleton_method(:send_email) { |raw| @raw = raw; fake_response }
@@ -39,8 +40,8 @@ class SendApplicationJobTest < ActiveJob::TestCase
     assert_not_nil @application.applied_at
   end
 
-  test "records the intended recipient, subject, body, and Gmail message id" do
-    sender = fake_sender(gmail_id: "gmail-msg-456")
+  test "records the intended recipient, subject, body, and Gmail message/thread id" do
+    sender = fake_sender(gmail_id: "gmail-msg-456", thread_id: "gmail-thread-456")
 
     stub_class_method(GmailSenderService, :new, sender) do
       SendApplicationJob.perform_now(@application.id, @template.id, @blob_id)
@@ -51,6 +52,7 @@ class SendApplicationJobTest < ActiveJob::TestCase
     assert_includes @application.sent_subject, @application.job.title
     assert_equal @template.render_content(@application.job), @application.sent_body
     assert_equal "gmail-msg-456", @application.gmail_message_id
+    assert_equal "gmail-thread-456", @application.gmail_thread_id
   end
 
   test "leaves the application queued if the Gmail send fails" do

@@ -32,7 +32,8 @@ class SendApplicationJob < ApplicationJob
       sent_recipient: application.intended_recipient,
       sent_subject: mail.subject,
       sent_body: template.render_content(job),
-      gmail_message_id: response.id
+      gmail_message_id: response.id,
+      gmail_thread_id: response.thread_id
     )
 
   rescue StandardError => e

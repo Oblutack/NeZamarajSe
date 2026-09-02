@@ -300,8 +300,14 @@ Devise.setup do |config|
       access_type: "offline",
       prompt: "consent",
       select_account: true,
-      # UPDATE THIS LINE to include the Gmail scope:
-      scope: "email, profile, https://www.googleapis.com/auth/gmail.send"
+      # gmail.send: lets the app send mail as the user. gmail.metadata: lets
+      # it read message/thread headers and labels ONLY - never body content
+      # - just enough for reply detection (Application#needs_follow_up? /
+      # CheckForRepliesJob) without ever being able to read what's actually
+      # in the user's inbox. Existing users need to sign out and back in
+      # once to grant the added scope - prompt: "consent" below means the
+      # next login will show it.
+      scope: "email, profile, https://www.googleapis.com/auth/gmail.send, https://www.googleapis.com/auth/gmail.metadata"
     }
 
   # ==> Warden configuration

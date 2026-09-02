@@ -20,13 +20,32 @@ class ApplicationsController < ApplicationController
     redirect_to jobs_path, notice: "#{@job.title} added to your CRM Wishlist!"
   end
 
+  def show
+    @application = current_user.applications.includes(job: :company).find(params[:id])
+  end
+
   def update
     @application = current_user.applications.find(params[:id])
+    redirect_target = params[:application]&.key?("status") ? crm_path : application_path(@application)
 
-    # Update the status (e.g., from 'wishlist' to 'applied')
+    # Update the status (e.g., from 'wishlist' to 'applied') or, from the
+    # detail page's own form, the CRM-depth fields (contact person, salary,
+    # interview date, rejection reason) - same action either way, just a
+    # different subset of application_params depending on which form posted.
     if @application.update(application_params)
-      redirect_to crm_path
+      redirect_to redirect_target
     end
+  end
+
+  def add_note
+    @application = current_user.applications.find(params[:id])
+    body = params[:body].to_s.strip
+
+    if body.present?
+      @application.application_events.create!(event_type: "note", body: body)
+    end
+
+    redirect_to application_path(@application)
   end
 
   def destroy
@@ -81,6 +100,47 @@ class ApplicationsController < ApplicationController
     SendApplicationJob.perform_later(@application.id, template_id, resume_blob_id)
 
     redirect_to crm_path, notice: "Application queued! The email is being sent in the background."
+  end
+
+  def compose_follow_up
+    @application = current_user.applications.find(params[:id])
+    @templates = current_user.cover_letter_templates
+    @resumes = current_user.resumes
+
+    @selected_template = @templates.find_by(id: params[:template_id])
+    @selected_resume = @resumes.find { |r| r.blob_id == params[:resume_blob_id].to_i } if params[:resume_blob_id].present?
+  end
+
+  def dispatch_follow_up
+    @application = current_user.applications.find(params[:id])
+    template_id = params[:template_id]
+    resume_blob_id = params[:resume_blob_id]
+
+    unless Rails.application.config.sending_enabled
+      redirect_to compose_follow_up_application_path(@application), alert: "Sending is currently disabled for the whole app - nothing was queued."
+      return
+    end
+
+    if template_id.blank? || resume_blob_id.blank?
+      redirect_to compose_follow_up_application_path(@application), alert: "Please select both a template and a resume."
+      return
+    end
+
+    unless sendable?(@application)
+      redirect_to compose_follow_up_application_path(@application),
+        alert: "#{@application.job.title} has no known contact email, and dry-run mode is off - there's nowhere to send this."
+      return
+    end
+
+    if current_user.remaining_daily_sends <= 0
+      redirect_to compose_follow_up_application_path(@application),
+        alert: "You've hit today's limit of #{Rails.application.config.daily_send_cap} sends - try again tomorrow."
+      return
+    end
+
+    SendFollowUpJob.perform_later(@application.id, template_id, resume_blob_id)
+
+    redirect_to application_path(@application), notice: "Follow-up queued! The email is being sent in the background."
   end
 
   def bulk_compose
@@ -147,7 +207,7 @@ class ApplicationsController < ApplicationController
   private
 
   def application_params
-    params.require(:application).permit(:status)
+    params.require(:application).permit(:status, :contact_person, :salary, :interview_date, :rejection_reason)
   end
 
   # dry_run_emails on means every send lands in the user's own inbox

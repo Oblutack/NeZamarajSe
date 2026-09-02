@@ -27,11 +27,14 @@ Rails.application.routes.draw do
       post :refresh_email
     end
   end
-  resources :applications, only: [ :create, :update, :destroy ] do
+  resources :applications, only: [ :create, :show, :update, :destroy ] do
     # Member routes apply to ONE specific record (e.g. /applications/5/compose)
     member do
       get :compose
       post :dispatch_email
+      post :add_note
+      get :compose_follow_up
+      post :dispatch_follow_up
     end
 
     # Collection routes apply to MULTIPLE records (e.g. /applications/bulk_compose)

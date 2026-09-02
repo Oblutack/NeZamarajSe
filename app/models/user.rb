@@ -30,6 +30,7 @@ class User < ApplicationRecord
   def remaining_daily_sends
     today = Time.current.all_day
     sent_today = applications.where(queued_at: today).count +
+      applications.where(last_followed_up_at: today).count +
       contacted_companies.where(last_contacted_at: today).count
     [ Rails.application.config.daily_send_cap - sent_today, 0 ].max
   end

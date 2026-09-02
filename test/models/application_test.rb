@@ -38,4 +38,54 @@ class ApplicationTest < ActiveSupport::TestCase
       application.update!(applied_at: Time.current)
     end
   end
+
+  test "records a status_change event with the from/to status whenever status changes" do
+    application = applications(:one)
+    application.update!(status: "queued")
+
+    event = application.application_events.first
+    assert_equal "status_change", event.event_type
+    assert_equal "wishlist", event.from_status
+    assert_equal "queued", event.to_status
+  end
+
+  test "does not record an event when a non-status field changes" do
+    application = applications(:one)
+
+    assert_no_difference -> { application.application_events.count } do
+      application.update!(contact_person: "Amila")
+    end
+  end
+
+  def with_follow_up_after_days(value)
+    original = Rails.application.config.follow_up_after_days
+    Rails.application.config.follow_up_after_days = value
+    yield
+  ensure
+    Rails.application.config.follow_up_after_days = original
+  end
+
+  test "needs_follow_up? is false for anything other than applied" do
+    application = applications(:one)
+    application.update!(status: "wishlist")
+    assert_not application.needs_follow_up?
+  end
+
+  test "needs_follow_up? is true once applied_at is older than the threshold with no follow-up sent" do
+    application = applications(:one)
+    application.update!(status: "applied", applied_at: 10.days.ago)
+
+    with_follow_up_after_days(7) do
+      assert application.needs_follow_up?
+    end
+  end
+
+  test "needs_follow_up? resets the clock after a follow-up was already sent" do
+    application = applications(:one)
+    application.update!(status: "applied", applied_at: 10.days.ago, last_followed_up_at: 1.day.ago)
+
+    with_follow_up_after_days(7) do
+      assert_not application.needs_follow_up?
+    end
+  end
 end

@@ -20,6 +20,17 @@ class GmailSenderService
     @gmail.send_user_message("me", message_object)
   end
 
+  # format: "metadata" restricts the response (and what this method is even
+  # allowed to request) to headers/labels, never body content - all the
+  # gmail.metadata OAuth scope permits, and all reply detection needs. We
+  # only ever send one message to start a thread, so a second message
+  # appearing in it can only be a reply (or the rare case of the user
+  # replying to their own sent mail from within Gmail itself).
+  def thread_has_reply?(thread_id)
+    thread = @gmail.get_user_thread("me", thread_id, format: "metadata")
+    thread.messages.size > 1
+  end
+
   private
 
   def refresh_token_if_expired!

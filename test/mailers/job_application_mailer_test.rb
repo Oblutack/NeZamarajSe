@@ -97,4 +97,33 @@ class JobApplicationMailerTest < ActionMailer::TestCase
       end
     end
   end
+
+  test "follow_up while dry_run_emails is on sends to the user's own inbox with a tagged subject" do
+    with_dry_run(true) do
+      mail = JobApplicationMailer.follow_up(@user, @job, @template, @resume)
+
+      assert_equal [ @user.email ], mail.to
+      assert_equal "[DRY RUN] Following up on my application for #{@job.title}", mail.subject
+    end
+  end
+
+  test "follow_up with dry_run_emails off sends to the job's real hr_email" do
+    with_dry_run(false) do
+      mail = JobApplicationMailer.follow_up(@user, @job, @template, @resume)
+
+      assert_equal [ "hr@realcompany.example" ], mail.to
+      assert_equal "Following up on my application for #{@job.title}", mail.subject
+    end
+  end
+
+  test "follow_up with dry_run_emails off and no known recipient refuses to send" do
+    @job.update!(hr_email: nil)
+    @job.company.update!(primary_email: nil)
+
+    with_dry_run(false) do
+      assert_raises(JobApplicationMailer::NoRecipientError) do
+        JobApplicationMailer.follow_up(@user, @job, @template, @resume).message
+      end
+    end
+  end
 end

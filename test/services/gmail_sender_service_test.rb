@@ -51,4 +51,33 @@ class GmailSenderServiceTest < ActiveSupport::TestCase
       assert_raises(RuntimeError) { GmailSenderService.new(user) }
     end
   end
+
+  def fake_gmail_client_with_thread(message_count:)
+    client = Object.new
+    client.define_singleton_method(:authorization=) { |_| }
+    client.define_singleton_method(:get_user_thread) do |_user_id, _thread_id, format: nil|
+      thread = Object.new
+      thread.define_singleton_method(:messages) { Array.new(message_count) { Object.new } }
+      thread
+    end
+    client
+  end
+
+  test "thread_has_reply? is true once a thread holds more than the one message we sent" do
+    user = users(:one)
+    user.update!(access_token: "valid-token", token_expires_at: 1.hour.from_now)
+
+    stub_class_method(Google::Apis::GmailV1::GmailService, :new, fake_gmail_client_with_thread(message_count: 2)) do
+      assert GmailSenderService.new(user).thread_has_reply?("thread-abc")
+    end
+  end
+
+  test "thread_has_reply? is false while the thread only holds our own sent message" do
+    user = users(:one)
+    user.update!(access_token: "valid-token", token_expires_at: 1.hour.from_now)
+
+    stub_class_method(Google::Apis::GmailV1::GmailService, :new, fake_gmail_client_with_thread(message_count: 1)) do
+      assert_not GmailSenderService.new(user).thread_has_reply?("thread-abc")
+    end
+  end
 end

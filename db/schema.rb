@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_02_095332) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_02_123858) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,12 +52,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_095332) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "application_events", force: :cascade do |t|
+    t.bigint "application_id", null: false
+    t.text "body"
+    t.datetime "created_at", null: false
+    t.string "event_type", null: false
+    t.string "from_status"
+    t.string "to_status"
+    t.index ["application_id"], name: "index_application_events_on_application_id"
+  end
+
   create_table "applications", force: :cascade do |t|
     t.datetime "applied_at"
+    t.string "contact_person"
     t.datetime "created_at", null: false
     t.string "gmail_message_id"
+    t.string "gmail_thread_id"
+    t.datetime "interview_date"
     t.bigint "job_id", null: false
+    t.datetime "last_followed_up_at"
     t.datetime "queued_at"
+    t.text "rejection_reason"
+    t.string "salary"
     t.text "sent_body"
     t.string "sent_recipient"
     t.string "sent_subject"
@@ -156,6 +172,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_095332) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "application_events", "applications"
   add_foreign_key "applications", "jobs"
   add_foreign_key "applications", "users"
   add_foreign_key "companies", "users", column: "last_contacted_by_id"

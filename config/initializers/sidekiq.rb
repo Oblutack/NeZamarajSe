@@ -25,6 +25,13 @@ schedule = {
     "cron"  => "30 3 * * *", # 3:30 AM Server Time
     "class" => "ScrapeItKarijeraJob",
     "queue" => "default"
+  },
+  "check_for_replies" => {
+    # Every 4 hours, not more often - reply detection isn't urgent, and this
+    # is one Gmail API call per "applied" application with a known thread.
+    "cron"  => "0 */4 * * *",
+    "class" => "CheckForRepliesJob",
+    "queue" => "default"
   }
 }
 
