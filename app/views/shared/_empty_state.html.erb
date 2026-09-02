@@ -1,10 +1,10 @@
 <%# locals: icon_path (an SVG <path> "d" attribute), title, description, cta (optional, pre-rendered link/button) %>
-<div class="flex flex-col items-center justify-center text-center py-16 px-6 border border-dashed border-zinc-200 rounded-lg bg-zinc-50/50">
-  <svg class="w-10 h-10 text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+<div class="flex flex-col items-center justify-center text-center py-16 px-6 border border-dashed border-zinc-200 rounded-lg bg-zinc-50/50 dark:border-zinc-800">
+  <svg class="w-10 h-10 text-zinc-300 dark:text-zinc-700" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
     <path stroke-linecap="round" stroke-linejoin="round" d="<%= icon_path %>"></path>
   </svg>
-  <h3 class="mt-4 text-[14px] font-semibold text-zinc-900"><%= title %></h3>
-  <p class="mt-1.5 text-[13px] text-zinc-500 max-w-xs"><%= description %></p>
+  <h3 class="mt-4 text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= title %></h3>
+  <p class="mt-1.5 text-[13px] text-zinc-500 max-w-xs dark:text-zinc-400"><%= description %></p>
   <% if local_assigns[:cta] %>
     <div class="mt-4"><%= cta %></div>
   <% end %>

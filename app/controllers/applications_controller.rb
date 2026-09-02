@@ -6,9 +6,13 @@ class ApplicationsController < ApplicationController
     # 1. Fetch all applications and include the job/company to prevent N+1 queries
     @applications = current_user.applications.includes(job: :company)
 
-    # 2. Group them by status. This creates a Hash: { "wishlist" => [...], "applied" => [...] }
+    # 2. Group them by status, each column sorted so the most urgent deadline
+    # bubbles to the top instead of arbitrary/insertion order - a job with no
+    # known deadline sorts last, not first (nil isn't more urgent than a
+    # real date). This creates a Hash: { "wishlist" => [...], "applied" => [...] }
     @grouped_applications = Application.statuses.keys.index_with do |status|
       @applications.select { |app| app.status == status }
+        .sort_by { |app| app.job.expires_at || Date.new(9999, 12, 31) }
     end
   end
 

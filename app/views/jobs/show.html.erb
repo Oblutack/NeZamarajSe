@@ -1,64 +1,64 @@
 <!-- app/views/jobs/show.html.erb -->
 <div class="max-w-3xl mx-auto py-8">
-  <%= link_to "&larr; Back to Job Market".html_safe, jobs_path, class: "text-[12.5px] font-semibold text-zinc-500 hover:text-zinc-900" %>
+  <%= link_to "&larr; Back to Job Market".html_safe, jobs_path, class: "text-[12.5px] font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100" %>
 
   <div class="mt-3 mb-6 flex items-start justify-between gap-4">
     <div>
-      <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight"><%= @job.title %></h1>
-      <p class="mt-1.5 text-[13px] text-zinc-500">
-        <%= link_to @job.company.name, company_path(@job.company), class: "font-semibold text-zinc-700 hover:underline" %>
+      <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= @job.title %></h1>
+      <p class="mt-1.5 text-[13px] text-zinc-500 dark:text-zinc-400">
+        <%= link_to @job.company.name, company_path(@job.company), class: "font-semibold text-zinc-700 hover:underline dark:text-zinc-300" %>
         &middot; <%= @job.location.presence || "Bosnia and Herzegovina" %>
       </p>
     </div>
 
     <% if @saved %>
-      <span class="flex-shrink-0 inline-flex items-center px-3.5 py-2 text-[12px] font-semibold rounded text-emerald-700 bg-emerald-50">Saved in CRM</span>
+      <span class="flex-shrink-0 inline-flex items-center px-3.5 py-2 text-[12px] font-semibold rounded text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40">Saved in CRM</span>
     <% else %>
-      <%= button_to "Save to Wishlist", applications_path(job_id: @job.id), data: { turbo: false }, class: "cursor-pointer flex-shrink-0 inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
+      <%= button_to "Save to Wishlist", applications_path(job_id: @job.id), data: { turbo: false }, class: "cursor-pointer flex-shrink-0 inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
     <% end %>
   </div>
 
   <div class="flex flex-wrap items-center gap-2 mb-6">
     <% if @job.hr_email.present? %>
-      <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[11.5px] font-semibold rounded bg-emerald-50 text-emerald-700">
+      <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[11.5px] font-semibold rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
         <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>
         <%= @job.hr_email %>
       </span>
     <% end %>
     <% if @job.expires_at.present? %>
-      <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[11.5px] font-semibold rounded bg-red-50 text-red-700">
+      <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[11.5px] font-semibold rounded bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400">
         <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         Deadline <%= @job.expires_at.strftime("%b %d, %Y") %>
       </span>
     <% end %>
-    <span class="inline-flex items-center px-2.5 py-1 text-[11.5px] font-semibold rounded bg-zinc-100 text-zinc-600">
+    <span class="inline-flex items-center px-2.5 py-1 text-[11.5px] font-semibold rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
       Scraped <%= time_ago_in_words(@job.created_at) %> ago
     </span>
   </div>
 
   <% if @job.job_sources.any? %>
-    <div class="mb-6 bg-white border border-zinc-200 rounded-lg p-4">
-      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-2">
+    <div class="mb-6 bg-white border border-zinc-200 rounded-lg p-4 dark:bg-zinc-900 dark:border-zinc-800">
+      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-2 dark:text-zinc-400">
         Posted on <%= @job.job_sources.size %> board<%= "s" if @job.job_sources.size > 1 %>
       </p>
       <div class="flex flex-wrap gap-2">
         <% @job.job_sources.each do |source| %>
-          <span class="inline-flex items-center px-2.5 py-1 text-[11.5px] font-medium rounded border border-zinc-200 text-zinc-600"><%= source.source_name %></span>
+          <span class="inline-flex items-center px-2.5 py-1 text-[11.5px] font-medium rounded border border-zinc-200 text-zinc-600 dark:border-zinc-800 dark:text-zinc-400"><%= source.source_name %></span>
         <% end %>
       </div>
     </div>
   <% end %>
 
-  <div class="bg-white border border-zinc-200 rounded-lg p-6 mb-6">
-    <h2 class="text-[13px] font-semibold text-zinc-700 mb-3">Description</h2>
+  <div class="bg-white border border-zinc-200 rounded-lg p-6 mb-6 dark:bg-zinc-900 dark:border-zinc-800">
+    <h2 class="text-[13px] font-semibold text-zinc-700 mb-3 dark:text-zinc-300">Description</h2>
     <% if @job.description.present? %>
-      <p class="text-[13.5px] text-zinc-700 whitespace-pre-wrap leading-relaxed"><%= @job.description %></p>
+      <p class="text-[13.5px] text-zinc-700 whitespace-pre-wrap leading-relaxed dark:text-zinc-300"><%= @job.description %></p>
     <% else %>
-      <p class="text-[13px] text-zinc-400">No description available yet - still being analyzed.</p>
+      <p class="text-[13px] text-zinc-400 dark:text-zinc-600">No description available yet - still being analyzed.</p>
     <% end %>
   </div>
 
   <% if (safe_url = safe_external_url(@job.url)) %>
-    <%= link_to "View Original Posting", safe_url, target: "_blank", class: "inline-flex items-center gap-1.5 text-[13px] font-semibold text-zinc-700 hover:text-zinc-950" %>
+    <%= link_to "View Original Posting", safe_url, target: "_blank", class: "inline-flex items-center gap-1.5 text-[13px] font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50" %>
   <% end %>
 </div>

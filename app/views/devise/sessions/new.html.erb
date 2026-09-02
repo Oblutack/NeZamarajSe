@@ -1,29 +1,29 @@
 <div class="max-w-md mx-auto py-10">
-  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-6 text-center">Log in</h1>
+  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-6 text-center dark:text-zinc-50">Log in</h1>
 
-  <div class="bg-white border border-zinc-200 rounded-lg p-6">
+  <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
     <%= render "devise/shared/error_messages", resource: resource %>
 
     <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "space-y-5" }) do |f| %>
       <div>
-        <%= f.label :email, class: "block text-[13px] font-semibold text-zinc-700" %>
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border" %>
+        <%= f.label :email, class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
       </div>
 
       <div>
-        <%= f.label :password, class: "block text-[13px] font-semibold text-zinc-700" %>
-        <%= f.password_field :password, autocomplete: "current-password", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border" %>
+        <%= f.label :password, class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
+        <%= f.password_field :password, autocomplete: "current-password", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
       </div>
 
       <% if devise_mapping.rememberable? %>
         <div class="flex items-center">
-          <%= f.check_box :remember_me, class: "focus:ring-zinc-500 h-3.5 w-3.5 text-zinc-900 border-zinc-300 rounded" %>
-          <%= f.label :remember_me, class: "ml-2 text-[12.5px] text-zinc-700" %>
+          <%= f.check_box :remember_me, class: "focus:ring-zinc-500 h-3.5 w-3.5 text-zinc-900 border-zinc-300 rounded dark:focus:ring-zinc-400 dark:text-zinc-100 dark:border-zinc-700" %>
+          <%= f.label :remember_me, class: "ml-2 text-[12.5px] text-zinc-700 dark:text-zinc-300" %>
         </div>
       <% end %>
 
       <div>
-        <%= f.submit "Log in", class: "cursor-pointer w-full inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
+        <%= f.submit "Log in", class: "cursor-pointer w-full inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
       </div>
     <% end %>
 

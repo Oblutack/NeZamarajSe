@@ -2,51 +2,51 @@
 <div class="max-w-4xl mx-auto py-8">
   <div class="md:flex md:items-center md:justify-between mb-8">
     <div class="flex-1 min-w-0">
-      <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">
+      <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50">
         Asset Library
       </h2>
-      <p class="mt-1.5 text-[13.5px] text-zinc-500">Manage your CVs and cover letters to use in automated campaigns.</p>
+      <p class="mt-1.5 text-[13.5px] text-zinc-500 dark:text-zinc-400">Manage your CVs and cover letters to use in automated campaigns.</p>
     </div>
   </div>
 
   <!-- Upload Form -->
-  <div class="bg-white border border-zinc-200 rounded-lg mb-8">
+  <div class="bg-white border border-zinc-200 rounded-lg mb-8 dark:bg-zinc-900 dark:border-zinc-800">
     <div class="px-5 py-5">
-      <h3 class="text-[14.5px] font-semibold text-zinc-900">Upload new resume</h3>
-      <div class="mt-1.5 max-w-xl text-[13px] text-zinc-500">
+      <h3 class="text-[14.5px] font-semibold text-zinc-900 dark:text-zinc-100">Upload new resume</h3>
+      <div class="mt-1.5 max-w-xl text-[13px] text-zinc-500 dark:text-zinc-400">
         <p>Please upload your CV in PDF format. We will use this to apply to jobs on your behalf.</p>
       </div>
 
       <!-- Rails Form Builder -->
       <%= form_with url: resumes_path, local: true, html: { multipart: true, class: "mt-4 sm:flex sm:items-center" } do |form| %>
         <div class="w-full sm:max-w-xs">
-          <%= form.file_field :resume, accept: 'application/pdf', class: "block w-full text-[12.5px] text-zinc-500 file:mr-4 file:py-2 file:px-3.5 file:rounded-md file:border-0 file:text-[12.5px] file:font-semibold file:bg-zinc-100 file:text-zinc-900 hover:file:bg-zinc-200" %>
+          <%= form.file_field :resume, accept: 'application/pdf', class: "block w-full text-[12.5px] text-zinc-500 file:mr-4 file:py-2 file:px-3.5 file:rounded-md file:border-0 file:text-[12.5px] file:font-semibold file:bg-zinc-100 file:text-zinc-900 hover:file:bg-zinc-200 dark:text-zinc-400 dark:file:bg-zinc-800 dark:file:text-zinc-100 dark:hover:file:bg-zinc-700" %>
         </div>
-        <%= form.submit "Upload", class: "cursor-pointer mt-3 w-full inline-flex items-center justify-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] sm:mt-0 sm:ml-3 sm:w-auto" %>
+        <%= form.submit "Upload", class: "cursor-pointer mt-3 w-full inline-flex items-center justify-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] sm:mt-0 sm:ml-3 sm:w-auto dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
       <% end %>
     </div>
   </div>
 
   <!-- List of Uploaded Resumes -->
   <% if @resumes.any? %>
-    <div class="bg-white border border-zinc-200 rounded-lg overflow-hidden">
-      <ul role="list" class="divide-y divide-zinc-100">
+    <div class="bg-white border border-zinc-200 rounded-lg overflow-hidden dark:bg-zinc-900 dark:border-zinc-800">
+      <ul role="list" class="divide-y divide-zinc-100 dark:divide-zinc-800">
         <% @resumes.each do |resume| %>
           <li>
             <div class="px-5 py-3.5 flex items-center justify-between">
               <div class="flex items-center">
-                <svg class="flex-shrink-0 h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                <svg class="flex-shrink-0 h-4 w-4 text-zinc-400 dark:text-zinc-600" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                 </svg>
                 <div class="ml-3">
                   <!-- url_for generates a temporary URL to view the file -->
-                  <%= link_to resume.filename, url_for(resume), target: "_blank", class: "text-[13px] font-semibold text-zinc-900 hover:text-zinc-600" %>
-                  <p class="text-[11.5px] text-zinc-400 mt-0.5">Uploaded <%= time_ago_in_words(resume.created_at) %> ago &middot; <%= (resume.byte_size / 1024.0).round(2) %> KB</p>
+                  <%= link_to resume.filename, url_for(resume), target: "_blank", class: "text-[13px] font-semibold text-zinc-900 hover:text-zinc-600 dark:text-zinc-100 dark:hover:text-zinc-400" %>
+                  <p class="text-[11.5px] text-zinc-400 mt-0.5 dark:text-zinc-600">Uploaded <%= time_ago_in_words(resume.created_at) %> ago &middot; <%= (resume.byte_size / 1024.0).round(2) %> KB</p>
                 </div>
               </div>
 
               <!-- Delete Button -->
-              <%= button_to "Delete", resume_path(resume), method: :delete, data: { turbo_confirm: "Are you sure you want to delete this CV?" }, class: "cursor-pointer text-[12.5px] text-zinc-500 hover:text-red-600 font-semibold" %>
+              <%= button_to "Delete", resume_path(resume), method: :delete, data: { turbo_confirm: "Are you sure you want to delete this CV?" }, class: "cursor-pointer text-[12.5px] text-zinc-500 hover:text-red-600 font-semibold dark:text-zinc-400 dark:hover:text-red-400" %>
             </div>
           </li>
         <% end %>

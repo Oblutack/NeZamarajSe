@@ -3,7 +3,7 @@
 <%= turbo_stream_from current_user, :crm %>
 
 <!-- 1. Wrap the entire board in a form and attach our Stimulus controller -->
-<%= form_with url: bulk_compose_applications_path, method: :get, data: { controller: "bulk-campaign" }, class: "relative max-w-screen-2xl mx-auto py-8 overflow-hidden flex flex-col h-[85vh]" do |form| %>
+<%= form_with url: bulk_compose_applications_path, method: :get, data: { controller: "bulk-campaign mobile-crm" }, class: "relative max-w-screen-2xl mx-auto py-8 overflow-hidden flex flex-col h-[85vh]" do |form| %>
 
   <%# Fades the page-canvas pattern out from the top edge down to solid
       white by ~15% of the board's height, then stays solid the rest of
@@ -13,23 +13,35 @@
       home/index.html.erb. Header and board below both need `relative` so
       they stack above this rather than being covered by it - see the
       note on absolute layers in CLAUDE.md. %>
-  <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to bottom, transparent, white 15%)" aria-hidden="true"></div>
+  <div class="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,transparent,white_15%)] dark:bg-[linear-gradient(to_bottom,transparent,var(--color-zinc-950)_15%)]" aria-hidden="true"></div>
 
   <div class="relative mb-2 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
     <div>
-      <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">My CRM</h2>
-      <p class="text-[13.5px] text-zinc-500 mt-1">Drag and drop jobs to track your application pipeline.</p>
+      <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50">My CRM</h2>
+      <p class="text-[13.5px] text-zinc-500 mt-1 dark:text-zinc-400">Drag and drop jobs to track your application pipeline.</p>
     </div>
   </div>
 
-  <div class="relative flex-1 overflow-x-auto flex px-4 sm:px-6 lg:px-8 pb-4 border-t border-zinc-100">
+  <!-- Mobile-only status switcher - six w-72 columns is ~1,730px of
+       horizontal scroll on a phone, so below `sm` only one column shows at
+       a time (see mobile_crm_controller.js). Hidden entirely at sm+, where
+       the normal horizontal-scroll board below already shows every column. -->
+  <div class="relative sm:hidden flex gap-1.5 px-4 mb-3 overflow-x-auto">
+    <% @grouped_applications.each_key do |status| %>
+      <button type="button" data-mobile-crm-target="tab" data-status="<%= status %>" data-action="click->mobile-crm#switch" class="flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold text-zinc-600 dark:text-zinc-400 transition">
+        <%= status.titleize %> (<%= @grouped_applications[status].count %>)
+      </button>
+    <% end %>
+  </div>
+
+  <div class="relative flex-1 overflow-x-auto flex px-4 sm:px-6 lg:px-8 pb-4 border-t border-zinc-100 dark:border-zinc-800">
     <% @grouped_applications.each do |status, applications| %>
-      <div class="flex-shrink-0 w-72 flex flex-col border-r border-zinc-100 last:border-r-0" data-controller="drag" data-action="dragover->drag#dragOver drop->drag#drop" data-status="<%= status %>">
+      <div class="hidden sm:flex w-full sm:w-72 flex-shrink-0 flex-col border-r-0 sm:border-r border-zinc-100 last:border-r-0 dark:border-zinc-800" data-mobile-crm-target="column" data-status="<%= status %>" data-controller="drag" data-action="dragover->drag#dragOver drop->drag#drop">
 
         <div class="pt-3.5 pb-3 pr-4">
-          <h3 class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide flex justify-between items-center">
+          <h3 class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide flex justify-between items-center dark:text-zinc-400">
             <%= status.titleize %>
-            <span class="text-zinc-400 font-semibold"><%= applications.count %></span>
+            <span class="text-zinc-400 font-semibold dark:text-zinc-600"><%= applications.count %></span>
           </h3>
         </div>
 
@@ -39,16 +51,16 @@
               <%= render "applications/application_card", app: app %>
             <% end %>
           <% else %>
-            <div class="flex flex-col items-center text-center py-8 px-3 border border-dashed border-zinc-200 rounded-lg">
-              <svg class="w-6 h-6 text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <div class="flex flex-col items-center text-center py-8 px-3 border border-dashed border-zinc-200 rounded-lg dark:border-zinc-800">
+              <svg class="w-6 h-6 text-zinc-300 dark:text-zinc-700" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0l-2.586 2.586a2 2 0 01-1.414.586H10a2 2 0 01-1.414-.586L6 13m14 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5"></path>
               </svg>
               <% if status == "wishlist" %>
-                <p class="mt-2.5 text-[12px] text-zinc-500">Save jobs from the</p>
-                <%= link_to "Job Market", jobs_path, class: "text-[12px] font-semibold text-zinc-700 hover:text-zinc-950" %>
-                <p class="text-[12px] text-zinc-500">to get started.</p>
+                <p class="mt-2.5 text-[12px] text-zinc-500 dark:text-zinc-400">Save jobs from the</p>
+                <%= link_to "Job Market", jobs_path, class: "text-[12px] font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50" %>
+                <p class="text-[12px] text-zinc-500 dark:text-zinc-400">to get started.</p>
               <% else %>
-                <p class="mt-2.5 text-[12px] text-zinc-500">Nothing here yet.</p>
+                <p class="mt-2.5 text-[12px] text-zinc-500 dark:text-zinc-400">Nothing here yet.</p>
               <% end %>
             </div>
           <% end %>
@@ -58,14 +70,14 @@
   </div>
 
   <!-- 3. The Floating "Bulk Apply" Bar -->
-  <div data-bulk-campaign-target="floatingBar" class="fixed bottom-0 left-0 right-0 bg-zinc-900 text-white shadow-2xl p-4 transform translate-y-full transition-transform duration-300 z-50">
+  <div data-bulk-campaign-target="floatingBar" class="fixed bottom-0 left-0 right-0 bg-zinc-900 text-white shadow-2xl p-4 transform translate-y-full transition-transform duration-300 z-50 dark:bg-white dark:text-zinc-900">
     <div class="max-w-7xl mx-auto flex justify-between items-center px-4">
       <div class="flex items-center space-x-4">
-        <span class="bg-zinc-700 text-white font-bold h-8 w-8 rounded-full flex items-center justify-center" data-bulk-campaign-target="countBadge">0</span>
+        <span class="bg-zinc-700 text-white font-bold h-8 w-8 rounded-full flex items-center justify-center dark:bg-zinc-600 dark:text-zinc-900" data-bulk-campaign-target="countBadge">0</span>
         <span class="font-medium text-lg">Jobs selected for Bulk Campaign</span>
       </div>
       <!-- This button submits the form! -->
-      <button type="submit" class="bg-white text-zinc-900 px-6 py-2.5 rounded-lg font-bold hover:bg-zinc-100 active:scale-[0.98] transition shadow">
+      <button type="submit" class="bg-white text-zinc-900 px-6 py-2.5 rounded-lg font-bold hover:bg-zinc-100 active:scale-[0.98] transition shadow dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800">
         Prepare Campaign
       </button>
     </div>

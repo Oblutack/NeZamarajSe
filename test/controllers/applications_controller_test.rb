@@ -29,6 +29,19 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "index sorts each column by soonest deadline first, with no-deadline jobs last" do
+    urgent_job = jobs(:two)
+    urgent_job.update!(expires_at: 2.days.from_now)
+    @application.job.update!(expires_at: nil)
+    @user.applications.create!(job: urgent_job, status: "wishlist")
+
+    get crm_url
+
+    urgent_position = response.body.index(urgent_job.title)
+    no_deadline_position = response.body.index(@application.job.title)
+    assert_operator urgent_position, :<, no_deadline_position
+  end
+
   test "should get create" do
     other_job = jobs(:two)
     assert_difference("Application.count") do

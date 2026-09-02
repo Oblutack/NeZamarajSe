@@ -1,69 +1,168 @@
 <!-- app/views/dashboard/show.html.erb -->
-<div class="max-w-4xl mx-auto py-8">
+<div class="max-w-5xl mx-auto py-8">
   <div class="mb-8">
-    <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight">Dashboard</h2>
-    <p class="mt-1.5 text-[13.5px] text-zinc-500">Your job hunt, at a glance.</p>
+    <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50">Dashboard</h2>
+    <p class="mt-1.5 text-[13.5px] text-zinc-500 dark:text-zinc-400">Your job hunt, at a glance.</p>
   </div>
 
-  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-    <div class="bg-white border border-zinc-200 rounded-lg p-5">
-      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide">Jobs Saved</p>
-      <p class="mt-2 text-[32px] font-bold text-zinc-950 tracking-tight"><%= number_with_delimiter(@jobs_saved_count) %></p>
-      <p class="mt-1 text-[12.5px] text-zinc-400">Across every column of your CRM</p>
+  <% unless @onboarding_complete %>
+    <div class="mb-6 bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
+      <p class="text-[13px] font-semibold text-zinc-900 mb-3 dark:text-zinc-100">Finish setting up</p>
+      <ul class="space-y-2">
+        <li class="flex items-center gap-2.5 text-[13px]">
+          <% if @onboarding[:template] %>
+            <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="text-zinc-400 line-through dark:text-zinc-600">Create a cover letter template</span>
+          <% else %>
+            <svg class="w-4 h-4 text-zinc-300 flex-shrink-0 dark:text-zinc-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+            <%= link_to "Create a cover letter template", new_cover_letter_template_path, class: "text-zinc-900 font-medium hover:underline dark:text-zinc-100" %>
+          <% end %>
+        </li>
+        <li class="flex items-center gap-2.5 text-[13px]">
+          <% if @onboarding[:resume] %>
+            <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="text-zinc-400 line-through dark:text-zinc-600">Upload a resume</span>
+          <% else %>
+            <svg class="w-4 h-4 text-zinc-300 flex-shrink-0 dark:text-zinc-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+            <%= link_to "Upload a resume", resumes_path, class: "text-zinc-900 font-medium hover:underline dark:text-zinc-100" %>
+          <% end %>
+        </li>
+        <li class="flex items-center gap-2.5 text-[13px]">
+          <% if @onboarding[:keywords] %>
+            <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="text-zinc-400 line-through dark:text-zinc-600">Set your radar keywords</span>
+          <% else %>
+            <svg class="w-4 h-4 text-zinc-300 flex-shrink-0 dark:text-zinc-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+            <%= link_to "Set your radar keywords", edit_user_preference_path, class: "text-zinc-900 font-medium hover:underline dark:text-zinc-100" %>
+          <% end %>
+        </li>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
+      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide dark:text-zinc-400">Jobs Saved</p>
+      <p class="mt-2 text-[32px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= number_with_delimiter(@jobs_saved_count) %></p>
+      <p class="mt-1 text-[12.5px] text-zinc-400 dark:text-zinc-600">Across every column of your CRM</p>
     </div>
 
-    <div class="bg-white border border-zinc-200 rounded-lg p-5">
-      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide">Applications Sent This Month</p>
-      <p class="mt-2 text-[32px] font-bold text-zinc-950 tracking-tight"><%= number_with_delimiter(@applications_sent_this_month_count) %></p>
-      <p class="mt-1 text-[12.5px] text-zinc-400"><%= Time.current.strftime("%B %Y") %></p>
+    <div class="bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
+      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide dark:text-zinc-400">Applications Sent This Month</p>
+      <p class="mt-2 text-[32px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= number_with_delimiter(@applications_sent_this_month_count) %></p>
+      <p class="mt-1 text-[12.5px] text-zinc-400 dark:text-zinc-600"><%= Time.current.strftime("%B %Y") %></p>
     </div>
 
-    <div class="bg-white border border-zinc-200 rounded-lg p-5">
-      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide">Cold vs. Warm Outreach</p>
+    <div class="bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
+      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide dark:text-zinc-400">Response Rate</p>
+      <% if @response_rate_percent.nil? %>
+        <p class="mt-2 text-[32px] font-bold text-zinc-300 tracking-tight dark:text-zinc-700">&mdash;</p>
+        <p class="mt-1 text-[12.5px] text-zinc-400 dark:text-zinc-600">No applications sent yet</p>
+      <% else %>
+        <p class="mt-2 text-[32px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= @response_rate_percent %>%</p>
+        <p class="mt-1 text-[12.5px] text-zinc-400 dark:text-zinc-600">Of <%= @applications_sent_count %> sent</p>
+      <% end %>
+    </div>
+
+    <div class="bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
+      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide dark:text-zinc-400">Cold vs. Warm Outreach</p>
 
       <% if (@warm_company_count + @cold_company_count).zero? %>
-        <p class="mt-2 text-[13px] text-zinc-400">No company data yet.</p>
+        <p class="mt-2 text-[13px] text-zinc-400 dark:text-zinc-600">No company data yet.</p>
       <% else %>
-        <div class="mt-3 flex h-2.5 w-full rounded-full overflow-hidden bg-zinc-100">
+        <div class="mt-3 flex h-2.5 w-full rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
           <% if @warm_company_count.positive? %>
-            <div class="h-full bg-zinc-900" style="width: <%= @warm_company_percent %>%"></div>
+            <div class="h-full bg-zinc-900 dark:bg-white" style="width: <%= @warm_company_percent %>%"></div>
           <% end %>
           <% if @warm_company_count.positive? && @cold_company_count.positive? %>
-            <div class="h-full w-[2px] bg-white"></div>
+            <div class="h-full w-[2px] bg-white dark:bg-zinc-900"></div>
           <% end %>
           <% if @cold_company_count.positive? %>
-            <div class="h-full bg-zinc-300"></div>
+            <div class="h-full bg-zinc-300 dark:bg-zinc-700"></div>
           <% end %>
         </div>
 
         <div class="mt-3 space-y-1.5">
           <div class="flex items-center justify-between text-[12.5px]">
-            <span class="flex items-center gap-1.5 text-zinc-600"><span class="w-2 h-2 rounded-full bg-zinc-900"></span>Warm — posted a job</span>
-            <span class="font-semibold text-zinc-900"><%= @warm_company_count %> (<%= @warm_company_percent %>%)</span>
+            <span class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400"><span class="w-2 h-2 rounded-full bg-zinc-900 dark:bg-white"></span>Warm</span>
+            <span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= @warm_company_percent %>%</span>
           </div>
           <div class="flex items-center justify-between text-[12.5px]">
-            <span class="flex items-center gap-1.5 text-zinc-600"><span class="w-2 h-2 rounded-full bg-zinc-300"></span>Cold — directory only</span>
-            <span class="font-semibold text-zinc-900"><%= @cold_company_count %> (<%= @cold_company_percent %>%)</span>
+            <span class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400"><span class="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-700"></span>Cold</span>
+            <span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= @cold_company_percent %>%</span>
           </div>
         </div>
       <% end %>
     </div>
   </div>
 
-  <div class="mt-5 bg-white border border-zinc-200 rounded-lg p-5">
-    <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-3">Cold Outreach Pipeline</p>
+  <div class="mt-5 bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
+    <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-4 dark:text-zinc-400">Pipeline Funnel</p>
+    <div class="space-y-3">
+      <% [ [ "Saved", @funnel[:saved] ], [ "Applied", @funnel[:applied] ], [ "Interviewing", @funnel[:interviewing] ], [ "Offered", @funnel[:offered] ] ].each do |label, count| %>
+        <% pct = @funnel[:saved].zero? ? 0 : (count * 100.0 / @funnel[:saved]).round %>
+        <div>
+          <div class="flex items-center justify-between text-[12.5px] mb-1">
+            <span class="font-medium text-zinc-700 dark:text-zinc-300"><%= label %></span>
+            <span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= count %></span>
+          </div>
+          <div class="h-2 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+            <div class="h-full bg-zinc-900 dark:bg-white rounded-full transition-all" style="width: <%= pct %>%"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div class="bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
+      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-3 dark:text-zinc-400">Deadlines This Week</p>
+      <% if @deadlines_this_week.empty? %>
+        <p class="text-[13px] text-zinc-400 dark:text-zinc-600">Nothing expiring in the next 7 days.</p>
+      <% else %>
+        <ul class="space-y-2.5">
+          <% @deadlines_this_week.each do |job| %>
+            <li class="flex items-center justify-between gap-3 text-[13px]">
+              <%= link_to job.title, job_path(job), class: "font-medium text-zinc-900 hover:underline truncate dark:text-zinc-100" %>
+              <span class="flex-shrink-0 font-semibold text-red-700 dark:text-red-400"><%= job.expires_at.strftime("%b %d") %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+
+    <div class="bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
+      <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-3 dark:text-zinc-400">Recent Activity</p>
+      <% if @recent_events.empty? %>
+        <p class="text-[13px] text-zinc-400 dark:text-zinc-600">Nothing yet - your activity will show up here.</p>
+      <% else %>
+        <ul class="space-y-2.5">
+          <% @recent_events.each do |event| %>
+            <li class="text-[13px]">
+              <%= link_to event.application.job.title, application_path(event.application), class: "font-medium text-zinc-900 hover:underline dark:text-zinc-100" %>
+              <span class="text-zinc-500 dark:text-zinc-400">&mdash; <%= application_event_description(event) %></span>
+              <span class="block text-[11px] text-zinc-400 dark:text-zinc-600"><%= time_ago_in_words(event.created_at) %> ago</span>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-5 bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
+    <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-3 dark:text-zinc-400">Cold Outreach Pipeline</p>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <%= link_to companies_path(cold: "1", has_email: "0"), class: "block rounded-md border border-zinc-200 p-4 hover:border-zinc-300 hover:bg-zinc-50 transition" do %>
-        <p class="text-[24px] font-bold text-zinc-950 tracking-tight"><%= number_with_delimiter(@cold_needs_email_count) %></p>
-        <p class="mt-1 text-[12.5px] text-zinc-500">Need an email lookup</p>
+      <%= link_to companies_path(cold: "1", has_email: "0"), class: "block rounded-md border border-zinc-200 p-4 hover:border-zinc-300 hover:bg-zinc-50 transition dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-800" do %>
+        <p class="text-[24px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= number_with_delimiter(@cold_needs_email_count) %></p>
+        <p class="mt-1 text-[12.5px] text-zinc-500 dark:text-zinc-400">Need an email lookup</p>
       <% end %>
-      <%= link_to companies_path(cold: "1", has_email: "1"), class: "block rounded-md border border-zinc-200 p-4 hover:border-zinc-300 hover:bg-zinc-50 transition" do %>
-        <p class="text-[24px] font-bold text-emerald-700 tracking-tight"><%= number_with_delimiter(@cold_ready_to_contact_count) %></p>
-        <p class="mt-1 text-[12.5px] text-zinc-500">Ready to contact - have an email, never reached out</p>
+      <%= link_to companies_path(cold: "1", has_email: "1"), class: "block rounded-md border border-zinc-200 p-4 hover:border-zinc-300 hover:bg-zinc-50 transition dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-800" do %>
+        <p class="text-[24px] font-bold text-emerald-700 tracking-tight dark:text-emerald-400"><%= number_with_delimiter(@cold_ready_to_contact_count) %></p>
+        <p class="mt-1 text-[12.5px] text-zinc-500 dark:text-zinc-400">Ready to contact - have an email, never reached out</p>
       <% end %>
-      <%= link_to companies_path(cold: "1"), class: "block rounded-md border border-zinc-200 p-4 hover:border-zinc-300 hover:bg-zinc-50 transition" do %>
-        <p class="text-[24px] font-bold text-zinc-950 tracking-tight"><%= number_with_delimiter(@cold_contacted_count) %></p>
-        <p class="mt-1 text-[12.5px] text-zinc-500">Already contacted</p>
+      <%= link_to companies_path(cold: "1"), class: "block rounded-md border border-zinc-200 p-4 hover:border-zinc-300 hover:bg-zinc-50 transition dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-800" do %>
+        <p class="text-[24px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= number_with_delimiter(@cold_contacted_count) %></p>
+        <p class="mt-1 text-[12.5px] text-zinc-500 dark:text-zinc-400">Already contacted</p>
       <% end %>
     </div>
   </div>

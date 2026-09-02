@@ -1,76 +1,76 @@
 <!-- app/views/applications/compose_follow_up.html.erb -->
 <div class="max-w-2xl mx-auto py-8">
-  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-1.5">Send a Follow-up</h1>
-  <p class="text-[13.5px] text-zinc-500 mb-6">Following up on <span class="font-semibold text-zinc-900"><%= @application.job.title %></span> at <%= @application.job.company.name %>.</p>
+  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-1.5 dark:text-zinc-50">Send a Follow-up</h1>
+  <p class="text-[13.5px] text-zinc-500 mb-6 dark:text-zinc-400">Following up on <span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= @application.job.title %></span> at <%= @application.job.company.name %>.</p>
 
   <% if Rails.application.config.dry_run_emails %>
-    <div class="mb-5 border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 rounded-lg text-[13px]">
+    <div class="mb-5 border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 rounded-lg text-[13px] dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-400">
       <span class="font-semibold">Dry-run mode is on.</span> This will actually be delivered to your own inbox (<%= current_user.email %>), not the recipient shown below - safe to send as a test.
     </div>
   <% end %>
 
   <turbo-frame id="compose_follow_up_preview" class="block space-y-5">
-    <div class="bg-white border border-zinc-200 rounded-lg p-6">
+    <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
       <%= form_with url: compose_follow_up_application_path(@application), method: :get, data: { turbo_frame: "compose_follow_up_preview" }, class: "space-y-5" do %>
         <div>
-          <label class="block text-[13px] font-semibold text-zinc-700">Select Cover Letter Template</label>
+          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300">Select Cover Letter Template</label>
           <%= select_tag :template_id,
                 options_from_collection_for_select(@templates, :id, :name, @selected_template&.id),
                 include_blank: "Choose a template...",
                 onchange: "this.form.requestSubmit()",
-                class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border" %>
+                class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
         </div>
 
         <div>
-          <label class="block text-[13px] font-semibold text-zinc-700">Select CV / Resume</label>
+          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300">Select CV / Resume</label>
           <%= select_tag :resume_blob_id,
                 options_for_select(@resumes.map { |r| [ r.filename.to_s, r.blob.id ] }, @selected_resume&.blob&.id),
                 include_blank: "Choose a resume...",
                 onchange: "this.form.requestSubmit()",
-                class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border" %>
+                class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
         </div>
       <% end %>
     </div>
 
     <% if @selected_template && @selected_resume %>
-      <div class="bg-white border border-zinc-200 rounded-lg p-6">
-        <h2 class="text-[13px] font-semibold text-zinc-700 mb-3">Preview - exactly what would be sent</h2>
+      <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
+        <h2 class="text-[13px] font-semibold text-zinc-700 mb-3 dark:text-zinc-300">Preview - exactly what would be sent</h2>
 
         <dl class="space-y-3 text-[13px]">
           <div>
-            <dt class="text-zinc-500">To</dt>
+            <dt class="text-zinc-500 dark:text-zinc-400">To</dt>
             <% if @application.intended_recipient.present? %>
-              <dd class="font-medium text-zinc-900 mt-0.5"><%= @application.intended_recipient %></dd>
+              <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100"><%= @application.intended_recipient %></dd>
             <% else %>
-              <dd class="mt-0.5 inline-flex items-center gap-1.5 font-medium text-red-700">
+              <dd class="mt-0.5 inline-flex items-center gap-1.5 font-medium text-red-700 dark:text-red-400">
                 <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
                 No email found for this company yet
               </dd>
             <% end %>
           </div>
           <div>
-            <dt class="text-zinc-500">Subject</dt>
-            <dd class="font-medium text-zinc-900 mt-0.5"><%= JobApplicationMailer.follow_up_subject_for(@application.job) %></dd>
+            <dt class="text-zinc-500 dark:text-zinc-400">Subject</dt>
+            <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100"><%= JobApplicationMailer.follow_up_subject_for(@application.job) %></dd>
           </div>
           <div>
-            <dt class="text-zinc-500">Attachment</dt>
-            <dd class="font-medium text-zinc-900 mt-0.5"><%= @selected_resume.filename %></dd>
+            <dt class="text-zinc-500 dark:text-zinc-400">Attachment</dt>
+            <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100"><%= @selected_resume.filename %></dd>
           </div>
           <div>
-            <dt class="text-zinc-500">Body</dt>
-            <dd class="mt-1.5 whitespace-pre-wrap font-mono text-[12px] text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-md p-3 max-h-64 overflow-y-auto"><%= @selected_template.render_content(@application.job) %></dd>
+            <dt class="text-zinc-500 dark:text-zinc-400">Body</dt>
+            <dd class="mt-1.5 whitespace-pre-wrap font-mono text-[12px] text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-md p-3 max-h-64 overflow-y-auto dark:text-zinc-300 dark:bg-zinc-800 dark:border-zinc-800"><%= @selected_template.render_content(@application.job) %></dd>
           </div>
         </dl>
 
-        <%= form_with url: dispatch_follow_up_application_path(@application), method: :post, data: { turbo_frame: "_top" }, class: "flex justify-end pt-5 mt-5 border-t border-zinc-100" do |f| %>
+        <%= form_with url: dispatch_follow_up_application_path(@application), method: :post, data: { turbo_frame: "_top" }, class: "flex justify-end pt-5 mt-5 border-t border-zinc-100 dark:border-zinc-800" do |f| %>
           <%= hidden_field_tag :template_id, @selected_template.id %>
           <%= hidden_field_tag :resume_blob_id, @selected_resume.blob.id %>
-          <%= link_to "Cancel", application_path(@application), class: "mr-3 bg-white py-2 px-4 border border-zinc-300 rounded-md text-[13px] font-semibold text-zinc-700 hover:bg-zinc-50" %>
-          <%= f.submit "Send Follow-up via Gmail", class: "cursor-pointer inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
+          <%= link_to "Cancel", application_path(@application), class: "mr-3 bg-white py-2 px-4 border border-zinc-300 rounded-md text-[13px] font-semibold text-zinc-700 hover:bg-zinc-50 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800" %>
+          <%= f.submit "Send Follow-up via Gmail", class: "cursor-pointer inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
         <% end %>
       </div>
     <% else %>
-      <p class="text-[13px] text-zinc-400 text-center py-4">Pick a template and a resume above to see a preview.</p>
+      <p class="text-[13px] text-zinc-400 text-center py-4 dark:text-zinc-600">Pick a template and a resume above to see a preview.</p>
     <% end %>
   </turbo-frame>
 </div>

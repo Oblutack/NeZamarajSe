@@ -1,20 +1,20 @@
 <%= turbo_frame_tag app do %>
-  <div class="bg-white p-3.5 rounded-lg border border-zinc-200 cursor-grab active:cursor-grabbing hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition relative" draggable="true" data-controller="drag" data-action="dragstart->drag#dragStart dragend->drag#dragEnd" data-id="<%= app.id %>">
+  <div class="bg-white p-3.5 rounded-lg border border-zinc-200 cursor-grab active:cursor-grabbing hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition relative dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700" draggable="true" data-controller="drag" data-action="dragstart->drag#dragStart dragend->drag#dragEnd" data-id="<%= app.id %>">
 
     <% if app.status == "wishlist" %>
       <div class="absolute top-3.5 right-3.5">
         <!-- name="application_ids[]" tells Rails to group all selected IDs into an array! -->
-        <input type="checkbox" name="application_ids[]" value="<%= app.id %>" data-bulk-campaign-target="checkbox" data-action="change->bulk-campaign#toggleBar" class="h-3.5 w-3.5 text-zinc-900 focus:ring-zinc-500 border-zinc-300 rounded cursor-pointer">
+        <input type="checkbox" name="application_ids[]" value="<%= app.id %>" data-bulk-campaign-target="checkbox" data-action="change->bulk-campaign#toggleBar" class="h-3.5 w-3.5 text-zinc-900 focus:ring-zinc-500 border-zinc-300 rounded cursor-pointer dark:text-zinc-100 dark:focus:ring-zinc-400 dark:border-zinc-700">
       </div>
     <% end %>
 
-    <h4 class="text-[13.5px] font-semibold text-zinc-900 leading-snug pr-6"><%= app.job.title %></h4>
-    <p class="text-xs text-zinc-500 mt-1.5"><%= app.job.company.name %></p>
+    <h4 class="text-[13.5px] font-semibold text-zinc-900 leading-snug pr-6 dark:text-zinc-100"><%= app.job.title %></h4>
+    <p class="text-xs text-zinc-500 mt-1.5 dark:text-zinc-400"><%= app.job.company.name %></p>
 
     <div class="flex items-center justify-between mt-2">
-      <span class="text-[11px] text-zinc-400"><%= app.job.location.presence || "Bosnia and Herzegovina" %></span>
+      <span class="text-[11px] text-zinc-400 dark:text-zinc-600"><%= app.job.location.presence || "Bosnia and Herzegovina" %></span>
       <% if app.job.expires_at.present? %>
-        <span class="text-[11px] font-semibold text-red-700 flex items-center gap-1">
+        <span class="text-[11px] font-semibold text-red-700 flex items-center gap-1 dark:text-red-400">
           <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <%= app.job.expires_at.strftime("%b %d") %>
         </span>
@@ -22,19 +22,19 @@
     </div>
 
     <% if app.needs_follow_up? %>
-      <div class="mt-2 text-[11px] font-semibold text-amber-700 flex items-center gap-1">
+      <div class="mt-2 text-[11px] font-semibold text-amber-700 flex items-center gap-1 dark:text-amber-400">
         <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
         No reply - follow up?
       </div>
     <% end %>
 
-    <div class="mt-2.5 pt-2.5 border-t border-zinc-100 flex items-center justify-between">
+    <div class="mt-2.5 pt-2.5 border-t border-zinc-100 flex items-center justify-between dark:border-zinc-800">
       <% if app.status == "wishlist" %>
-        <%= link_to "Apply individually →", compose_application_path(app), data: { turbo: false }, class: "text-[11.5px] font-semibold text-zinc-700 hover:text-zinc-950" %>
+        <%= link_to "Apply individually →", compose_application_path(app), data: { turbo: false }, class: "text-[11.5px] font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50" %>
       <% else %>
         <span></span>
       <% end %>
-      <%= link_to "Details", application_path(app), data: { turbo: false }, class: "text-[11.5px] font-semibold text-zinc-500 hover:text-zinc-950" %>
+      <%= link_to "Details", application_path(app), data: { turbo: false }, class: "text-[11.5px] font-semibold text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50" %>
     </div>
   </div>
 <% end %>

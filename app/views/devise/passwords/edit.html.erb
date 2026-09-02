@@ -1,26 +1,26 @@
 <div class="max-w-md mx-auto py-10">
-  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-6 text-center">Change your password</h1>
+  <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-6 text-center dark:text-zinc-50">Change your password</h1>
 
-  <div class="bg-white border border-zinc-200 rounded-lg p-6">
+  <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
     <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put, class: "space-y-5" }) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
       <%= f.hidden_field :reset_password_token %>
 
       <div>
-        <%= f.label :password, "New password", class: "block text-[13px] font-semibold text-zinc-700" %>
+        <%= f.label :password, "New password", class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
         <% if @minimum_password_length %>
-          <p class="text-[11.5px] text-zinc-500 mt-1"><%= @minimum_password_length %> characters minimum</p>
+          <p class="text-[11.5px] text-zinc-500 mt-1 dark:text-zinc-400"><%= @minimum_password_length %> characters minimum</p>
         <% end %>
-        <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border" %>
+        <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
       </div>
 
       <div>
-        <%= f.label :password_confirmation, "Confirm new password", class: "block text-[13px] font-semibold text-zinc-700" %>
-        <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border" %>
+        <%= f.label :password_confirmation, "Confirm new password", class: "block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
       </div>
 
       <div>
-        <%= f.submit "Change my password", class: "cursor-pointer w-full inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98]" %>
+        <%= f.submit "Change my password", class: "cursor-pointer w-full inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
       </div>
     <% end %>
 

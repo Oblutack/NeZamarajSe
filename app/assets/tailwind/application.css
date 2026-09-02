@@ -1,6 +1,21 @@
 @import "tailwindcss";
 @import "../stylesheets/actiontext.css";
 
+/* Class-based dark mode (not the media-query default) - Tailwind v4 has no
+   JS config file, so this is the documented way to opt in: `dark:` utilities
+   now key off a `.dark` class anywhere up the tree (see theme_controller.js,
+   which toggles it on <html> and persists the choice to localStorage) rather
+   than only the OS-level prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tells the browser itself (not just our own utility classes) to use dark
+   chrome for anything it renders natively - scrollbars, the default look
+   of checkboxes/date pickers before our own styling, autofill highlight
+   color - so those don't stay stuck light against a dark page. */
+html.dark {
+  color-scheme: dark;
+}
+
 /* Trix ships styled for its own defaults (gray #bbb borders, a blue
    #cbeefa active-button highlight, 3px corners) - restyle it to the app's
    monochrome zinc palette instead of leaving a visibly different widget
@@ -28,6 +43,28 @@ trix-editor {
 trix-editor:focus {
   outline: 2px solid var(--color-zinc-500);
   outline-offset: -1px;
+}
+
+.dark trix-toolbar .trix-button-group {
+  border-color: var(--color-zinc-700);
+}
+.dark trix-toolbar .trix-button {
+  color: var(--color-zinc-400);
+}
+.dark trix-toolbar .trix-button:not(:first-child) {
+  border-left-color: var(--color-zinc-700);
+}
+.dark trix-toolbar .trix-button.trix-active {
+  background: var(--color-zinc-800);
+  color: var(--color-zinc-50);
+}
+.dark trix-editor {
+  border-color: var(--color-zinc-700);
+  background-color: var(--color-zinc-900);
+  color: var(--color-zinc-100);
+}
+.dark trix-editor:focus {
+  outline-color: var(--color-zinc-400);
 }
 
 /* A static, faint dot grid on the page canvas itself (not a boxed-off
@@ -58,6 +95,10 @@ trix-editor:focus {
   background-image: radial-gradient(circle, var(--color-zinc-300) 1px, transparent 1px);
   background-size: 20px 20px;
 }
+.dark .page-canvas {
+  background-color: var(--color-zinc-950);
+  background-image: radial-gradient(circle, var(--color-zinc-800) 1px, transparent 1px);
+}
 
 /* Geist: a minimal, geometric grotesk (Vercel's typeface) - replaces the
    system font stack app-wide. Loaded via Google Fonts in the layout head;
@@ -78,6 +119,17 @@ trix-editor:focus {
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 150ms;
   }
+}
+
+/* j/k list navigation's highlight (keyboard_shortcuts_controller.js) - an
+   outline rather than a background/border change, so it layers cleanly over
+   any card or table row regardless of that element's own styling. */
+.shortcut-focused {
+  outline: 2px solid var(--color-zinc-500);
+  outline-offset: 2px;
+}
+.dark .shortcut-focused {
+  outline-color: var(--color-zinc-400);
 }
 
 /* Turbo Drive page transitions (View Transitions API - progressive
