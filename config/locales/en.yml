@@ -3,15 +3,17 @@ en:
     dashboard: "Dashboard"
     job_market: "Job Market"
     companies: "Companies"
-    my_crm: "My CRM"
+    my_crm: "My Applications"
     manage: "Manage"
-    templates: "Templates"
-    asset_library: "Asset Library"
-    radar_settings: "Radar Settings"
+    templates: "Cover Letters"
+    asset_library: "My Documents"
+    radar_settings: "Job Alerts"
     command_palette: "Command palette"
     toggle_dark_mode: "Toggle dark mode"
     sign_out: "Sign out"
     sign_in: "Sign in"
+    test_mode_badge: "Test mode"
+    test_mode_tooltip: "No emails are going to real companies right now - everything is redirected to your own inbox instead."
 
   shared:
     pagination:
@@ -35,11 +37,13 @@ en:
       no_email_found: "No email found for this company yet"
       cancel: "Cancel"
       pick_template_and_resume: "Pick a template and a resume above to see a preview."
-      dry_run_title: "Dry-run mode is on."
-      dry_run_body: "This will actually be delivered to your own inbox (%{email}), not the recipient shown below - safe to send as a test."
+      dry_run_title: "Test mode"
+      dry_run_body: "Nothing is sent to the company yet. This email goes to your own inbox (%{email}) instead of the recipient shown below, so you can check it's right before you ever send for real."
+      explainer_title: "How this works:"
+      explainer_body: "Sending goes out from your own Gmail account to the address shown below, with your selected CV attached. Nothing is sent until you click the button, and you can always see exactly what went out afterward."
     application_statuses:
       wishlist: "Wishlist"
-      queued: "Queued"
+      queued: "Sending soon"
       applied: "Applied"
       interviewing: "Interviewing"
       rejected: "Rejected"
@@ -48,6 +52,11 @@ en:
       status_change: "Moved from %{from} to %{to}"
       follow_up_sent: "Follow-up email sent"
       reply_detected: "Reply detected in Gmail thread"
+    hint:
+      dismiss: "Dismiss"
+      show_tips_again: "Show tips again"
+      show_tips_again_hint: "Tips you've dismissed around the app (like on the CRM board or before sending) are hidden from now on. Bring them back here."
+      reset_confirmation: "Done - dismissed tips will show again as you come across them."
 
   home:
     index:
@@ -76,7 +85,7 @@ en:
       no_company_data: "No company data yet."
       warm: "Warm"
       cold: "Cold"
-      pipeline_funnel: "Pipeline Funnel"
+      pipeline_funnel: "Your Progress"
       funnel:
         saved: "Saved"
         applied: "Applied"
@@ -87,7 +96,7 @@ en:
       recent_activity: "Recent Activity"
       no_activity: "Nothing yet - your activity will show up here."
       time_ago: "%{time} ago"
-      cold_outreach_pipeline: "Cold Outreach Pipeline"
+      cold_outreach_pipeline: "Companies to Contact"
       hunter_title: "Hunter.io domain-search calls made this calendar month"
       hunter_usage: "Hunter.io: %{used} / %{quota} this month"
       needs_email_lookup: "Need an email lookup"
@@ -123,32 +132,52 @@ en:
       try_different_search: "Try a different title, company name, or loosen a filter."
       clear_search: "Clear search"
       no_jobs_match_filters: "No jobs match your filters"
-      try_adjusting_filters: "Try adjusting your keywords in the Radar Settings, or loosening a filter above."
+      try_adjusting_filters: "Try adjusting your keywords in Job Alerts, or loosening a filter above."
       update_settings: "Update Settings"
       email_found: "Email found"
       ends: "Ends %{date}"
       analyzing: "Analyzing…"
       bosnia_and_herzegovina: "Bosnia and Herzegovina"
       scraped_ago: "Scraped %{time} ago"
+      added_ago: "Added %{time} ago"
       also_posted:
         one: "Also posted on %{count} other board"
         other: "Also posted on %{count} other boards"
       view_original: "View Original"
-      saved_in_crm: "Saved in CRM"
+      saved_in_crm: "Saved to My Applications"
       save_to_wishlist: "Save to Wishlist"
+      add_a_job: "Add a Job"
     show:
       back_to_job_market: "Back to Job Market"
       bosnia_and_herzegovina: "Bosnia and Herzegovina"
-      saved_in_crm: "Saved in CRM"
+      saved_in_crm: "Saved to My Applications"
       save_to_wishlist: "Save to Wishlist"
       deadline: "Deadline %{date}"
       scraped_ago: "Scraped %{time} ago"
+      added_ago: "Added %{time} ago"
+      private_to_you: "Private to you - other people using this app can't see this job."
       posted_on_boards:
         one: "Posted on %{count} board"
         other: "Posted on %{count} boards"
       description: "Description"
       no_description: "No description available yet - still being analyzed."
       view_original_posting: "View Original Posting"
+    new:
+      title: "Add a Job"
+      subtitle: "Found something the scrapers missed - on LinkedIn, a company's careers page, or word of mouth? Add it here and it lands straight on your board."
+      company_name: "Company"
+      company_name_placeholder: "e.g. Example d.o.o."
+      job_title: "Job Title"
+      url: "Job Posting URL (optional)"
+      url_placeholder: "https://…"
+      url_hint: "If you paste a link and leave the description below blank, we'll try to fill in the description, deadline, and contact email automatically - same as a scraped job."
+      location: "Location (optional)"
+      hr_email: "Contact Email (optional)"
+      hr_email_hint: "Already know who to send this to? Add it now instead of waiting on us to find it."
+      expires_at: "Application Deadline (optional)"
+      description: "Description (optional)"
+      add_job: "Add Job"
+      privacy_note: "This job is private to your account - unlike scraped listings, other people using this app won't see it or the contact details you add here."
 
   companies:
     index:
@@ -160,8 +189,8 @@ en:
       has_email: "Has email"
       no_email: "No email"
       outreach_type: "Outreach type"
-      warm_option: "Warm - posted a job"
-      cold_option: "Cold - directory only"
+      warm_option: "Has a job posted"
+      cold_option: "No job posted yet"
       industry_code: "Industry code"
       city: "City"
       city_placeholder: "e.g. Sarajevo"
@@ -223,8 +252,8 @@ en:
       companies_count:
         one: "%{count} company"
         other: "%{count} companies"
-      dry_run_title: "Dry-run mode is on."
-      dry_run_body: "Every email below will actually be delivered to your own inbox (%{email}), not the recipient shown - safe to launch as a test."
+      dry_run_title: "Test mode"
+      dry_run_body: "Nothing is sent to any company yet. Every email below goes to your own inbox (%{email}) instead, so you can check the whole campaign before you ever send for real."
       target_jobs_and_recipients: "Target Jobs & Recipients"
       no_email_found: "No email found"
       no_email_found_will_skip: "No email found - will be skipped"
@@ -235,21 +264,33 @@ en:
       launch_campaign: "Launch Campaign"
       stagger_notice: "Emails will be staggered by 5 minutes to bypass Google Spam Filters."
     index:
-      title: "My CRM"
+      title: "My Applications"
       subtitle: "Track every application from wishlist to offer."
       save_jobs_from_the: "Save jobs from the"
       to_get_started: "to get started."
       nothing_here_yet: "Nothing here yet."
+      board_hint: 'Drag a card into another column to update its status, or open "Details" on any card for the full picture.'
+      empty_states:
+        queued: "Nothing here yet. Applications land here as soon as you send them."
+        applied: "Nothing here yet. Once you send an application, it shows up here automatically."
+        interviewing: "Nothing here yet. We'll move an application here on its own if we spot a reply in your Gmail."
+        rejected: "Nothing here - hopefully it stays that way."
+        offered: "Nothing here yet. Fingers crossed!"
       jobs_selected: "jobs selected"
       prepare_campaign: "Prepare Campaign"
     application_card:
       bosnia_and_herzegovina: "Bosnia and Herzegovina"
       no_reply_follow_up: "No reply - worth a follow-up"
       apply_individually: "Apply"
+      cancel_send: "Cancel"
+      cancel_send_confirm: "Cancel this send? It'll move back to your wishlist and won't count against today's limit."
+      move_to: "Move to…"
       details: "Details"
     show:
-      back_to_crm: "Back to CRM"
+      back_to_crm: "Back to My Applications"
       send_follow_up: "Send Follow-up"
+      cancel_send: "Cancel send"
+      cancel_send_confirm: "Cancel this send? It'll move back to your wishlist and won't count against today's limit."
       no_reply_in_days:
         one: "No reply in over %{count} day."
         other: "No reply in over %{count} days."
@@ -263,6 +304,9 @@ en:
       rejection_reason: "Rejection reason"
       rejection_reason_placeholder: "e.g. Position filled internally"
       save_details: "Save Details"
+      sent_email:
+        title: "What we actually sent"
+        sent_ago: "Sent %{time} ago via Gmail"
       timeline: "Timeline"
       add_a_note: "Add a note..."
       add: "Add"
@@ -291,7 +335,7 @@ en:
 
   resumes:
     index:
-      title: "Asset Library"
+      title: "My Documents"
       subtitle: "Manage your CVs and cover letters to use in automated campaigns."
       upload_new_resume: "Upload new resume"
       upload_hint: "Please upload your CV in PDF format. We will use this to apply to jobs on your behalf."
@@ -350,7 +394,7 @@ en:
 
   user_preferences:
     edit:
-      title: "Radar Settings"
+      title: "Job Alerts"
       job_keywords: "Job Keywords (Comma separated)"
       keywords_placeholder: "e.g. Ruby, React, Marketing, Manager"
       keywords_hint: "Our AI and scraper will only show you jobs matching these words."
@@ -359,6 +403,7 @@ en:
       enable_daily_radar_email: "Enable Daily Radar Email"
       daily_summary_hint: "Receive a daily summary at 8:00 AM of new jobs matching your keywords."
       save_radar_settings: "Save Radar Settings"
+      help_tips_title: "Help tips"
 
   flash:
     resumes:
@@ -370,8 +415,10 @@ en:
       updated: "Template updated successfully."
       deleted: "Template deleted."
     applications:
-      added_to_wishlist: "%{job} added to your CRM Wishlist!"
-      removed_from_crm: "Removed from CRM."
+      added_to_wishlist: "%{job} added to your wishlist!"
+      removed_from_crm: "Removed from your applications."
+      send_canceled: "Send canceled - moved back to your wishlist."
+      cancel_too_late: "Too late to cancel - it's no longer queued."
       sending_disabled: "Sending is currently disabled for the whole app - nothing was queued."
       select_template_and_resume: "Please select both a template and a resume."
       no_contact_email: "%{job} has no known contact email, and dry-run mode is off - there's nowhere to send this."
@@ -396,6 +443,9 @@ en:
       google_login_failed: "Something went wrong with Google Login."
 
   activerecord:
+    attributes:
+      job:
+        company_name: "Company"
     errors:
       models:
         user:

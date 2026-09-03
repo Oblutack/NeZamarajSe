@@ -3,15 +3,17 @@ bs:
     dashboard: "Nadzorna ploča"
     job_market: "Tržište poslova"
     companies: "Kompanije"
-    my_crm: "Moj CRM"
+    my_crm: "Moje prijave"
     manage: "Upravljanje"
-    templates: "Predlošci"
-    asset_library: "Biblioteka dokumenata"
-    radar_settings: "Postavke radara"
+    templates: "Motivaciona pisma"
+    asset_library: "Moji dokumenti"
+    radar_settings: "Obavještenja o poslovima"
     command_palette: "Paleta naredbi"
     toggle_dark_mode: "Uklj./isklj. tamni način"
     sign_out: "Odjava"
     sign_in: "Prijava"
+    test_mode_badge: "Probni način"
+    test_mode_tooltip: "Trenutno se nijedan email ne šalje pravim kompanijama - sve se preusmjerava na tvoj vlastiti inbox."
 
   shared:
     pagination:
@@ -35,11 +37,13 @@ bs:
       no_email_found: "Za ovu kompaniju još nije pronađen email"
       cancel: "Otkaži"
       pick_template_and_resume: "Odaberi predložak i CV iznad da vidiš pregled."
-      dry_run_title: "Probni način rada je uključen."
-      dry_run_body: "Ovo će zapravo biti dostavljeno na tvoj vlastiti inbox (%{email}), a ne primaocu prikazanom ispod - sigurno za probno slanje."
+      dry_run_title: "Probni način"
+      dry_run_body: "Kompaniji se još ništa ne šalje. Ovaj email ide na tvoj vlastiti inbox (%{email}) umjesto primaocu prikazanom ispod, da provjeriš da je sve u redu prije nego ikad pošalješ pravi email."
+      explainer_title: "Kako ovo funkcioniše:"
+      explainer_body: "Slanje ide sa tvog vlastitog Gmail naloga na adresu prikazanu ispod, sa tvojim odabranim CV-jem u prilogu. Ništa se ne šalje dok ne klikneš dugme, a uvijek možeš vidjeti tačno šta je poslano nakon toga."
     application_statuses:
       wishlist: "Lista želja"
-      queued: "U redu za slanje"
+      queued: "Uskoro se šalje"
       applied: "Prijavljeno"
       interviewing: "Intervju"
       rejected: "Odbijeno"
@@ -48,6 +52,11 @@ bs:
       status_change: "Premješteno iz %{from} u %{to}"
       follow_up_sent: "Email za podsjećanje je poslan"
       reply_detected: "Otkriven odgovor u Gmail konverzaciji"
+    hint:
+      dismiss: "Zatvori"
+      show_tips_again: "Prikaži savjete ponovo"
+      show_tips_again_hint: "Savjeti koje si zatvorio/la širom aplikacije (npr. na CRM tabli ili prije slanja) su od tada sakriveni. Vrati ih nazad ovdje."
+      reset_confirmation: "Gotovo - zatvoreni savjeti će se ponovo prikazati kad na njih naiđeš."
 
   home:
     index:
@@ -76,7 +85,7 @@ bs:
       no_company_data: "Još nema podataka o kompanijama."
       warm: "Topli"
       cold: "Hladni"
-      pipeline_funnel: "Lijevak napretka"
+      pipeline_funnel: "Tvoj napredak"
       funnel:
         saved: "Sačuvano"
         applied: "Prijavljeno"
@@ -87,7 +96,7 @@ bs:
       recent_activity: "Nedavna aktivnost"
       no_activity: "Još ništa - tvoja aktivnost će se pojaviti ovdje."
       time_ago: "prije %{time}"
-      cold_outreach_pipeline: "Lijevak hladnih kontakata"
+      cold_outreach_pipeline: "Kompanije za kontakt"
       hunter_title: "Broj Hunter.io pretraga domena ovog kalendarskog mjeseca"
       hunter_usage: "Hunter.io: %{used} / %{quota} ovaj mjesec"
       needs_email_lookup: "Potrebna pretraga e-maila"
@@ -123,27 +132,31 @@ bs:
       try_different_search: "Pokušaj s drugim nazivom, kompanijom, ili popusti neki filter."
       clear_search: "Poništi pretragu"
       no_jobs_match_filters: "Nema poslova koji odgovaraju filterima"
-      try_adjusting_filters: "Pokušaj prilagoditi ključne riječi u Postavkama radara, ili popustiti neki filter iznad."
+      try_adjusting_filters: "Pokušaj prilagoditi ključne riječi u Obavještenjima o poslovima, ili popustiti neki filter iznad."
       update_settings: "Ažuriraj postavke"
       email_found: "Email pronađen"
       ends: "Ističe %{date}"
       analyzing: "Analiziranje…"
       bosnia_and_herzegovina: "Bosna i Hercegovina"
       scraped_ago: "Prikupljeno prije %{time}"
+      added_ago: "Dodano prije %{time}"
       also_posted:
         one: "Također objavljeno na još %{count} oglasnoj ploči"
         few: "Također objavljeno na još %{count} oglasne ploče"
         other: "Također objavljeno na još %{count} oglasnih ploča"
       view_original: "Pogledaj original"
-      saved_in_crm: "Sačuvano u CRM-u"
+      saved_in_crm: "Sačuvano u Mojim prijavama"
       save_to_wishlist: "Sačuvaj u listu želja"
+      add_a_job: "Dodaj posao"
     show:
       back_to_job_market: "Nazad na tržište poslova"
       bosnia_and_herzegovina: "Bosna i Hercegovina"
-      saved_in_crm: "Sačuvano u CRM-u"
+      saved_in_crm: "Sačuvano u Mojim prijavama"
       save_to_wishlist: "Sačuvaj u listu želja"
       deadline: "Rok %{date}"
       scraped_ago: "Prikupljeno prije %{time}"
+      added_ago: "Dodano prije %{time}"
+      private_to_you: "Privatno za tebe - drugi korisnici ove aplikacije ne mogu vidjeti ovaj posao."
       posted_on_boards:
         one: "Objavljeno na %{count} oglasnoj ploči"
         few: "Objavljeno na %{count} oglasne ploče"
@@ -151,6 +164,22 @@ bs:
       description: "Opis"
       no_description: "Opis još nije dostupan - u toku je analiza."
       view_original_posting: "Pogledaj originalni oglas"
+    new:
+      title: "Dodaj posao"
+      subtitle: "Pronašao/la si nešto što naši pretraživači nisu - na LinkedIn-u, karijernoj stranici kompanije, ili preko preporuke? Dodaj to ovdje i odmah završava na tvojoj tabli."
+      company_name: "Kompanija"
+      company_name_placeholder: "npr. Example d.o.o."
+      job_title: "Naziv posla"
+      url: "Link na oglas (opcionalno)"
+      url_placeholder: "https://…"
+      url_hint: "Ako zalijepiš link i ostaviš opis ispod praznim, pokušaćemo automatski popuniti opis, rok i kontakt email - isto kao kod prikupljenog oglasa."
+      location: "Lokacija (opcionalno)"
+      hr_email: "Kontakt email (opcionalno)"
+      hr_email_hint: "Već znaš kome poslati prijavu? Dodaj to sada umjesto da čekaš da mi to pronađemo."
+      expires_at: "Rok za prijavu (opcionalno)"
+      description: "Opis (opcionalno)"
+      add_job: "Dodaj posao"
+      privacy_note: "Ovaj posao je privatan za tvoj nalog - za razliku od prikupljenih oglasa, drugi korisnici ove aplikacije ga neće vidjeti, kao ni kontakt podatke koje ovdje dodaš."
 
   companies:
     index:
@@ -162,8 +191,8 @@ bs:
       has_email: "Ima email"
       no_email: "Nema email"
       outreach_type: "Tip kontakta"
-      warm_option: "Topli - objavili posao"
-      cold_option: "Hladni - samo direktorij"
+      warm_option: "Ima objavljen posao"
+      cold_option: "Još nema objavljenog posla"
       industry_code: "Šifra djelatnosti"
       city: "Grad"
       city_placeholder: "npr. Sarajevo"
@@ -227,8 +256,8 @@ bs:
         one: "%{count} kompaniju"
         few: "%{count} kompanije"
         other: "%{count} kompanija"
-      dry_run_title: "Probni način rada je uključen."
-      dry_run_body: "Svaki email ispod će zapravo biti dostavljen na tvoj vlastiti inbox (%{email}), a ne prikazanom primaocu - sigurno za probno pokretanje."
+      dry_run_title: "Probni način"
+      dry_run_body: "Nijednoj kompaniji se još ništa ne šalje. Svaki email ispod ide na tvoj vlastiti inbox (%{email}) umjesto prikazanom primaocu, da provjeriš cijelu kampanju prije nego ikad pošalješ prave emailove."
       target_jobs_and_recipients: "Ciljani poslovi i primaoci"
       no_email_found: "Email nije pronađen"
       no_email_found_will_skip: "Email nije pronađen - biće preskočeno"
@@ -239,21 +268,33 @@ bs:
       launch_campaign: "Pokreni kampanju"
       stagger_notice: "Emailovi će biti raspoređeni sa razmakom od 5 minuta kako bi se izbjegli Google filteri za spam."
     index:
-      title: "Moj CRM"
+      title: "Moje prijave"
       subtitle: "Prati svaku prijavu od liste želja do ponude."
       save_jobs_from_the: "Sačuvaj poslove sa"
       to_get_started: "da počneš."
       nothing_here_yet: "Ovdje još ništa nema."
+      board_hint: 'Prevuci karticu u drugu kolonu da promijeniš status, ili otvori "Detalji" na bilo kojoj kartici za cijelu sliku.'
+      empty_states:
+        queued: "Ovdje još ništa nema. Prijave se pojavljuju ovdje čim ih pošalješ."
+        applied: "Ovdje još ništa nema. Čim pošalješ prijavu, automatski će se pojaviti ovdje."
+        interviewing: "Ovdje još ništa nema. Prijavu ćemo sami premjestiti ovdje ako otkrijemo odgovor u tvom Gmailu."
+        rejected: "Ovdje još ništa nema - nadajmo se da će tako i ostati."
+        offered: "Ovdje još ništa nema. Držimo fige!"
       jobs_selected: "odabranih poslova"
       prepare_campaign: "Pripremi kampanju"
     application_card:
       bosnia_and_herzegovina: "Bosna i Hercegovina"
       no_reply_follow_up: "Nema odgovora - vrijedi poslati podsjetnik"
       apply_individually: "Prijavi se"
+      cancel_send: "Otkaži"
+      cancel_send_confirm: "Otkazati ovo slanje? Vratiće se na tvoju listu želja i neće se računati u današnji limit."
+      move_to: "Premjesti u…"
       details: "Detalji"
     show:
-      back_to_crm: "Nazad na CRM"
+      back_to_crm: "Nazad na Moje prijave"
       send_follow_up: "Pošalji podsjetnik"
+      cancel_send: "Otkaži slanje"
+      cancel_send_confirm: "Otkazati ovo slanje? Vratiće se na tvoju listu želja i neće se računati u današnji limit."
       no_reply_in_days:
         one: "Nema odgovora više od %{count} dan."
         few: "Nema odgovora više od %{count} dana."
@@ -268,6 +309,9 @@ bs:
       rejection_reason: "Razlog odbijanja"
       rejection_reason_placeholder: "npr. Pozicija popunjena interno"
       save_details: "Sačuvaj detalje"
+      sent_email:
+        title: "Šta smo zapravo poslali"
+        sent_ago: "Poslano prije %{time} putem Gmaila"
       timeline: "Vremenska linija"
       add_a_note: "Dodaj bilješku..."
       add: "Dodaj"
@@ -296,7 +340,7 @@ bs:
 
   resumes:
     index:
-      title: "Biblioteka dokumenata"
+      title: "Moji dokumenti"
       subtitle: "Upravljaj svojim CV-jevima i motivacionim pismima za automatske kampanje."
       upload_new_resume: "Otpremi novi CV"
       upload_hint: "Molimo otpremi svoj CV u PDF formatu. Koristićemo ga za prijavu na poslove u tvoje ime."
@@ -358,7 +402,7 @@ bs:
 
   user_preferences:
     edit:
-      title: "Postavke radara"
+      title: "Obavještenja o poslovima"
       job_keywords: "Ključne riječi za posao (odvojene zarezom)"
       keywords_placeholder: "npr. Ruby, React, Marketing, Menadžer"
       keywords_hint: "Naš AI i pretraživač će ti prikazivati samo poslove koji odgovaraju ovim riječima."
@@ -367,6 +411,7 @@ bs:
       enable_daily_radar_email: "Uključi dnevni radar email"
       daily_summary_hint: "Primaj dnevni sažetak u 8:00 sa novim poslovima koji odgovaraju tvojim ključnim riječima."
       save_radar_settings: "Sačuvaj postavke radara"
+      help_tips_title: "Savjeti"
 
   flash:
     resumes:
@@ -378,8 +423,10 @@ bs:
       updated: "Predložak uspješno ažuriran."
       deleted: "Predložak obrisan."
     applications:
-      added_to_wishlist: "%{job} dodan na tvoju CRM listu želja!"
-      removed_from_crm: "Uklonjeno iz CRM-a."
+      added_to_wishlist: "%{job} dodan na tvoju listu želja!"
+      removed_from_crm: "Uklonjeno iz tvojih prijava."
+      send_canceled: "Slanje otkazano - vraćeno na tvoju listu želja."
+      cancel_too_late: "Prekasno za otkazivanje - više nije u redu za slanje."
       sending_disabled: "Slanje je trenutno onemogućeno za cijelu aplikaciju - ništa nije poslano u red za slanje."
       select_template_and_resume: "Molimo odaberi i predložak i CV."
       no_contact_email: "%{job} nema poznat kontakt email, a probni način rada je isključen - nema kome poslati ovo."
@@ -405,6 +452,9 @@ bs:
       google_login_failed: "Nešto je pošlo po zlu s Google prijavom."
 
   activerecord:
+    attributes:
+      job:
+        company_name: "Kompanija"
     errors:
       models:
         user:
