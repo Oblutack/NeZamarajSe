@@ -30,4 +30,18 @@ class Job < ApplicationRecord
   # every controller reading Job outside a user's own applications must
   # filter through this.
   scope :visible_to, ->(user) { where(added_by_id: nil).or(where(added_by_id: user.id)) }
+
+  # How many of the user's own radar keywords show up in this posting's
+  # title/description - a plain substring count, not a ranked search
+  # relevance score. Deliberately reuses whatever's already in `description`
+  # as-is (a freshly-scraped job's placeholder text, or blank for a manual
+  # entry with none written) rather than treating that as a special case -
+  # the score just improves on its own once AI analysis fills in the real
+  # text, same job either way.
+  def keyword_match_count(keywords)
+    return 0 if keywords.blank?
+
+    haystack = "#{title} #{description}".downcase
+    keywords.count { |keyword| haystack.include?(keyword.downcase) }
+  end
 end

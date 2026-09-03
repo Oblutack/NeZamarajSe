@@ -142,6 +142,33 @@ class JobsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Posted on 2 boards/, response.body)
   end
 
+  test "index shows a keyword match badge based on the user's radar keywords" do
+    users(:one).user_preference.update!(keywords: "Ruby, React, Python")
+    jobs(:one).update!(title: "Senior Ruby Developer", description: "You'll write Ruby and React.")
+
+    get jobs_url, params: { q: jobs(:one).title }
+
+    assert_match(/2\/3 keywords match/, response.body)
+  end
+
+  test "show shows a keyword match badge based on the user's radar keywords" do
+    users(:one).user_preference.update!(keywords: "Ruby, React, Python")
+    job = jobs(:one)
+    job.update!(title: "Senior Ruby Developer", description: "You'll write Ruby and React.")
+
+    get job_url(job)
+
+    assert_match(/2\/3 keywords match/, response.body)
+  end
+
+  test "no keyword match badge when the user has no radar keywords set" do
+    users(:one).user_preference.update!(keywords: "")
+
+    get job_url(jobs(:one))
+
+    assert_no_match(/keywords match/, response.body)
+  end
+
   test "should get new" do
     get new_job_url
     assert_response :success

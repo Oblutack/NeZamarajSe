@@ -70,4 +70,17 @@ class JobTest < ActiveSupport::TestCase
     job.update!(expires_at: 30.days.from_now)
     assert_not_includes Job.expiring_soon, job
   end
+
+  test "keyword_match_count counts case-insensitive matches across title and description" do
+    job = jobs(:one)
+    job.update!(title: "Senior Ruby Developer", description: "We use React on the frontend.")
+
+    assert_equal 2, job.keyword_match_count(%w[ruby react python])
+  end
+
+  test "keyword_match_count is 0 with no keywords" do
+    job = jobs(:one)
+    assert_equal 0, job.keyword_match_count([])
+    assert_equal 0, job.keyword_match_count(nil)
+  end
 end

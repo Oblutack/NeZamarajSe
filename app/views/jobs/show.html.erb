@@ -40,6 +40,12 @@
         <%= t(".private_to_you") %>
       </span>
     <% end %>
+    <% if @radar_keywords.present? %>
+      <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[11.5px] font-semibold rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400" title="<%= t(".keyword_match_title", keywords: @radar_keywords.join(", ")) %>">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+        <%= t(".keyword_match", matched: @job.keyword_match_count(@radar_keywords), total: @radar_keywords.size) %>
+      </span>
+    <% end %>
   </div>
 
   <% if @job.job_sources.any? %>

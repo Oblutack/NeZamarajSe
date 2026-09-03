@@ -50,11 +50,13 @@ class JobsController < ApplicationController
 
     @locations = Job.visible_to(current_user).distinct.where.not(location: [ nil, "" ]).order(:location).pluck(:location)
     @sources = JobSource.distinct.order(:source_name).pluck(:source_name)
+    @radar_keywords = preference&.keyword_array
   end
 
   def show
     @job = Job.visible_to(current_user).includes(:company, job_sources: []).find(params[:id])
     @saved = current_user.applications.exists?(job_id: @job.id)
+    @radar_keywords = current_user.user_preference&.keyword_array
   end
 
   def new
