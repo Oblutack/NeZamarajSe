@@ -141,4 +141,84 @@ class JobsControllerTest < ActionDispatch::IntegrationTest
     assert_match job.description, response.body
     assert_match(/Posted on 2 boards/, response.body)
   end
+
+  test "should get new" do
+    get new_job_url
+    assert_response :success
+  end
+
+  test "create adds a manually-entered job to the user's wishlist" do
+    assert_difference([ "Job.count", "Application.count" ], 1) do
+      post jobs_url, params: {
+        job: {
+          company_name: "Newco d.o.o.",
+          title: "Found on LinkedIn",
+          location: "Mostar"
+        }
+      }
+    end
+
+    job = Job.order(:created_at).last
+    assert_equal "Newco d.o.o.", job.company.name
+    assert_equal users(:one), job.added_by
+    assert users(:one).applications.find_by(job: job).wishlist?
+    assert_redirected_to crm_path
+  end
+
+  test "create reuses an existing company by name instead of duplicating it" do
+    existing = companies(:one)
+
+    assert_no_difference("Company.count") do
+      post jobs_url, params: { job: { company_name: existing.name, title: "Another Role At The Same Place" } }
+    end
+
+    assert_equal existing, Job.order(:created_at).last.company
+  end
+
+  test "create requires a company name" do
+    assert_no_difference("Job.count") do
+      post jobs_url, params: { job: { title: "No Company Given" } }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "li", text: /Company/
+  end
+
+  test "create requires a title" do
+    assert_no_difference("Job.count") do
+      post jobs_url, params: { job: { company_name: "Some Co" } }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "create enqueues AI analysis only when a url is given and no description was written" do
+    assert_enqueued_with(job: AnalyzeJob) do
+      post jobs_url, params: { job: { company_name: "Newco", title: "With URL", url: "https://example.com/job" } }
+    end
+  end
+
+  test "create does not enqueue AI analysis when the user already wrote a description" do
+    assert_no_enqueued_jobs(only: AnalyzeJob) do
+      post jobs_url, params: {
+        job: { company_name: "Newco", title: "With URL And Description", url: "https://example.com/job", description: "My own words." }
+      }
+    end
+  end
+
+  test "create does not enqueue AI analysis when there is no url" do
+    assert_no_enqueued_jobs(only: AnalyzeJob) do
+      post jobs_url, params: { job: { company_name: "Newco", title: "No URL" } }
+    end
+  end
+
+  test "a manually-added job is private to whoever added it" do
+    other_job = Job.create!(company: companies(:one), title: "Someone Else's Lead", added_by: users(:two))
+
+    get jobs_url
+    assert_no_match(/#{Regexp.escape(other_job.title)}/, response.body)
+
+    get job_url(other_job)
+    assert_response :not_found
+  end
 end

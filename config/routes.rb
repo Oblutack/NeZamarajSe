@@ -19,7 +19,7 @@ Rails.application.routes.draw do
   resource :user_preference, only: [ :edit, :update ]
 
   # --- PHASE 4 ROUTES (The Job Market & CRM) ---
-  resources :jobs, only: [ :index, :show ]
+  resources :jobs, only: [ :index, :show, :new, :create ]
   resources :companies, only: [ :index, :show ] do
     member do
       get :compose_outreach

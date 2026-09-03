@@ -1,0 +1,67 @@
+<!-- app/views/jobs/new.html.erb -->
+<div class="max-w-2xl mx-auto py-8">
+  <%= link_to "&larr; #{t("jobs.show.back_to_job_market")}".html_safe, jobs_path, class: "text-[12.5px] font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100" %>
+
+  <h1 class="mt-3 text-[22px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= t(".title") %></h1>
+  <p class="mt-1.5 mb-6 text-[13.5px] text-zinc-500 dark:text-zinc-400"><%= t(".subtitle") %></p>
+
+  <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
+    <%= form_with model: @job, url: jobs_path, class: "space-y-5" do |f| %>
+      <% if @job.errors.any? %>
+        <div class="border border-red-200 bg-red-50 text-red-700 text-[13px] p-3.5 rounded-md dark:border-red-900 dark:bg-red-950/40 dark:text-red-400">
+          <ul class="list-disc pl-5">
+            <% @job.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".company_name") %></label>
+          <%= f.text_field :company_name, placeholder: t(".company_name_placeholder"), class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border placeholder:text-zinc-400 dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400 dark:placeholder:text-zinc-600" %>
+        </div>
+        <div>
+          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".job_title") %></label>
+          <%= f.text_field :title, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".url") %></label>
+        <%= f.url_field :url, placeholder: t(".url_placeholder"), class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border placeholder:text-zinc-400 dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400 dark:placeholder:text-zinc-600" %>
+        <p class="text-[11.5px] text-zinc-500 mt-1.5 dark:text-zinc-400"><%= t(".url_hint") %></p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".location") %></label>
+          <%= f.text_field :location, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+        </div>
+        <div>
+          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".expires_at") %></label>
+          <%= f.date_field :expires_at, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".hr_email") %></label>
+        <%= f.email_field :hr_email, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+        <p class="text-[11.5px] text-zinc-500 mt-1.5 dark:text-zinc-400"><%= t(".hr_email_hint") %></p>
+      </div>
+
+      <div>
+        <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".description") %></label>
+        <%= f.text_area :description, rows: 4, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+      </div>
+
+      <p class="text-[11.5px] text-zinc-400 dark:text-zinc-600"><%= t(".privacy_note") %></p>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+        <%= link_to t("shared.compose.cancel"), jobs_path, class: "bg-white py-2 px-4 border border-zinc-300 rounded-md text-[13px] font-semibold text-zinc-700 hover:bg-zinc-50 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800" %>
+        <%= f.submit t(".add_job"), class: "cursor-pointer inline-flex justify-center py-2.5 px-4 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
+      </div>
+    <% end %>
+  </div>
+</div>

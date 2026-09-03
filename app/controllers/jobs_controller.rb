@@ -9,7 +9,7 @@ class JobsController < ApplicationController
     @query = params[:q].to_s.strip
     preference = current_user.user_preference
 
-    @jobs = Job.includes(:company, :job_sources)
+    @jobs = Job.visible_to(current_user).includes(:company, :job_sources)
 
     if @query.present?
       # A one-off search overrides the radar's keyword filter for this
@@ -48,16 +48,56 @@ class JobsController < ApplicationController
 
     @pagy, @jobs = pagy(@jobs, items: 24)
 
-    @locations = Job.distinct.where.not(location: [ nil, "" ]).order(:location).pluck(:location)
+    @locations = Job.visible_to(current_user).distinct.where.not(location: [ nil, "" ]).order(:location).pluck(:location)
     @sources = JobSource.distinct.order(:source_name).pluck(:source_name)
   end
 
   def show
-    @job = Job.includes(:company, job_sources: []).find(params[:id])
+    @job = Job.visible_to(current_user).includes(:company, job_sources: []).find(params[:id])
     @saved = current_user.applications.exists?(job_id: @job.id)
   end
 
+  def new
+    @job = Job.new
+  end
+
+  def create
+    @job = Job.new(job_params)
+    @job.url = @job.url.presence
+    @job.added_by = current_user
+
+    if @job.company_name.blank?
+      @job.errors.add(:company_name, :blank)
+      render :new, status: :unprocessable_entity
+      return
+    end
+
+    ActiveRecord::Base.transaction do
+      @job.company = Company.find_or_create_by!(name: @job.company_name.strip)
+      @job.save!
+    end
+
+    # Straight onto the user's own board, wishlist status - the whole point
+    # of adding it by hand is to track it, same as saving a scraped one.
+    current_user.applications.find_or_create_by(job: @job) { |a| a.status = "wishlist" }
+
+    # Reuse the existing AI enrichment pipeline when there's a URL to fetch -
+    # but only if the user left the description blank. AiJobAnalyzerService
+    # unconditionally overwrites `description` with whatever it scrapes off
+    # the page (that's correct for a scraper's own placeholder text, but
+    # would silently clobber something the user deliberately typed here).
+    AnalyzeJob.perform_later(@job.id) if @job.url.present? && @job.description.blank?
+
+    redirect_to crm_path, notice: t("flash.applications.added_to_wishlist", job: @job.title)
+  rescue ActiveRecord::RecordInvalid
+    render :new, status: :unprocessable_entity
+  end
+
   private
+
+  def job_params
+    params.require(:job).permit(:title, :company_name, :url, :location, :hr_email, :description, :expires_at)
+  end
 
   def sort_jobs(scope, sort)
     case sort

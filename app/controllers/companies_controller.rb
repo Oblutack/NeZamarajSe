@@ -32,14 +32,26 @@ class CompaniesController < ApplicationController
     # SQL column in it, which Postgres rejects (see CompaniesController's
     # git history / ROADMAP.md Track C for the exact error this avoids).
     @pagy, companies_page = pagy(@companies)
-    @companies = companies_page.left_joins(:jobs).select("companies.*, COUNT(jobs.id) AS jobs_count").group("companies.id").to_a
+
+    # A plain left_joins(:jobs) would count every job under the company,
+    # including another user's private manually-added one (see Job.visible_to)
+    # - the count itself is a much smaller leak than showing the job outright,
+    # but "private" should mean private everywhere, not just on the job's own
+    # page. Same NULLS-still-a-match LEFT JOIN condition as Job.visible_to,
+    # written as raw SQL since a parameterized association scope can't be
+    # used inside a join/select like this.
+    jobs_join = ActiveRecord::Base.sanitize_sql_array([
+      "LEFT JOIN jobs ON jobs.company_id = companies.id AND (jobs.added_by_id IS NULL OR jobs.added_by_id = ?)",
+      current_user.id
+    ])
+    @companies = companies_page.joins(jobs_join).select("companies.*, COUNT(jobs.id) AS jobs_count").group("companies.id").to_a
 
     @industry_codes = Company.distinct.where.not(industry_code: [ nil, "" ]).order(:industry_code).pluck(:industry_code)
   end
 
   def show
     @company = Company.find(params[:id])
-    @jobs = @company.jobs.order(created_at: :desc)
+    @jobs = @company.jobs.visible_to(current_user).order(created_at: :desc)
   end
 
   def compose_outreach
