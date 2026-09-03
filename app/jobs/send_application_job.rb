@@ -5,6 +5,14 @@ class SendApplicationJob < ApplicationJob
 
   def perform(application_id, template_id, resume_blob_id, locale = I18n.default_locale.to_s)
     application = Application.find(application_id)
+
+    # The user may have canceled this queued send (see
+    # ApplicationsController#cancel) any time between enqueueing and this
+    # job actually running - bulk campaigns stagger up to 45 minutes out, so
+    # that window is real. `.find` above always reads current DB state, so
+    # this is a genuine re-check, not a stale in-memory flag.
+    return unless application.queued?
+
     user = application.user
     job = application.job
 

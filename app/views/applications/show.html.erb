@@ -13,6 +13,8 @@
 
     <% if @application.applied? %>
       <%= link_to t(".send_follow_up"), compose_follow_up_application_path(@application), class: "flex-shrink-0 inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
+    <% elsif @application.queued? %>
+      <%= link_to t(".cancel_send"), cancel_application_path(@application), data: { turbo_method: :post, turbo_confirm: t(".cancel_send_confirm") }, class: "cursor-pointer flex-shrink-0 inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-red-700 border border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-900 dark:hover:bg-red-950/40" %>
     <% end %>
   </div>
 
@@ -47,6 +49,29 @@
       </div>
     <% end %>
   </div>
+
+  <% if @application.sent_recipient.present? %>
+    <div class="bg-white border border-zinc-200 rounded-lg p-6 mb-6 dark:bg-zinc-900 dark:border-zinc-800">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".sent_email.title") %></h2>
+        <span class="text-[11.5px] text-zinc-400 dark:text-zinc-600"><%= t(".sent_email.sent_ago", time: time_ago_in_words(@application.applied_at)) %></span>
+      </div>
+      <dl class="space-y-3 text-[13px]">
+        <div>
+          <dt class="text-zinc-500 dark:text-zinc-400"><%= t("shared.compose.to") %></dt>
+          <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100"><%= @application.sent_recipient %></dd>
+        </div>
+        <div>
+          <dt class="text-zinc-500 dark:text-zinc-400"><%= t("shared.compose.subject") %></dt>
+          <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100"><%= @application.sent_subject %></dd>
+        </div>
+        <div>
+          <dt class="text-zinc-500 dark:text-zinc-400"><%= t("shared.compose.body") %></dt>
+          <dd class="mt-1.5 whitespace-pre-wrap font-mono text-[12px] text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-md p-3 max-h-64 overflow-y-auto dark:text-zinc-300 dark:bg-zinc-800 dark:border-zinc-800"><%= @application.sent_body %></dd>
+        </div>
+      </dl>
+    </div>
+  <% end %>
 
   <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
     <h2 class="text-[13px] font-semibold text-zinc-700 mb-4 dark:text-zinc-300"><%= t(".timeline") %></h2>

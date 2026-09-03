@@ -15,6 +15,12 @@
           </span>
           <span class="text-[14.5px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50">NeZamarajSe</span>
         <% end %>
+
+        <% if user_signed_in? && Rails.application.config.dry_run_emails %>
+          <span class="ml-2.5 inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-400" title="<%= t("navbar.test_mode_tooltip") %>">
+            <%= t("navbar.test_mode_badge") %>
+          </span>
+        <% end %>
       </div>
 
       <!-- Right side navigation -->

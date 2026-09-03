@@ -55,6 +55,18 @@ class SendApplicationJobTest < ActiveJob::TestCase
     assert_equal "gmail-thread-456", @application.gmail_thread_id
   end
 
+  test "does nothing if the application was canceled before the job ran" do
+    @application.update!(status: "wishlist", queued_at: nil)
+    sender = fake_sender
+
+    stub_class_method(GmailSenderService, :new, sender) do
+      SendApplicationJob.perform_now(@application.id, @template.id, @blob_id)
+    end
+
+    assert_nil sender.raw_sent
+    assert @application.reload.wishlist?
+  end
+
   test "leaves the application queued if the Gmail send fails" do
     stub_class_method(GmailSenderService, :new, ->(*) { raise "Failed to refresh token" }) do
       assert_raises(RuntimeError) do

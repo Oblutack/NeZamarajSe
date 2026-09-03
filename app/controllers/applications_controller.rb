@@ -17,7 +17,7 @@ class ApplicationsController < ApplicationController
   end
 
   def create
-    @job = Job.find(params[:job_id])
+    @job = Job.visible_to(current_user).find(params[:job_id])
     @application = current_user.applications.find_or_create_by(job: @job) do |app|
       app.status = "wishlist"
     end
@@ -104,6 +104,24 @@ class ApplicationsController < ApplicationController
     SendApplicationJob.perform_later(@application.id, template_id, resume_blob_id, I18n.locale.to_s)
 
     redirect_to crm_path, notice: t("flash.applications.queued")
+  end
+
+  # A queued send (single or, more importantly, a staggered bulk campaign -
+  # up to 45 minutes between the first and last email) can be called back
+  # right up until Gmail actually confirms it. SendApplicationJob re-checks
+  # status before ever sending, so this is a real cancel, not just a UI
+  # illusion. Reverting to "wishlist" mirrors the only status dispatch ever
+  # starts from (see application_card's own "wishlist only" Apply button),
+  # and clearing queued_at hands back the daily allowance it had reserved.
+  def cancel
+    @application = current_user.applications.find(params[:id])
+
+    if @application.queued?
+      @application.update!(status: "wishlist", queued_at: nil)
+      redirect_back fallback_location: crm_path, notice: t("flash.applications.send_canceled")
+    else
+      redirect_back fallback_location: crm_path, alert: t("flash.applications.cancel_too_late")
+    end
   end
 
   def compose_follow_up
