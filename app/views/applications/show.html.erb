@@ -39,6 +39,9 @@
       <div>
         <label class="block text-[12px] font-semibold text-zinc-500 mb-1 dark:text-zinc-400"><%= t(".interview_date") %></label>
         <%= f.datetime_field :interview_date, class: "block w-full rounded-md border-zinc-300 text-[13px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+        <% if @application.interview_date.present? %>
+          <%= link_to t(".add_to_calendar"), interview_ics_application_path(@application), class: "mt-1.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50" %>
+        <% end %>
       </div>
       <div>
         <label class="block text-[12px] font-semibold text-zinc-500 mb-1 dark:text-zinc-400"><%= t(".rejection_reason") %></label>
@@ -57,6 +60,12 @@
         <span class="text-[11.5px] text-zinc-400 dark:text-zinc-600"><%= t(".sent_email.sent_ago", time: time_ago_in_words(@application.applied_at)) %></span>
       </div>
       <dl class="space-y-3 text-[13px]">
+        <% if @application.cover_letter_template.present? %>
+          <div>
+            <dt class="text-zinc-500 dark:text-zinc-400"><%= t(".sent_email.template") %></dt>
+            <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100"><%= @application.cover_letter_template.name %></dd>
+          </div>
+        <% end %>
         <div>
           <dt class="text-zinc-500 dark:text-zinc-400"><%= t("shared.compose.to") %></dt>
           <dd class="font-medium text-zinc-900 mt-0.5 dark:text-zinc-100"><%= @application.sent_recipient %></dd>

@@ -2,6 +2,7 @@
 class Application < ApplicationRecord
   belongs_to :user
   belongs_to :job
+  belongs_to :cover_letter_template, optional: true
   has_many :application_events, dependent: :destroy
 
   # The Rails 8 Way to handle state machines / CRM lanes
@@ -37,7 +38,37 @@ class Application < ApplicationRecord
     last_contact.present? && last_contact <= Rails.application.config.follow_up_after_days.days.ago
   end
 
+  # A plain RFC 5545 .ics file, hand-built rather than pulling in a gem for
+  # one event - a 1-hour block starting at interview_date, since nothing on
+  # the form captures an actual duration. CRLF line endings are required by
+  # the spec, not just style.
+  def interview_ics
+    return nil if interview_date.blank?
+
+    start_time = interview_date.utc
+    end_time = start_time + 1.hour
+
+    <<~ICS.gsub("\n", "\r\n")
+      BEGIN:VCALENDAR
+      VERSION:2.0
+      PRODID:-//NeZamarajSe//Interview//EN
+      BEGIN:VEVENT
+      UID:application-#{id}@nezamarajse.local
+      DTSTAMP:#{Time.current.utc.strftime('%Y%m%dT%H%M%SZ')}
+      DTSTART:#{start_time.strftime('%Y%m%dT%H%M%SZ')}
+      DTEND:#{end_time.strftime('%Y%m%dT%H%M%SZ')}
+      SUMMARY:#{ics_escape("Interview: #{job.title} at #{job.company.name}")}
+      DESCRIPTION:#{ics_escape("Interview for the #{job.title} position at #{job.company.name}.")}
+      END:VEVENT
+      END:VCALENDAR
+    ICS
+  end
+
   private
+
+  def ics_escape(text)
+    text.to_s.gsub("\\", "\\\\\\\\").gsub(",", "\\,").gsub(";", "\\;")
+  end
 
   def broadcast_status_update
     Turbo::StreamsChannel.broadcast_replace_to(

@@ -41,6 +41,20 @@ class ApplicationsController < ApplicationController
     end
   end
 
+  def interview_ics
+    @application = current_user.applications.find(params[:id])
+
+    if @application.interview_date.blank?
+      redirect_to application_path(@application), alert: t("flash.applications.no_interview_date")
+      return
+    end
+
+    send_data @application.interview_ics,
+      filename: "interview-#{@application.job.company.name.parameterize}.ics",
+      type: "text/calendar; charset=utf-8",
+      disposition: "attachment"
+  end
+
   def add_note
     @application = current_user.applications.find(params[:id])
     body = params[:body].to_s.strip

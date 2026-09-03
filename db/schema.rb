@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_03_061959) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_03_071914) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -66,6 +66,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_061959) do
   create_table "applications", force: :cascade do |t|
     t.datetime "applied_at"
     t.string "contact_person"
+    t.bigint "cover_letter_template_id"
     t.datetime "created_at", null: false
     t.string "gmail_message_id"
     t.string "gmail_thread_id"
@@ -81,6 +82,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_061959) do
     t.string "status", default: "wishlist", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["cover_letter_template_id"], name: "index_applications_on_cover_letter_template_id"
     t.index ["job_id"], name: "index_applications_on_job_id"
     t.index ["queued_at"], name: "index_applications_on_queued_at"
     t.index ["status"], name: "index_applications_on_status"
@@ -206,6 +208,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_061959) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "application_events", "applications"
+  add_foreign_key "applications", "cover_letter_templates", on_delete: :nullify
   add_foreign_key "applications", "jobs"
   add_foreign_key "applications", "users"
   add_foreign_key "companies", "users", column: "last_contacted_by_id"

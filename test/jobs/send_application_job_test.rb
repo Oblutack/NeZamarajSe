@@ -53,6 +53,7 @@ class SendApplicationJobTest < ActiveJob::TestCase
     assert_equal @template.render_content(@application.job), @application.sent_body
     assert_equal "gmail-msg-456", @application.gmail_message_id
     assert_equal "gmail-thread-456", @application.gmail_thread_id
+    assert_equal @template, @application.cover_letter_template
   end
 
   test "does nothing if the application was canceled before the job ran" do

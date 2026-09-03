@@ -148,6 +148,8 @@ bs:
       saved_in_crm: "Sačuvano u Mojim prijavama"
       save_to_wishlist: "Sačuvaj u listu želja"
       add_a_job: "Dodaj posao"
+      keyword_match: "%{matched}/%{total} ključnih riječi odgovara"
+      keyword_match_title: "Tvoje ključne riječi za obavještenja: %{keywords}"
     show:
       back_to_job_market: "Nazad na tržište poslova"
       bosnia_and_herzegovina: "Bosna i Hercegovina"
@@ -157,6 +159,8 @@ bs:
       scraped_ago: "Prikupljeno prije %{time}"
       added_ago: "Dodano prije %{time}"
       private_to_you: "Privatno za tebe - drugi korisnici ove aplikacije ne mogu vidjeti ovaj posao."
+      keyword_match: "%{matched}/%{total} ključnih riječi odgovara"
+      keyword_match_title: "Tvoje ključne riječi za obavještenja: %{keywords}"
       posted_on_boards:
         one: "Objavljeno na %{count} oglasnoj ploči"
         few: "Objavljeno na %{count} oglasne ploče"
@@ -306,11 +310,13 @@ bs:
       salary: "Plata"
       salary_placeholder: "npr. 2.500 KM/mjesečno"
       interview_date: "Datum intervjua"
+      add_to_calendar: "Dodaj u kalendar"
       rejection_reason: "Razlog odbijanja"
       rejection_reason_placeholder: "npr. Pozicija popunjena interno"
       save_details: "Sačuvaj detalje"
       sent_email:
         title: "Šta smo zapravo poslali"
+        template: "Korišteno motivaciono pismo"
         sent_ago: "Poslano prije %{time} putem Gmaila"
       timeline: "Vremenska linija"
       add_a_note: "Dodaj bilješku..."
@@ -327,6 +333,8 @@ bs:
       delete_confirm: "Obrisati ovaj predložak?"
       no_templates_yet: "Još nema predložaka"
       no_templates_description: "Kreiraj predložak motivacionog pisma s pametnim oznakama poput {{company_name}} da počneš slati automatske prijave."
+      not_sent_yet: "Još nije poslano"
+      reply_stats: "%{sent} poslano · %{replies} odgovora (%{percent}%)"
     new:
       title: "Novi predložak motivacionog pisma"
     edit:
@@ -427,6 +435,7 @@ bs:
       removed_from_crm: "Uklonjeno iz tvojih prijava."
       send_canceled: "Slanje otkazano - vraćeno na tvoju listu želja."
       cancel_too_late: "Prekasno za otkazivanje - više nije u redu za slanje."
+      no_interview_date: "Prvo postavi datum intervjua."
       sending_disabled: "Slanje je trenutno onemogućeno za cijelu aplikaciju - ništa nije poslano u red za slanje."
       select_template_and_resume: "Molimo odaberi i predložak i CV."
       no_contact_email: "%{job} nema poznat kontakt email, a probni način rada je isključen - nema kome poslati ovo."

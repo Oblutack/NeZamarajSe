@@ -55,4 +55,43 @@ class CoverLetterTemplateTest < ActiveSupport::TestCase
     assert_not_includes rendered, "{{job_title}}"
     assert_not_includes rendered, "{{location}}"
   end
+
+  test "sent_count and reply_count only count applications actually sent with this template" do
+    user = users(:one)
+    template = cover_letter_templates(:one)
+    other_template = CoverLetterTemplate.create!(user: user, name: "Other Template", body: "Body")
+
+    job_a = Job.create!(company: companies(:one), title: "Role A", url: "https://jobs.example.com/role-a")
+    job_b = Job.create!(company: companies(:one), title: "Role B", url: "https://jobs.example.com/role-b")
+    job_c = Job.create!(company: companies(:one), title: "Role C", url: "https://jobs.example.com/role-c")
+
+    app_a = user.applications.create!(job: job_a, status: "applied", applied_at: Time.current, cover_letter_template: template)
+    user.applications.create!(job: job_b, status: "applied", applied_at: Time.current, cover_letter_template: template)
+    user.applications.create!(job: job_c, status: "applied", applied_at: Time.current, cover_letter_template: other_template)
+
+    app_a.application_events.create!(event_type: "reply_detected")
+
+    assert_equal 2, template.sent_count
+    assert_equal 1, template.reply_count
+    assert_equal 1, other_template.sent_count
+    assert_equal 0, other_template.reply_count
+  end
+
+  test "sent_count and reply_count ignore applications not yet sent with this template" do
+    template = cover_letter_templates(:one)
+
+    assert_equal 0, template.sent_count
+    assert_equal 0, template.reply_count
+  end
+
+  test "deleting a template nullifies cover_letter_template_id rather than removing the application" do
+    user = users(:one)
+    template = CoverLetterTemplate.create!(user: user, name: "Disposable", body: "Body")
+    job = Job.create!(company: companies(:one), title: "Role D", url: "https://jobs.example.com/role-d")
+    application = user.applications.create!(job: job, status: "applied", applied_at: Time.current, cover_letter_template: template)
+
+    template.destroy
+
+    assert_nil application.reload.cover_letter_template_id
+  end
 end

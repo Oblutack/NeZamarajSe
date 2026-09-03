@@ -88,4 +88,34 @@ class ApplicationTest < ActiveSupport::TestCase
       assert_not application.needs_follow_up?
     end
   end
+
+  test "interview_ics is nil without an interview date" do
+    application = applications(:one)
+    application.update!(interview_date: nil)
+
+    assert_nil application.interview_ics
+  end
+
+  test "interview_ics renders a valid VEVENT with the job title and company" do
+    application = applications(:one)
+    application.update!(interview_date: Time.zone.parse("2026-10-05 14:00"))
+
+    ics = application.interview_ics
+
+    assert_match(/\ABEGIN:VCALENDAR\r\n/, ics)
+    assert_match(/END:VCALENDAR\r\n\z/, ics)
+    assert_match "SUMMARY:Interview: #{application.job.title} at #{application.job.company.name}", ics
+    assert_match "DTSTART:20261005T140000Z", ics
+    assert_match "DTEND:20261005T150000Z", ics
+  end
+
+  test "interview_ics escapes commas and semicolons in the summary" do
+    application = applications(:one)
+    application.job.company.update!(name: "Vertex, Solutions; d.o.o.")
+    application.update!(interview_date: 1.week.from_now)
+
+    ics = application.interview_ics
+
+    assert_match "Vertex\\, Solutions\\; d.o.o.", ics
+  end
 end

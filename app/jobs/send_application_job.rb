@@ -43,7 +43,8 @@ class SendApplicationJob < ApplicationJob
       sent_subject: mail.subject,
       sent_body: template.render_content(job),
       gmail_message_id: response.id,
-      gmail_thread_id: response.thread_id
+      gmail_thread_id: response.thread_id,
+      cover_letter_template: template
     )
 
   rescue StandardError => e

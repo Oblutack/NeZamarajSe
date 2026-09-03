@@ -33,6 +33,7 @@ Rails.application.routes.draw do
       get :compose
       post :dispatch_email
       post :cancel
+      get :interview_ics
       post :add_note
       get :compose_follow_up
       post :dispatch_follow_up

@@ -274,6 +274,25 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
     assert @application.reload.applied?
   end
 
+  test "interview_ics downloads a calendar file when an interview date is set" do
+    @application.update!(interview_date: 3.days.from_now)
+
+    get interview_ics_application_url(@application)
+
+    assert_response :success
+    assert_equal "text/calendar", response.media_type
+    assert_match "BEGIN:VEVENT", response.body
+    assert_match @application.job.title, response.body
+  end
+
+  test "interview_ics refuses without an interview date" do
+    @application.update!(interview_date: nil)
+
+    get interview_ics_application_url(@application)
+
+    assert_redirected_to application_path(@application)
+  end
+
   test "should get show" do
     get application_url(@application)
     assert_response :success
