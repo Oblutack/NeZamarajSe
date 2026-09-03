@@ -32,6 +32,7 @@ Rails.application.routes.draw do
     member do
       get :compose
       post :dispatch_email
+      post :cancel
       post :add_note
       get :compose_follow_up
       post :dispatch_follow_up
