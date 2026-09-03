@@ -13,6 +13,30 @@ class JobTest < ActiveSupport::TestCase
     assert_includes duplicate.errors[:url], "has already been taken"
   end
 
+  test "does not require a url - a manually-added job often has none" do
+    job = Job.new(company: companies(:one), title: "Found via LinkedIn")
+    assert job.valid?
+  end
+
+  test "allows more than one job with no url" do
+    Job.create!(company: companies(:one), title: "Manual Role One")
+    second = Job.new(company: companies(:one), title: "Manual Role Two")
+
+    assert second.valid?
+  end
+
+  test "visible_to includes every scraped job and only the current user's own manual jobs" do
+    scraped = jobs(:one)
+    mine = Job.create!(company: companies(:one), title: "Mine", added_by: users(:one))
+    theirs = Job.create!(company: companies(:one), title: "Theirs", added_by: users(:two))
+
+    visible = Job.visible_to(users(:one))
+
+    assert_includes visible, scraped
+    assert_includes visible, mine
+    assert_not_includes visible, theirs
+  end
+
   test "destroying a job destroys its applications" do
     application = applications(:one)
     job = application.job

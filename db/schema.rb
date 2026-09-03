@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_02_154112) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_03_053647) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -136,6 +136,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_154112) do
   end
 
   create_table "jobs", force: :cascade do |t|
+    t.bigint "added_by_id"
     t.bigint "company_id", null: false
     t.datetime "created_at", null: false
     t.text "description"
@@ -145,7 +146,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_154112) do
     t.string "location"
     t.string "title", null: false
     t.datetime "updated_at", null: false
-    t.string "url", null: false
+    t.string "url"
+    t.index ["added_by_id"], name: "index_jobs_on_added_by_id"
     t.index ["company_id"], name: "index_jobs_on_company_id"
     t.index ["external_id"], name: "index_jobs_on_external_id", unique: true
     t.index ["url"], name: "index_jobs_on_url", unique: true
@@ -205,5 +207,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_154112) do
   add_foreign_key "hunter_lookups", "companies"
   add_foreign_key "job_sources", "jobs"
   add_foreign_key "jobs", "companies"
+  add_foreign_key "jobs", "users", column: "added_by_id"
   add_foreign_key "user_preferences", "users"
 end
