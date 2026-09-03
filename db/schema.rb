@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_03_053647) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_03_061959) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -60,6 +60,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_053647) do
     t.string "from_status"
     t.string "to_status"
     t.index ["application_id"], name: "index_application_events_on_application_id"
+    t.index ["created_at"], name: "index_application_events_on_created_at"
   end
 
   create_table "applications", force: :cascade do |t|
@@ -81,6 +82,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_053647) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["job_id"], name: "index_applications_on_job_id"
+    t.index ["queued_at"], name: "index_applications_on_queued_at"
+    t.index ["status"], name: "index_applications_on_status"
     t.index ["user_id", "job_id"], name: "index_applications_on_user_id_and_job_id", unique: true
     t.index ["user_id"], name: "index_applications_on_user_id"
   end
@@ -98,6 +101,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_053647) do
     t.string "primary_email"
     t.datetime "updated_at", null: false
     t.string "website"
+    t.index ["is_cold_outreach"], name: "index_companies_on_is_cold_outreach"
     t.index ["last_contacted_by_id"], name: "index_companies_on_last_contacted_by_id"
     t.index ["name"], name: "index_companies_on_name", unique: true
   end
@@ -149,6 +153,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_053647) do
     t.string "url"
     t.index ["added_by_id"], name: "index_jobs_on_added_by_id"
     t.index ["company_id"], name: "index_jobs_on_company_id"
+    t.index ["created_at"], name: "index_jobs_on_created_at"
+    t.index ["expires_at"], name: "index_jobs_on_expires_at"
     t.index ["external_id"], name: "index_jobs_on_external_id", unique: true
     t.index ["url"], name: "index_jobs_on_url", unique: true
   end
