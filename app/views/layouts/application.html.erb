@@ -18,7 +18,7 @@
         so the class persists on its own after this first runs; it only
         needs to fire again on an actual fresh load. See theme_controller.js
         for the toggle button that flips this after load. %>
-    <script>
+    <script nonce="<%= content_security_policy_nonce %>">
       (function() {
         var theme = localStorage.getItem("theme");
         if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
@@ -68,7 +68,7 @@
             <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <p class="text-[13px] font-medium"><%= notice %></p>
           </div>
-          <button data-action="click->flash#dismiss" class="text-zinc-400 hover:text-zinc-700 transition dark:text-zinc-600 dark:hover:text-zinc-300">
+          <button data-action="click->flash#dismiss" aria-label="<%= t("shared.hint.dismiss") %>" class="text-zinc-400 hover:text-zinc-700 transition dark:text-zinc-600 dark:hover:text-zinc-300">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
@@ -81,7 +81,7 @@
             <svg class="w-4 h-4 text-red-500 flex-shrink-0 dark:text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
             <p class="text-[13px] font-medium"><%= alert %></p>
           </div>
-          <button data-action="click->flash#dismiss" class="text-red-400 hover:text-red-700 transition dark:text-red-400 dark:hover:text-red-400">
+          <button data-action="click->flash#dismiss" aria-label="<%= t("shared.hint.dismiss") %>" class="text-red-400 hover:text-red-700 transition dark:text-red-400 dark:hover:text-red-400">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>

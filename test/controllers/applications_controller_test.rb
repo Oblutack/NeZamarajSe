@@ -29,6 +29,41 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "index offers a non-drag 'Move to' menu with every other status as a target" do
+    get crm_url
+
+    assert_select "button[data-action='click->dropdown#toggle']", text: "" do
+      # icon-only trigger - accessible name comes from aria-label, not text
+    end
+    assert_select "button[aria-label='Move to…']"
+    card = "##{ActionView::RecordIdentifier.dom_id(@application)}"
+    (Application.statuses.keys - [ @application.status ]).each do |status|
+      assert_select "#{card} button[data-action='click->drag#moveTo click->dropdown#close'][data-id='#{@application.id}'][data-status='#{status}']"
+    end
+    assert_select "#{card} button[data-status='#{@application.status}']", count: 0
+  end
+
+  test "index renders one shared move-form, not one per application" do
+    second_job = Job.create!(company: companies(:one), title: "Second Wishlist Job", url: "https://jobs.example.com/second-wishlist-job")
+    @user.applications.create!(job: second_job, status: "wishlist")
+
+    get crm_url
+
+    assert_select "form#move-form", count: 1
+    assert_select "form[id^='move-form-']", count: 0
+  end
+
+  test "index marks each column's card list as an aria-live region" do
+    get crm_url
+    assert_select "div[aria-live='polite']", minimum: Application.statuses.keys.size
+  end
+
+  test "index renders the command palette dialog with dialog and listbox roles" do
+    get crm_url
+    assert_select "div[role='dialog'][aria-modal='true']"
+    assert_select "ul[role='listbox'] li[role='option']", minimum: 1
+  end
+
   test "index sorts each column by soonest deadline first, with no-deadline jobs last" do
     urgent_job = jobs(:two)
     urgent_job.update!(expires_at: 2.days.from_now)
@@ -40,6 +75,14 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
     urgent_position = response.body.index(urgent_job.title)
     no_deadline_position = response.body.index(@application.job.title)
     assert_operator urgent_position, :<, no_deadline_position
+  end
+
+  test "a flash notice's dismiss button has an accessible name" do
+    other_job = jobs(:two)
+    post applications_url, params: { job_id: other_job.id }
+    follow_redirect!
+
+    assert_select "button[data-action='click->flash#dismiss'][aria-label]"
   end
 
   test "should get create" do
@@ -213,10 +256,51 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil @application.reload.queued_at
   end
 
+  test "cancel moves a queued application back to wishlist and clears queued_at" do
+    @application.update!(status: "queued", queued_at: Time.current)
+
+    post cancel_application_url(@application)
+
+    @application.reload
+    assert @application.wishlist?
+    assert_nil @application.queued_at
+  end
+
+  test "cancel refuses once the application is no longer queued" do
+    @application.update!(status: "applied", applied_at: Time.current)
+
+    post cancel_application_url(@application)
+
+    assert @application.reload.applied?
+  end
+
   test "should get show" do
     get application_url(@application)
     assert_response :success
     assert_select "h1", text: @application.job.title
+  end
+
+  test "show renders what was actually sent once an application has been sent" do
+    @application.update!(
+      status: "applied",
+      applied_at: Time.current,
+      sent_recipient: "hr@realcompany.example",
+      sent_subject: "Application: #{@application.job.title}",
+      sent_body: "Dear team, ..."
+    )
+
+    get application_url(@application)
+
+    assert_select "dd", text: "hr@realcompany.example"
+    assert_select "dd", text: "Dear team, ..."
+  end
+
+  test "show does not render the sent email section before anything has been sent" do
+    assert_nil @application.sent_recipient
+
+    get application_url(@application)
+
+    assert_no_match(/What we actually sent/, response.body)
   end
 
   test "updating status redirects to the CRM board" do

@@ -1,5 +1,5 @@
 <%= turbo_frame_tag app do %>
-  <div class="bg-white p-3.5 rounded-lg border border-zinc-200 cursor-grab active:cursor-grabbing hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition relative dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700" draggable="true" data-controller="drag" data-action="dragstart->drag#dragStart dragend->drag#dragEnd" data-id="<%= app.id %>">
+  <div class="bg-white p-3.5 rounded-lg border border-zinc-200 cursor-grab active:cursor-grabbing hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition relative dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700" draggable="true" data-controller="drag dropdown" data-action="dragstart->drag#dragStart dragend->drag#dragEnd" data-id="<%= app.id %>">
 
     <% if app.status == "wishlist" %>
       <div class="absolute top-3.5 right-3.5">
@@ -31,10 +31,36 @@
     <div class="mt-2.5 pt-2.5 border-t border-zinc-100 flex items-center justify-between dark:border-zinc-800">
       <% if app.status == "wishlist" %>
         <%= link_to t(".apply_individually"), compose_application_path(app), data: { turbo: false }, class: "text-[11.5px] font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50" %>
+      <% elsif app.status == "queued" %>
+        <%# link_to + turbo_method, not button_to - this card renders inside
+            the CRM board's own outer <form> (bulk campaign selection), and
+            HTML forbids nesting a <form> inside another (see the hidden
+            drag-and-drop forms rendered outside that form in
+            applications/index.html.erb for the same reason). %>
+        <%= link_to t(".cancel_send"), cancel_application_path(app), data: { turbo_method: :post, turbo_confirm: t(".cancel_send_confirm") }, class: "cursor-pointer text-[11.5px] font-semibold text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" %>
       <% else %>
         <span></span>
       <% end %>
-      <%= link_to t(".details"), application_path(app), data: { turbo: false }, class: "text-[11.5px] font-semibold text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50" %>
+
+      <div class="flex items-center gap-2.5">
+        <%# Keyboard/screen-reader/touch equivalent of dragging a card to a
+            new column - drag stays as the primary path for anyone who likes
+            it, this menu makes the same move possible without a mouse. %>
+        <div class="relative" draggable="false">
+          <button type="button" data-action="click->dropdown#toggle" title="<%= t(".move_to") %>" aria-label="<%= t(".move_to") %>" class="cursor-pointer p-0.5 text-zinc-400 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-300 transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>
+          </button>
+          <div data-dropdown-target="menu" class="hidden absolute right-0 mt-2 w-40 bg-white border border-zinc-200 rounded-lg shadow-lg py-1.5 z-20 dark:bg-zinc-900 dark:border-zinc-800">
+            <p class="px-3.5 py-1 text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide dark:text-zinc-600"><%= t(".move_to") %></p>
+            <% (Application.statuses.keys - [ app.status ]).each do |status| %>
+              <button type="button" data-action="click->drag#moveTo click->dropdown#close" data-id="<%= app.id %>" data-status="<%= status %>" class="cursor-pointer block w-full text-left px-3.5 py-1.5 text-[12.5px] font-medium text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                <%= application_status_label(status) %>
+              </button>
+            <% end %>
+          </div>
+        </div>
+        <%= link_to t(".details"), application_path(app), data: { turbo: false }, class: "text-[11.5px] font-semibold text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50" %>
+      </div>
     </div>
   </div>
 <% end %>

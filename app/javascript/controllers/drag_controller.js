@@ -21,17 +21,31 @@ export default class extends Controller {
   // Fired when the card is dropped into a column
   drop(event) {
     event.preventDefault()
-    
+
     const applicationId = event.dataTransfer.getData("application_id")
     const newStatus = event.currentTarget.dataset.status // Gets the status of the column
-    
-    // Find the hidden form for this specific application
-    const form = document.getElementById(`move-form-${applicationId}`)
-    
-    if (form) {
-      // Update the hidden input value and submit via Turbo
-      form.querySelector(".status-input").value = newStatus
-      form.requestSubmit()
-    }
+
+    this.submitMove(applicationId, newStatus)
+  }
+
+  // Keyboard/screen-reader/touch equivalent of a drag-and-drop move - wired
+  // to each "Move to…" menu item on the card (see _application_card.html.erb
+  // and dropdown_controller.js for the menu itself). Same hidden form and
+  // the same result as dropping the card, just without a mouse.
+  moveTo(event) {
+    const { id, status } = event.currentTarget.dataset
+    this.submitMove(id, status)
+  }
+
+  submitMove(applicationId, newStatus) {
+    // One shared hidden form (applications/index.html.erb) instead of one
+    // per application - its action just gets pointed at the right record
+    // right before every submit.
+    const form = document.getElementById("move-form")
+    if (!form) return
+
+    form.action = `/applications/${applicationId}`
+    form.querySelector(".status-input").value = newStatus
+    form.requestSubmit()
   }
 }
