@@ -91,7 +91,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
 
     get dashboard_url
 
-    assert_match(/Moved from Wishlist to Queued/, response.body)
+    assert_match(/Moved from Wishlist to Sending soon/, response.body)
   end
 
   test "onboarding checklist appears when template, resume, and keywords are all missing" do

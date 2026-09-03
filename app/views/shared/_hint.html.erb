@@ -1,0 +1,13 @@
+<%# app/views/shared/_hint.html.erb
+    Small, dismissible inline help tip - locals: `id` (unique, stable
+    localStorage key), `text`, and optional `title`. Renders nothing extra
+    once dismissed - see hint_controller.js. %>
+<div data-controller="hint" data-hint-id-value="<%= id %>" class="mb-5 flex items-start gap-2.5 border border-zinc-200 bg-zinc-50 text-zinc-600 px-4 py-3 rounded-lg text-[12.5px] dark:border-zinc-800 dark:bg-zinc-800/60 dark:text-zinc-400">
+  <svg class="w-4 h-4 flex-shrink-0 mt-0.5 text-zinc-400 dark:text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+  <p class="flex-1">
+    <% if local_assigns[:title].present? %><span class="font-semibold text-zinc-700 dark:text-zinc-300"><%= title %></span> <% end %><%= text %>
+  </p>
+  <button type="button" data-action="click->hint#dismiss" class="flex-shrink-0 text-zinc-400 hover:text-zinc-700 transition dark:text-zinc-600 dark:hover:text-zinc-300" aria-label="<%= t("shared.hint.dismiss") %>">
+    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+</div>

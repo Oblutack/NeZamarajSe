@@ -31,4 +31,15 @@
       </div>
     <% end %>
   </div>
+
+  <div class="mt-5 bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800" data-controller="hint">
+    <p class="text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".help_tips_title") %></p>
+    <p class="text-zinc-500 text-[12px] mt-0.5 dark:text-zinc-400"><%= t("shared.hint.show_tips_again_hint") %></p>
+    <div class="mt-3 flex items-center gap-3">
+      <button type="button" data-action="click->hint#resetAll" class="cursor-pointer inline-flex justify-center py-2 px-3.5 text-[12.5px] font-semibold rounded-md text-zinc-700 border border-zinc-300 hover:bg-zinc-50 dark:text-zinc-300 dark:border-zinc-700 dark:hover:bg-zinc-800">
+        <%= t("shared.hint.show_tips_again") %>
+      </button>
+      <p hidden data-hint-target="confirmation" class="text-[12px] text-emerald-700 font-medium dark:text-emerald-400"><%= t("shared.hint.reset_confirmation") %></p>
+    </div>
+  </div>
 </div>
