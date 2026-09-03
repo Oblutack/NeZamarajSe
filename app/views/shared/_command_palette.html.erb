@@ -1,15 +1,15 @@
 <!-- app/views/shared/_command_palette.html.erb -->
-<div data-command-palette-target="dialog" data-action="click->command-palette#closeOnBackdrop" class="hidden fixed inset-0 z-[100] bg-zinc-950/50 flex items-start justify-center pt-[15vh] px-4">
+<div data-command-palette-target="dialog" role="dialog" aria-modal="true" aria-label="<%= t("shared.command_palette.placeholder") %>" data-action="click->command-palette#closeOnBackdrop" class="hidden fixed inset-0 z-[100] bg-zinc-950/50 flex items-start justify-center pt-[15vh] px-4">
   <div class="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-lg shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
     <div class="flex items-center gap-2.5 px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
       <svg class="w-4 h-4 text-zinc-400 dark:text-zinc-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input data-command-palette-target="input" data-action="input->command-palette#filter" type="text" placeholder="<%= t("shared.command_palette.placeholder") %>" autocomplete="off" class="flex-1 text-[14px] outline-none bg-transparent text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600">
+      <input data-command-palette-target="input" data-action="input->command-palette#filter" type="text" role="combobox" aria-expanded="true" aria-controls="command-palette-listbox" aria-autocomplete="list" placeholder="<%= t("shared.command_palette.placeholder") %>" autocomplete="off" class="flex-1 text-[14px] outline-none bg-transparent text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600">
       <kbd class="text-[10.5px] font-semibold text-zinc-400 dark:text-zinc-600 border border-zinc-200 dark:border-zinc-700 rounded px-1.5 py-0.5">Esc</kbd>
     </div>
 
-    <ul class="max-h-80 overflow-y-auto py-1.5">
-      <% command_palette_items.each do |item| %>
-        <li data-command-palette-target="item" data-label="<%= item[:label] %>" data-url="<%= item[:url] %>" data-action="click->command-palette#visit" class="mx-1.5 px-3 py-2 rounded-md text-[13.5px] font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer">
+    <ul id="command-palette-listbox" role="listbox" class="max-h-80 overflow-y-auto py-1.5">
+      <% command_palette_items.each_with_index do |item, index| %>
+        <li id="command-palette-item-<%= index %>" role="option" data-command-palette-target="item" data-label="<%= item[:label] %>" data-url="<%= item[:url] %>" data-action="click->command-palette#visit" class="mx-1.5 px-3 py-2 rounded-md text-[13.5px] font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer">
           <%= item[:label] %>
         </li>
       <% end %>

@@ -41,7 +41,33 @@
       <p class="mt-1.5 text-[13px] text-zinc-500 dark:text-zinc-400"><%= t(".try_loosening") %></p>
     </div>
   <% else %>
-    <div class="bg-white border border-zinc-200 rounded-lg overflow-hidden dark:bg-zinc-900 dark:border-zinc-800">
+    <%# Below `sm`, a stacked card list instead of the table - same data,
+        same treatment the CRM board got in Track F (a wide table with
+        several columns is unreadable squeezed onto a phone, and horizontal
+        scrolling a data table is a poor substitute). %>
+    <div class="sm:hidden bg-white border border-zinc-200 rounded-lg divide-y divide-zinc-100 overflow-hidden dark:bg-zinc-900 dark:border-zinc-800 dark:divide-zinc-800">
+      <% @companies.each do |company| %>
+        <div data-shortcut-item class="p-4 space-y-2">
+          <div class="flex items-start justify-between gap-2">
+            <%= link_to company.name, company_path(company), class: "font-semibold text-zinc-900 hover:underline dark:text-zinc-100" %>
+            <% if company.is_cold_outreach %>
+              <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"><%= t(".cold") %></span>
+            <% else %>
+              <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"><%= t(".warm") %></span>
+            <% end %>
+          </div>
+          <div class="flex items-center justify-between text-[12px] text-zinc-500 dark:text-zinc-400">
+            <span><%= t(".jobs") %>: <%= company.jobs_count %></span>
+            <span><%= company.last_contacted_at ? t(".ago", time: time_ago_in_words(company.last_contacted_at)) : t(".never") %></span>
+          </div>
+          <% if company.primary_email.present? %>
+            <p class="text-[12px] text-emerald-700 font-medium dark:text-emerald-400"><%= company.primary_email %></p>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="hidden sm:block bg-white border border-zinc-200 rounded-lg overflow-hidden dark:bg-zinc-900 dark:border-zinc-800">
       <div class="overflow-x-auto">
         <table class="w-full text-[13px]">
           <thead>

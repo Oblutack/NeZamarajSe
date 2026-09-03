@@ -46,6 +46,11 @@ export default class extends Controller {
   }
 
   open() {
+    // So focus can go back to whatever opened this (the navbar button, or
+    // nothing in particular if it was the ⌘K shortcut) once it closes -
+    // otherwise focus is just dropped when the dialog disappears.
+    this.previouslyFocusedElement = document.activeElement
+
     this.isOpen = true
     this.dialogTarget.classList.remove("hidden")
     this.inputTarget.value = ""
@@ -58,6 +63,7 @@ export default class extends Controller {
     this.isOpen = false
     this.dialogTarget.classList.add("hidden")
     document.body.style.overflow = ""
+    this.previouslyFocusedElement?.focus()
   }
 
   closeOnBackdrop(event) {
@@ -71,11 +77,11 @@ export default class extends Controller {
     this.itemTargets.forEach((item) => {
       const matches = item.dataset.label.toLowerCase().includes(query)
       item.classList.toggle("hidden", !matches)
-      item.classList.remove("bg-zinc-100", "dark:bg-zinc-800")
+      this.deactivate(item)
       if (matches && !firstVisible) firstVisible = item
     })
 
-    if (firstVisible) firstVisible.classList.add("bg-zinc-100", "dark:bg-zinc-800")
+    if (firstVisible) this.activate(firstVisible)
     this.emptyTarget.classList.toggle("hidden", !!firstVisible)
   }
 
@@ -83,21 +89,36 @@ export default class extends Controller {
     const visible = this.itemTargets.filter((item) => !item.classList.contains("hidden"))
     if (visible.length === 0) return
 
-    const currentIndex = visible.findIndex((item) => item.classList.contains("bg-zinc-100") || item.classList.contains("dark:bg-zinc-800"))
-    visible.forEach((item) => item.classList.remove("bg-zinc-100", "dark:bg-zinc-800"))
+    const currentIndex = visible.findIndex((item) => item.getAttribute("aria-selected") === "true")
+    visible.forEach((item) => this.deactivate(item))
 
     let nextIndex = currentIndex + direction
     if (nextIndex < 0) nextIndex = visible.length - 1
     if (nextIndex >= visible.length) nextIndex = 0
 
     const next = visible[nextIndex]
-    next.classList.add("bg-zinc-100", "dark:bg-zinc-800")
+    this.activate(next)
     next.scrollIntoView({ block: "nearest" })
   }
 
   visitFocused() {
-    const focused = this.itemTargets.find((item) => !item.classList.contains("hidden") && (item.classList.contains("bg-zinc-100") || item.classList.contains("dark:bg-zinc-800")))
+    const focused = this.itemTargets.find((item) => !item.classList.contains("hidden") && item.getAttribute("aria-selected") === "true")
     if (focused) Turbo.visit(focused.dataset.url)
+  }
+
+  // Keeps the visible highlight, `aria-selected`, and the input's
+  // `aria-activedescendant` (what a screen reader announces as "current")
+  // all pointing at the same item - the combobox/listbox pattern needs all
+  // three to move together.
+  activate(item) {
+    item.classList.add("bg-zinc-100", "dark:bg-zinc-800")
+    item.setAttribute("aria-selected", "true")
+    this.inputTarget.setAttribute("aria-activedescendant", item.id)
+  }
+
+  deactivate(item) {
+    item.classList.remove("bg-zinc-100", "dark:bg-zinc-800")
+    item.setAttribute("aria-selected", "false")
   }
 
   visit(event) {

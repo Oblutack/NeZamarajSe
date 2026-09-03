@@ -40,6 +40,13 @@ class CompaniesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "index renders a mobile card layout alongside the table, with the same data" do
+    get companies_url
+
+    assert_select "div.sm\\:hidden a", text: @company.name
+    assert_select "table a", text: @company.name
+  end
+
   test "index filters by has_email" do
     @company.update!(primary_email: "hr@vertexsolutions.example")
     companies(:two).update!(primary_email: nil)
@@ -66,6 +73,25 @@ class CompaniesControllerTest < ActionDispatch::IntegrationTest
     get company_url(@company)
     assert_response :success
     assert_select "h1", text: @company.name
+  end
+
+  test "show does not list another user's private manually-added job under this company" do
+    mine = Job.create!(company: @company, title: "My Private Lead", added_by: @user)
+    theirs = Job.create!(company: @company, title: "Someone Else's Lead", added_by: users(:two))
+
+    get company_url(@company)
+
+    assert_match mine.title, response.body
+    assert_no_match(/#{Regexp.escape(theirs.title)}/, response.body)
+  end
+
+  test "index's jobs_count does not include another user's private manually-added job" do
+    visible_count = @company.jobs.count
+    Job.create!(company: @company, title: "Someone Else's Lead", added_by: users(:two))
+
+    get companies_url
+
+    assert_select "td", text: visible_count.to_s
   end
 
   test "refresh_email enqueues FindCompanyEmailJob for the company" do
