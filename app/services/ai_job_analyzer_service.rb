@@ -91,14 +91,41 @@ class AiJobAnalyzerService
       # it's unaffected either way regardless of ordering.
       extract_and_attach_company_logo(doc)
 
+      # MojPosao (a Nuxt SSR app) never renders its job description into the
+      # DOM at all, even after full JS hydration - confirmed live, headless
+      # rendering came back with nothing. But the plain fetch already has
+      # everything: Nuxt embeds its page's full state as JSON in a
+      # <script id="__NUXT_DATA__"> tag for client-side hydration, and the
+      # job's real description lives right there as an HTML string,
+      # untouched by any of the page's own chrome. Must run before
+      # extract_email_and_text below, which strips every <script> tag
+      # (including this one) as part of its normal chrome-stripping.
+      nuxt_html = extract_nuxt_payload_html(doc)
+
+      # Always run the normal DOM-based extraction first - email extraction
+      # in particular needs the script-stripping this does, having caught a
+      # real false positive live: an un-stripped inline <script> on MojPosao
+      # embeds a Sentry error-tracking DSN
+      # (a1b2c3@oXXXXXX.ingest.sentry.io) that happens to be shaped exactly
+      # like an email address, and extract_email's plain-text regex
+      # fallback matched it as if it were the page's HR contact.
       email_from_page, raw_text = extract_email_and_text(doc)
 
-      # Some sites (MojPosao, and some itbase.ba redirect targets) render
-      # their actual posting text client-side via JS - the plain fetch above
-      # only sees the pre-hydration page shell in that case, which yields
-      # suspiciously little text. Retry once with the same headless-Chrome
-      # approach the scrapers already use at listing-scrape time rather than
-      # silently saving that shell text as if it were the real description.
+      # Only the *text* gets a second opinion from the Nuxt payload, and only
+      # if it's actually better than what the DOM gave us - same
+      # longer-wins comparison as the headless fallback below.
+      if nuxt_html.present?
+        nuxt_text = extract_readable_text(Nokogiri::HTML.fragment(nuxt_html))
+        raw_text = nuxt_text if nuxt_text.length > raw_text.length
+      end
+
+      # Some sites (and some itbase.ba redirect targets) render their actual
+      # posting text client-side via JS with no server-embedded state to
+      # fall back on - the plain fetch above only sees the pre-hydration
+      # page shell in that case, which yields suspiciously little text.
+      # Retry once with the same headless-Chrome approach the scrapers
+      # already use at listing-scrape time rather than silently saving that
+      # shell text as if it were the real description.
       if raw_text.length < MIN_RENDERED_TEXT_LENGTH
         rendered_doc = fetch_rendered_doc(@job.url)
         if rendered_doc
@@ -187,6 +214,39 @@ class AiJobAnalyzerService
   end
 
   private
+
+  # Nuxt 3's SSR mode serializes the whole page's reactive state as a flat
+  # JSON array in <script id="__NUXT_DATA__"> - objects reference other
+  # values by their index in that array (so it stays valid, parseable JSON
+  # despite the shared-reference structure) rather than duplicating data
+  # inline. Confirmed live against MojPosao: the job detail object in that
+  # array always carries "title"/"slug"/"html" keys pointing at other
+  # indices, and index the "html" one points to is the full posting body
+  # as an HTML string - complete, with none of the page's own chrome mixed
+  # in, since it's the same content the server used to prerender the page
+  # in the first place. Matched by object shape, not by host/URL, so this
+  # applies to any other Nuxt SSR job board with the same data shape, not
+  # just MojPosao specifically.
+  def extract_nuxt_payload_html(doc)
+    script = doc.at_css("script#__NUXT_DATA__")
+    return nil unless script
+
+    payload = JSON.parse(script.text)
+    return nil unless payload.is_a?(Array)
+
+    job_object = payload.find do |el|
+      el.is_a?(Hash) && el["html"].is_a?(Integer) && el["title"].is_a?(Integer) && el["slug"].is_a?(Integer)
+    end
+    return nil unless job_object
+
+    description_index = job_object["description"]
+    candidates = [ payload[job_object["html"]] ]
+    candidates << payload[description_index] if description_index.is_a?(Integer)
+
+    candidates.select { |value| value.is_a?(String) }.max_by(&:length).presence
+  rescue JSON::ParserError
+    nil
+  end
 
   # Strips chrome and pulls the [email, readable_text] pair out of a parsed
   # page - shared between the plain-fetch doc and the headless-rendered

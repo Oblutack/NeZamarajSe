@@ -538,4 +538,103 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
 
     assert_equal "BambooHR", job.reload.description
   end
+
+  def nuxt_data_html(job_object_json, *values)
+    payload = [ JSON.parse(job_object_json), *values ].to_json
+    %(<html><body><p>Rendered page shell - not the real content.</p><script id="__NUXT_DATA__" type="application/json">#{payload}</script></body></html>)
+  end
+
+  test "reads the description straight out of a Nuxt SSR page's embedded __NUXT_DATA__ payload" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = nuxt_data_html(
+      %({"title": 1, "slug": 2, "html": 3, "description": 4}),
+      "Job Title", "job-slug",
+      "<p>Real description paragraph one.</p><p>Real description paragraph two.</p>",
+      ""
+    )
+
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal "Real description paragraph one.\nReal description paragraph two.", job.reload.description
+    assert_not_includes job.description, "Rendered page shell"
+  end
+
+  test "does not mistake an inline <script>'s Sentry DSN for the page's HR email on a Nuxt SSR page" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    payload = [ { "title" => 1, "slug" => 2, "html" => 3, "description" => 4 }, "Job Title", "job-slug",
+                "<p>Real description paragraph one.</p><p>Real description paragraph two.</p>", "" ].to_json
+    html = <<~HTML
+      <html><body>
+        <script>Sentry.init({dsn: "https://a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4@o4506224253796352.ingest.sentry.io/1"});</script>
+        <p>Rendered page shell - not the real content.</p>
+        <script id="__NUXT_DATA__" type="application/json">#{payload}</script>
+      </body></html>
+    HTML
+
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_nil job.reload.hr_email
+  end
+
+  test "falls back to the payload's description field when html is blank" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = nuxt_data_html(
+      %({"title": 1, "slug": 2, "html": 3, "description": 4}),
+      "Job Title", "job-slug",
+      "",
+      "Plain-text description from the description field."
+    )
+
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal "Plain-text description from the description field.", job.reload.description
+  end
+
+  test "ignores a __NUXT_DATA__ payload with no job-shaped object in it" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = %(<html><body><p>#{'A perfectly ordinary server-rendered description. ' * 10}</p><script id="__NUXT_DATA__" type="application/json">[{"unrelated":"stuff"}]</script></body></html>)
+
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_includes job.reload.description, "A perfectly ordinary server-rendered description."
+  end
+
+  test "does not blow up on a malformed __NUXT_DATA__ payload" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = %(<html><body><p>#{'Fallback page content that is plenty long enough. ' * 10}</p><script id="__NUXT_DATA__" type="application/json">{not valid json</script></body></html>)
+
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        assert_nothing_raised { AiJobAnalyzerService.call(job) }
+      end
+    end
+
+    assert_includes job.reload.description, "Fallback page content that is plenty long enough."
+  end
 end
