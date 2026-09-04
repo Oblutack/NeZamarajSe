@@ -1,0 +1,9 @@
+<!-- app/views/notifications/_notification.html.erb -->
+<%= button_to mark_read_notification_path(notification), method: :patch,
+      class: "w-full text-left flex items-start gap-2 px-3.5 py-2.5 text-[12.5px] hover:bg-zinc-50 dark:hover:bg-zinc-800 border-b border-zinc-100 dark:border-zinc-800 last:border-0 cursor-pointer" do %>
+  <span class="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 <%= notification.read? ? "" : "bg-emerald-500" %>"></span>
+  <span class="min-w-0">
+    <span class="block font-semibold text-zinc-900 dark:text-zinc-100 truncate"><%= notification.job.title %></span>
+    <span class="block text-zinc-500 dark:text-zinc-400 truncate"><%= notification.job.company.name %></span>
+  </span>
+<% end %>

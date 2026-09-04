@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_04_133207) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_04_154130) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -180,6 +180,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_04_133207) do
     t.index ["url"], name: "index_jobs_on_url", unique: true
   end
 
+  create_table "notifications", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "job_id", null: false
+    t.datetime "read_at"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["job_id"], name: "index_notifications_on_job_id"
+    t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_and_read_at"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
   create_table "scraper_configs", force: :cascade do |t|
     t.boolean "active", default: true
     t.string "card_selector"
@@ -239,5 +250,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_04_133207) do
   add_foreign_key "job_sources", "jobs"
   add_foreign_key "jobs", "companies"
   add_foreign_key "jobs", "users", column: "added_by_id"
+  add_foreign_key "notifications", "jobs"
+  add_foreign_key "notifications", "users"
   add_foreign_key "user_preferences", "users"
 end

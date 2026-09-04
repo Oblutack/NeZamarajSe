@@ -1,0 +1,24 @@
+<!-- app/views/shared/_notification_bell.html.erb -->
+<%= turbo_stream_from current_user, :notifications %>
+<% recent_notifications = current_user.notifications.includes(job: :company).limit(10) %>
+
+<div class="relative" data-controller="dropdown">
+  <button type="button" data-action="click->dropdown#toggle" aria-label="<%= t("shared.notification_bell.title") %>" title="<%= t("shared.notification_bell.title") %>" class="cursor-pointer relative flex items-center text-zinc-400 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-300 transition">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+    <%= render "shared/notification_badge", count: current_user.notifications.unread.count %>
+  </button>
+
+  <div data-dropdown-target="menu" class="hidden absolute right-0 mt-2 w-72 bg-white border border-zinc-200 rounded-lg shadow-lg z-20 dark:bg-zinc-900 dark:border-zinc-800">
+    <div id="notification_list" class="max-h-80 overflow-y-auto">
+      <% if recent_notifications.any? %>
+        <%= render recent_notifications %>
+      <% else %>
+        <p class="px-3.5 py-4 text-[12.5px] text-zinc-400 dark:text-zinc-600 text-center"><%= t("shared.notification_bell.empty") %></p>
+      <% end %>
+    </div>
+    <div class="flex justify-between items-center px-3.5 py-2 border-t border-zinc-100 dark:border-zinc-800">
+      <%= link_to t("navbar.radar_settings"), edit_user_preference_path, class: "text-[11.5px] font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100" %>
+      <%= button_to t("shared.notification_bell.mark_all_read"), mark_all_read_notifications_path, method: :patch, class: "cursor-pointer text-[11.5px] font-semibold text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50" %>
+    </div>
+  </div>
+</div>

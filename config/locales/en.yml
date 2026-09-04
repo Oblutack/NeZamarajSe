@@ -52,6 +52,10 @@ en:
     confirm_dialog:
       cancel: "Cancel"
       confirm: "Confirm"
+    notification_bell:
+      title: "Notifications"
+      empty: "No new jobs yet - matches to your keywords will show up here."
+      mark_all_read: "Mark all read"
     application_statuses:
       wishlist: "Wishlist"
       queued: "Sending soon"

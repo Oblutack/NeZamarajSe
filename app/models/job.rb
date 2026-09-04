@@ -4,6 +4,9 @@ class Job < ApplicationRecord
   belongs_to :added_by, class_name: "User", optional: true
   has_many :applications, dependent: :destroy
   has_many :job_sources, dependent: :destroy
+  has_many :notifications, dependent: :destroy
+
+  after_create_commit :notify_matching_users
 
   # Only used by the manual-entry form (JobsController#new/#create) - scrapers
   # resolve/assign `company` directly instead of going through this. Kept on
@@ -67,5 +70,23 @@ class Job < ApplicationRecord
 
   def unshare!
     update!(share_token: nil)
+  end
+
+  private
+
+  # Fires once per genuinely new job (cross-posting dedup in
+  # Scrapers::CrossPostingRecordable skips `create` entirely for a repeat
+  # posting, so this never double-fires for the same listing). Reuses
+  # #keyword_match_count rather than a separate SQL-based check like
+  # JobsController#index/SendDailyRadarJob - this runs once per new job
+  # against every user's keyword list, the cheap direction for a plain-Ruby
+  # substring check, whereas those two filter the whole jobs table and need
+  # SQL to stay fast.
+  def notify_matching_users
+    UserPreference.where.not(keywords: [ nil, "" ]).find_each do |preference|
+      next unless keyword_match_count(preference.keyword_array).positive?
+
+      JobRadarNotifierService.call(job: self, user: preference.user)
+    end
   end
 end

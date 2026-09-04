@@ -133,4 +133,32 @@ class JobTest < ActiveSupport::TestCase
     assert_not job.shared?
     assert_nil job.share_token
   end
+
+  test "notifies a user whose radar keyword appears in the new job's title" do
+    assert_difference("users(:one).notifications.count", 1) do
+      Job.create!(company: companies(:one), title: "Senior Software Architect", url: "https://jobs.example.com/senior-software-architect")
+    end
+
+    assert_no_difference("users(:two).notifications.count") do
+      Job.create!(company: companies(:one), title: "Another Software Role", url: "https://jobs.example.com/another-software-role")
+    end
+  end
+
+  test "does not notify anyone when the new job matches no one's keywords" do
+    assert_no_difference("Notification.count") do
+      Job.create!(company: companies(:one), title: "Marketing Coordinator", url: "https://jobs.example.com/marketing-coordinator")
+    end
+  end
+
+  test "skips a user with blank radar keywords" do
+    # User#create_default_preferences already gives every new user real
+    # keywords on signup - this simulates one who cleared them, not a user
+    # with no UserPreference row at all.
+    blank_user = User.create!(email: "blank-keywords@example.com", password: "password123")
+    blank_user.user_preference.update!(keywords: "")
+
+    assert_no_difference("blank_user.notifications.count") do
+      Job.create!(company: companies(:one), title: "Senior Software Architect", url: "https://jobs.example.com/senior-software-architect-2")
+    end
+  end
 end

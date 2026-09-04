@@ -52,6 +52,10 @@ bs:
     confirm_dialog:
       cancel: "Otkaži"
       confirm: "Potvrdi"
+    notification_bell:
+      title: "Obavještenja"
+      empty: "Još nema novih poslova - poklapanja s tvojim ključnim riječima će se prikazati ovdje."
+      mark_all_read: "Označi sve kao pročitano"
     application_statuses:
       wishlist: "Lista želja"
       queued: "Uskoro se šalje"

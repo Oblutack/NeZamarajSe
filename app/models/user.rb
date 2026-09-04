@@ -14,6 +14,7 @@ class User < ApplicationRecord
   # --- SECURITY: ENCRYPT OAUTH TOKENS IN THE DB ---
   encrypts :access_token, :refresh_token
   has_many :cover_letter_templates, dependent: :destroy
+  has_many :notifications, dependent: :destroy
 
   # NEW: A user has exactly ONE preference profile
   has_one :user_preference, dependent: :destroy

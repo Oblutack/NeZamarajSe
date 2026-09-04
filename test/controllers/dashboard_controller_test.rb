@@ -201,7 +201,13 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
 
     get dashboard_url
 
-    assert_no_match(/#{Regexp.escape(matching_job.title)}/, response.body)
+    # Scoped to <main>, not the whole response body: the navbar's
+    # notification bell (outside <main>) legitimately surfaces this same
+    # job's title too, since it *does* match the user's radar keyword - that
+    # bell is a separate, correct signal from the dashboard's own
+    # already-saved-exclusion this test is actually checking.
+    main_html = Nokogiri::HTML(response.body).at_css("main").to_s
+    assert_no_match(/#{Regexp.escape(matching_job.title)}/, main_html)
   end
 
   test "records the visit time so a job created before the first visit isn't 'new' on the next visit" do
@@ -216,7 +222,10 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
 
     get dashboard_url
 
-    assert_no_match(/#{Regexp.escape(old_job.title)}/, response.body)
+    # See the note above - scoped to <main> since the notification bell
+    # (outside it) still correctly lists this job as a keyword match.
+    main_html = Nokogiri::HTML(response.body).at_css("main").to_s
+    assert_no_match(/#{Regexp.escape(old_job.title)}/, main_html)
   end
 
   test "shows a friendly empty state when nothing needs attention today" do

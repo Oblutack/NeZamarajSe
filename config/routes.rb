@@ -21,6 +21,11 @@ Rails.application.routes.draw do
 
   resource :user_preference, only: [ :edit, :update ]
 
+  resources :notifications, only: [] do
+    member { patch :mark_read }
+    collection { patch :mark_all_read }
+  end
+
   # --- PHASE 4 ROUTES (The Job Market & CRM) ---
   resources :jobs, only: [ :index, :show, :new, :create ] do
     member do
