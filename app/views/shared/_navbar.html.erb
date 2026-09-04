@@ -3,6 +3,9 @@
     current_page?(path) ? "text-[13px] font-semibold whitespace-nowrap text-zinc-950 dark:text-zinc-50" : "text-[13px] font-medium whitespace-nowrap text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
   }
   dropdown_item_class = "block px-3.5 py-2 text-[13px] font-medium text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+  mobile_nav_link_class = ->(path) {
+    current_page?(path) ? "block px-3 py-2.5 rounded-md text-[14px] font-semibold text-zinc-950 bg-zinc-100 dark:text-zinc-50 dark:bg-zinc-800" : "block px-3 py-2.5 rounded-md text-[14px] font-medium text-zinc-600 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800"
+  }
 %>
 <nav class="bg-white border-b border-zinc-200 mb-8 dark:bg-zinc-900 dark:border-zinc-800">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -17,15 +20,16 @@
         <% end %>
 
         <% if user_signed_in? && Rails.application.config.dry_run_emails %>
-          <span class="ml-2.5 inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-400" title="<%= t("navbar.test_mode_tooltip") %>">
+          <span class="ml-2.5 hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-400" title="<%= t("navbar.test_mode_tooltip") %>">
             <%= t("navbar.test_mode_badge") %>
           </span>
         <% end %>
       </div>
 
-      <!-- Right side navigation -->
-      <div class="flex items-center space-x-5 flex-nowrap">
-        <% if user_signed_in? %>
+      <% if user_signed_in? %>
+      <div class="flex items-center gap-3">
+        <!-- Full nav row - lg and up only, see the mobile trigger/panel below for narrower screens -->
+        <div class="hidden lg:flex items-center space-x-5 flex-nowrap">
           <%= link_to t("navbar.dashboard"), dashboard_path, class: nav_link_class.call(dashboard_path) %>
           <%= link_to t("navbar.job_market"), jobs_path, class: nav_link_class.call(jobs_path) %>
           <%= link_to t("navbar.companies"), companies_path, class: nav_link_class.call(companies_path) %>
@@ -57,9 +61,7 @@
 
           <div class="w-px h-4 bg-zinc-200 dark:bg-zinc-700"></div>
 
-          <%= render "shared/notification_bell" %>
-
-          <span class="hidden lg:inline text-[12.5px] font-medium whitespace-nowrap text-zinc-400 dark:text-zinc-600">
+          <span class="text-[12.5px] font-medium whitespace-nowrap text-zinc-400 dark:text-zinc-600">
             <%= current_user.email %>
           </span>
 
@@ -67,7 +69,66 @@
           <%= button_to t("navbar.sign_out"), destroy_user_session_path,
                 method: :delete,
                 class: "text-[13px] font-semibold text-zinc-900 hover:text-red-600 transition cursor-pointer dark:text-zinc-100 dark:hover:text-red-400" %>
-        <% else %>
+        </div>
+
+        <!-- Rendered once, visible at every breakpoint (unlike the two blocks
+             around it) - the bell manages its own independent dropdown, so
+             unread jobs stay noticeable whether or not the mobile menu is
+             open. Deliberately not duplicated inside the mobile panel below:
+             two copies would mean two "notification_list"/"notification_badge"
+             ids, two Action Cable subscriptions, and double the per-request
+             notification queries for zero benefit. -->
+        <%= render "shared/notification_bell" %>
+
+        <!-- Mobile trigger - below lg only. -->
+        <div class="lg:hidden" data-controller="dropdown">
+          <button type="button" data-action="click->dropdown#toggle" aria-label="<%= t("navbar.menu") %>" aria-expanded="false" class="cursor-pointer text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+
+          <!-- Mobile slide-down panel: fixed to the viewport (not positioned
+               relative to this narrow trigger wrapper) so it always spans the
+               full width regardless of where the hamburger button sits. -->
+          <div data-dropdown-target="menu" class="hidden fixed inset-0 top-16 z-30 lg:hidden">
+            <div class="absolute inset-0 bg-zinc-950/40" data-action="click->dropdown#close"></div>
+            <div class="relative bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto">
+              <div class="px-4 py-3 space-y-1">
+                <%= link_to t("navbar.dashboard"), dashboard_path, class: mobile_nav_link_class.call(dashboard_path) %>
+                <%= link_to t("navbar.job_market"), jobs_path, class: mobile_nav_link_class.call(jobs_path) %>
+                <%= link_to t("navbar.companies"), companies_path, class: mobile_nav_link_class.call(companies_path) %>
+                <%= link_to t("navbar.my_crm"), crm_path, class: mobile_nav_link_class.call(crm_path) %>
+
+                <div class="my-2 border-t border-zinc-100 dark:border-zinc-800"></div>
+
+                <%= link_to t("navbar.templates"), cover_letter_templates_path, class: mobile_nav_link_class.call(cover_letter_templates_path) %>
+                <%= link_to t("navbar.asset_library"), resumes_path, class: mobile_nav_link_class.call(resumes_path) %>
+                <%= link_to t("navbar.radar_settings"), edit_user_preference_path, class: mobile_nav_link_class.call(edit_user_preference_path) %>
+
+                <div class="my-2 border-t border-zinc-100 dark:border-zinc-800"></div>
+
+                <button type="button" data-action="click->command-palette#open" class="cursor-pointer w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[14px] font-medium text-zinc-600 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                  <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <%= t("navbar.command_palette") %>
+                </button>
+
+                <div class="flex items-center justify-between px-3 py-2">
+                  <%= render "shared/theme_toggle" %>
+                  <%= render "shared/locale_switcher" %>
+                </div>
+
+                <div class="my-2 border-t border-zinc-100 dark:border-zinc-800"></div>
+
+                <div class="px-3 py-1 text-[12.5px] text-zinc-400 dark:text-zinc-600 truncate"><%= current_user.email %></div>
+                <%= button_to t("navbar.sign_out"), destroy_user_session_path,
+                      method: :delete,
+                      class: "cursor-pointer w-full text-left px-3 py-2.5 rounded-md text-[14px] font-semibold text-zinc-900 hover:bg-red-50 hover:text-red-600 dark:text-zinc-100 dark:hover:bg-red-950/40 dark:hover:text-red-400" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% else %>
+        <div class="flex items-center gap-3">
           <%= render "shared/theme_toggle" %>
           <%= render "shared/locale_switcher" %>
 
@@ -75,8 +136,8 @@
           <%= button_to t("navbar.sign_in"), user_google_oauth2_omniauth_authorize_path,
                 data: { turbo: false },
                 class: "text-[13px] font-semibold text-zinc-900 hover:text-zinc-600 transition cursor-pointer dark:text-zinc-100 dark:hover:text-zinc-400" %>
-        <% end %>
-      </div>
+        </div>
+      <% end %>
     </div>
   </div>
 </nav>

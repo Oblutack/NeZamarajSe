@@ -2,8 +2,8 @@
 <div class="max-w-3xl mx-auto py-8">
   <%= link_to "&larr; #{t(".back_to_crm")}".html_safe, crm_path, class: "text-[12.5px] font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100" %>
 
-  <div class="mt-3 mb-6 flex items-start justify-between gap-4">
-    <div>
+  <div class="mt-3 mb-6 flex flex-wrap items-start justify-between gap-4">
+    <div class="min-w-0">
       <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= @application.job.title %></h1>
       <p class="mt-1.5 text-[13px] text-zinc-500 dark:text-zinc-400">
         <%= link_to @application.job.company.name, company_path(@application.job.company), class: "hover:underline" %>
@@ -11,7 +11,7 @@
       </p>
     </div>
 
-    <div class="flex-shrink-0 flex items-center gap-2.5">
+    <div class="flex-shrink-0 flex flex-wrap items-center gap-2.5">
       <% if @application.applied? %>
         <%= link_to t(".send_follow_up"), compose_follow_up_application_path(@application), class: "inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
       <% elsif @application.queued? %>

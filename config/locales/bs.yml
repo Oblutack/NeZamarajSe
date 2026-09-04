@@ -9,6 +9,7 @@ bs:
     asset_library: "Moji dokumenti"
     radar_settings: "Obavještenja o poslovima"
     command_palette: "Paleta naredbi"
+    menu: "Meni"
     toggle_dark_mode: "Uklj./isklj. tamni način"
     sign_out: "Odjava"
     sign_in: "Prijava"
