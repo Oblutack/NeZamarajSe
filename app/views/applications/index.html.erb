@@ -3,7 +3,16 @@
 <%= turbo_stream_from current_user, :crm %>
 
 <!-- 1. Wrap the entire board in a form and attach our Stimulus controller -->
-<%= form_with url: bulk_compose_applications_path, method: :get, data: { controller: "bulk-campaign mobile-crm" }, class: "relative max-w-screen-2xl mx-auto py-8 overflow-hidden flex flex-col h-[85vh]" do |form| %>
+<%# w-full, not just mx-auto: this form is itself a flex item of <main> (see
+    layout's flex flex-col), and `mx-auto` alone on a flex item suppresses
+    the default cross-axis stretch, sizing it to its own content width
+    instead - exactly the un-scrolled width of everything inside it (the
+    six-status mobile pill strip, in particular). `min-w-0` alone doesn't
+    fix this: that only lifts the min-content floor, it doesn't restore
+    stretch. `w-full` forces it back to filling `main`, so the pill strip's
+    and board's own `overflow-x-auto` can do their job within a correctly
+    bounded box instead of the box itself growing to fit them. %>
+<%= form_with url: bulk_compose_applications_path, method: :get, data: { controller: "bulk-campaign mobile-crm" }, class: "relative max-w-screen-2xl w-full mx-auto py-8 overflow-hidden flex flex-col min-w-0 h-[85vh]" do |form| %>
 
   <%# Fades the page-canvas pattern out from the top edge down to solid
       white by ~15% of the board's height, then stays solid the rest of
@@ -30,7 +39,7 @@
        horizontal scroll on a phone, so below `sm` only one column shows at
        a time (see mobile_crm_controller.js). Hidden entirely at sm+, where
        the normal horizontal-scroll board below already shows every column. -->
-  <div class="relative sm:hidden flex gap-1.5 px-4 mb-3 overflow-x-auto">
+  <div class="relative sm:hidden flex gap-1.5 px-4 mb-3 overflow-x-auto min-w-0">
     <% @grouped_applications.each_key do |status| %>
       <button type="button" data-mobile-crm-target="tab" data-status="<%= status %>" data-action="click->mobile-crm#switch" class="flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold text-zinc-600 dark:text-zinc-400 transition">
         <%= application_status_label(status) %> (<%= @grouped_applications[status].count %>)
@@ -38,7 +47,7 @@
     <% end %>
   </div>
 
-  <div class="relative flex-1 overflow-x-auto flex px-4 sm:px-6 lg:px-8 pb-4 border-t border-zinc-100 dark:border-zinc-800">
+  <div class="relative flex-1 overflow-x-auto flex min-w-0 px-4 sm:px-6 lg:px-8 pb-4 border-t border-zinc-100 dark:border-zinc-800">
     <% @grouped_applications.each do |status, applications| %>
       <div class="hidden sm:flex w-full sm:w-72 flex-shrink-0 flex-col border-r-0 sm:border-r border-zinc-100 last:border-r-0 dark:border-zinc-800" data-mobile-crm-target="column" data-status="<%= status %>" data-controller="drag" data-action="dragover->drag#dragOver drop->drag#drop">
 
