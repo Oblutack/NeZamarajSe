@@ -40,6 +40,101 @@
     </div>
   <% end %>
 
+  <div class="mb-6 bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
+    <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-4 dark:text-zinc-400"><%= t(".today") %></p>
+
+    <% if @action_item_count.zero? %>
+      <p class="text-[13px] text-zinc-400 dark:text-zinc-600"><%= t(".today_empty") %></p>
+    <% else %>
+      <div class="space-y-5">
+        <% if @deadlines_to_apply.any? %>
+          <div>
+            <p class="text-[12px] font-semibold text-zinc-700 mb-2 dark:text-zinc-300"><%= t(".deadlines_to_apply") %></p>
+            <ul class="space-y-2">
+              <% @deadlines_to_apply.each do |app| %>
+                <li class="flex items-center justify-between gap-3 text-[13px]">
+                  <div class="min-w-0">
+                    <%= link_to app.job.title, job_path(app.job), class: "font-medium text-zinc-900 hover:underline truncate block dark:text-zinc-100" %>
+                    <p class="text-[11.5px] text-zinc-500 dark:text-zinc-400"><%= app.job.company.name %></p>
+                  </div>
+                  <span class="flex-shrink-0 font-semibold text-red-700 dark:text-red-400"><%= l(app.job.expires_at, format: "%b %d") %></span>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <% if @follow_ups_due.any? %>
+          <div>
+            <p class="text-[12px] font-semibold text-zinc-700 mb-2 dark:text-zinc-300"><%= t(".follow_ups_due") %></p>
+            <ul class="space-y-2">
+              <% @follow_ups_due.each do |app| %>
+                <li class="flex items-center justify-between gap-3 text-[13px]">
+                  <div class="min-w-0">
+                    <%= link_to app.job.title, application_path(app), class: "font-medium text-zinc-900 hover:underline truncate block dark:text-zinc-100" %>
+                    <p class="text-[11.5px] text-zinc-500 dark:text-zinc-400"><%= app.job.company.name %></p>
+                  </div>
+                  <%= link_to t(".send_follow_up"), compose_follow_up_application_path(app), class: "flex-shrink-0 text-[12px] font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50" %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <% if @upcoming_interviews.any? %>
+          <div>
+            <p class="text-[12px] font-semibold text-zinc-700 mb-2 dark:text-zinc-300"><%= t(".upcoming_interviews") %></p>
+            <ul class="space-y-2">
+              <% @upcoming_interviews.each do |app| %>
+                <li class="flex items-center justify-between gap-3 text-[13px]">
+                  <div class="min-w-0">
+                    <%= link_to app.job.title, application_path(app), class: "font-medium text-zinc-900 hover:underline truncate block dark:text-zinc-100" %>
+                    <p class="text-[11.5px] text-zinc-500 dark:text-zinc-400"><%= app.job.company.name %> &middot; <%= l(app.interview_date, format: "%b %d, %H:%M") %></p>
+                  </div>
+                  <%= link_to t(".add_to_calendar"), interview_ics_application_path(app), class: "flex-shrink-0 text-[12px] font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50" %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <% if @sends_in_flight.any? %>
+          <div>
+            <p class="text-[12px] font-semibold text-zinc-700 mb-2 dark:text-zinc-300"><%= t(".sends_in_flight") %></p>
+            <ul class="space-y-2">
+              <% @sends_in_flight.each do |app| %>
+                <li class="flex items-center justify-between gap-3 text-[13px]">
+                  <div class="min-w-0">
+                    <%= link_to app.job.title, application_path(app), class: "font-medium text-zinc-900 hover:underline truncate block dark:text-zinc-100" %>
+                    <p class="text-[11.5px] text-zinc-500 dark:text-zinc-400"><%= app.job.company.name %> &middot; <%= t(".queued_ago", time: time_ago_in_words(app.queued_at)) %></p>
+                  </div>
+                  <%= link_to t(".cancel_send"), cancel_application_path(app), data: { turbo_method: :post, turbo_confirm: t(".cancel_send_confirm") }, class: "cursor-pointer flex-shrink-0 text-[12px] font-semibold text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <% if @new_matching_jobs.any? %>
+          <div>
+            <p class="text-[12px] font-semibold text-zinc-700 mb-2 dark:text-zinc-300"><%= t(".new_matching_jobs") %></p>
+            <ul class="space-y-2">
+              <% @new_matching_jobs.each do |job| %>
+                <li class="flex items-center justify-between gap-3 text-[13px]">
+                  <div class="min-w-0">
+                    <%= link_to job.title, job_path(job), class: "font-medium text-zinc-900 hover:underline truncate block dark:text-zinc-100" %>
+                    <p class="text-[11.5px] text-zinc-500 dark:text-zinc-400"><%= job.company.name %></p>
+                  </div>
+                  <span class="flex-shrink-0 text-[11.5px] text-zinc-400 dark:text-zinc-600"><%= t(".posted_ago", time: time_ago_in_words(job.created_at)) %></span>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
   <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
     <div class="bg-white border border-zinc-200 rounded-lg p-5 dark:bg-zinc-900 dark:border-zinc-800">
       <p class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide dark:text-zinc-400"><%= t(".jobs_saved") %></p>

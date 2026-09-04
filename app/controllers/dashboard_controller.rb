@@ -5,6 +5,8 @@ class DashboardController < ApplicationController
   def show
     applications = current_user.applications
 
+    build_action_list(applications)
+
     @jobs_saved_count = applications.count
     @applications_sent_this_month_count = applications.where(applied_at: Time.current.all_month).count
 
@@ -47,6 +49,67 @@ class DashboardController < ApplicationController
   end
 
   private
+
+  # The dashboard used to only report what already happened (funnel, response
+  # rate, recent activity) - this builds the short, prioritized "what to do
+  # now" list above all of that. Every piece here is a filter over data that
+  # already exists (Track L's indexes on jobs.expires_at/applications.status/
+  # applications.queued_at are exactly what these queries lean on) - this is
+  # composition, not new plumbing.
+  def build_action_list(applications)
+    @deadlines_to_apply = applications.wishlist.joins(:job).includes(job: :company)
+      .where(jobs: { expires_at: Date.current..7.days.from_now })
+      .order("jobs.expires_at asc")
+
+    # needs_follow_up? stays a plain Ruby method (Application#needs_follow_up?)
+    # rather than being duplicated as a second SQL scope - a user's own
+    # "applied" list is small enough that filtering in Ruby is fine, and it
+    # guarantees this list can never drift from what the CRM card itself
+    # flags.
+    @follow_ups_due = applications.applied.includes(job: :company)
+      .select(&:needs_follow_up?)
+      .sort_by { |app| app.last_followed_up_at || app.applied_at }
+
+    @upcoming_interviews = applications.where(interview_date: Time.current..7.days.from_now.end_of_day)
+      .includes(job: :company).order(:interview_date)
+
+    # queued_at is always set alongside status by the controllers that queue a
+    # send (dispatch_email/bulk_dispatch) - excluding a nil here is a defensive
+    # guard against an application put into "queued" some other way (e.g.
+    # directly in a test or a console), not a case the normal flow produces.
+    @sends_in_flight = applications.queued.where.not(queued_at: nil).includes(job: :company).order(:queued_at)
+
+    @new_matching_jobs = new_matching_jobs_since_last_visit(applications)
+
+    @action_item_count = @deadlines_to_apply.size + @follow_ups_due.size +
+      @upcoming_interviews.size + @sends_in_flight.size + @new_matching_jobs.size
+
+    # Recorded last (after every query above reads the *previous* value) and
+    # via update_column specifically - this is visit tracking, not a change
+    # worth running full validation/callbacks for on every dashboard load.
+    current_user.update_column(:last_dashboard_visit_at, Time.current)
+  end
+
+  # New jobs since the user's last visit that match their own radar
+  # keywords - already-saved jobs are excluded, since flagging a job the
+  # user has already acted on isn't "new" in any useful sense. Falls back to
+  # a 7-day window on someone's very first visit (last_dashboard_visit_at is
+  # nil) rather than surfacing the entire jobs table as "new".
+  def new_matching_jobs_since_last_visit(applications)
+    keywords = current_user.user_preference&.keyword_array
+    return [] if keywords.blank?
+
+    since = current_user.last_dashboard_visit_at || 7.days.ago
+    saved_job_ids = applications.select(:job_id)
+
+    Job.visible_to(current_user)
+      .where(created_at: since..)
+      .where.not(id: saved_job_ids)
+      .select { |job| job.keyword_match_count(keywords).positive? }
+      .sort_by(&:created_at)
+      .reverse
+      .first(10)
+  end
 
   # "Reached interviewing" (or further) is read from the application_events
   # log (Track D) rather than current status, so an application that later
