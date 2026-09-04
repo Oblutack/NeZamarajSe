@@ -13,4 +13,18 @@ namespace :enrichment do
 
     puts "Done. Enqueued #{count} AnalyzeJob(s)."
   end
+
+  desc "Re-fetch and re-analyze every job with a URL, skipping the Hunter.io fallback - used to reformat descriptions that were already fetched before a formatting fix to AiJobAnalyzerService (e.g. paragraph/list structure, anchor-tag chrome stripping)"
+  task reformat_descriptions: :environment do
+    jobs = Job.where.not(url: nil)
+    count = jobs.count
+
+    puts "Re-enqueuing #{count} job(s) for analysis (Hunter.io fallback skipped)..."
+
+    jobs.find_each do |job|
+      AnalyzeJob.perform_later(job.id, skip_email_lookup: true)
+    end
+
+    puts "Done. Enqueued #{count} AnalyzeJob(s)."
+  end
 end

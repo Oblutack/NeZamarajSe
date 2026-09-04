@@ -1,6 +1,7 @@
 # app/services/ai_job_analyzer_service.rb
 require "open-uri"
 require "nokogiri"
+require "ferrum"
 
 class AiJobAnalyzerService
   # A handful of jobs link to domains that are dead/very slow (e.g. a defunct
@@ -39,6 +40,15 @@ class AiJobAnalyzerService
   # structure instead of collapsing into one run-on line.
   BLOCK_TAGS = %w[p div li h1 h2 h3 h4 h5 h6 tr].freeze
 
+  # A real job posting runs into the hundreds of characters at minimum -
+  # confirmed live, some itbase.ba postings redirect to ATS pages (e.g.
+  # BambooHR) that render the actual listing client-side via JS, so the
+  # plain HTTP fetch below only sees a near-empty page shell ("BambooHR", 8
+  # characters, was one real result). Text shorter than this after a normal
+  # fetch triggers a headless-Chrome retry (see #fetch_rendered_doc) instead
+  # of silently saving the shell text as if it were the real description.
+  MIN_RENDERED_TEXT_LENGTH = 300
+
   def self.call(job, skip_email_lookup: false)
     new(job, skip_email_lookup: skip_email_lookup).call
   end
@@ -75,26 +85,30 @@ class AiJobAnalyzerService
       DeadDomain.record_success!(host)
       doc = Nokogiri::HTML(html)
 
-      # Strip noisy HTML tags so we don't confuse the AI (and save tokens) -
-      # and so a job board's own generic "contact us" mailto: link in its nav
-      # or footer (site-wide, printed on every posting) isn't mistaken for
-      # this specific listing's HR address. Do this before extracting the
-      # email, not after: a site like Klix prints its own posao@klix.ba
-      # contact link in the page chrome on every single job page.
-      doc.search("script, style, nav, footer, header").remove
-
-      # A mailto: link or a bare email address printed in the remaining page
-      # text is a sure thing - Bosnian job ads print the HR address plainly
-      # very often. Try this before ever spending an AI call on it.
-      email_from_page = extract_email(doc)
-
-      # Best-effort, and deliberately after email extraction rather than
-      # before it - a failure in here must never affect the more important
-      # email/description work above it.
+      # Best-effort, and deliberately before the chrome-stripping/extraction
+      # below - a failure in here must never affect the more important
+      # email/description work that follows. og:image lives in <head>, so
+      # it's unaffected either way regardless of ordering.
       extract_and_attach_company_logo(doc)
 
-      # Convert the DOM to readable text, preserving paragraph/list structure
-      raw_text = extract_readable_text(doc)
+      email_from_page, raw_text = extract_email_and_text(doc)
+
+      # Some sites (MojPosao, and some itbase.ba redirect targets) render
+      # their actual posting text client-side via JS - the plain fetch above
+      # only sees the pre-hydration page shell in that case, which yields
+      # suspiciously little text. Retry once with the same headless-Chrome
+      # approach the scrapers already use at listing-scrape time rather than
+      # silently saving that shell text as if it were the real description.
+      if raw_text.length < MIN_RENDERED_TEXT_LENGTH
+        rendered_doc = fetch_rendered_doc(@job.url)
+        if rendered_doc
+          rendered_email, rendered_text = extract_email_and_text(rendered_doc)
+          if rendered_text.length > raw_text.length
+            raw_text = rendered_text
+            email_from_page = email_from_page.presence || rendered_email
+          end
+        end
+      end
 
       # Truncate to ~4000 characters just to be safe with token limits
       text_to_analyze = raw_text[0..4000]
@@ -174,6 +188,74 @@ class AiJobAnalyzerService
 
   private
 
+  # Strips chrome and pulls the [email, readable_text] pair out of a parsed
+  # page - shared between the plain-fetch doc and the headless-rendered
+  # fallback doc so both go through identical extraction logic.
+  def extract_email_and_text(doc)
+    # Strip noisy HTML tags so we don't confuse the AI (and save tokens) -
+    # and so a job board's own generic "contact us" mailto: link in its nav
+    # or footer (site-wide, printed on every posting) isn't mistaken for
+    # this specific listing's HR address. Do this before extracting the
+    # email, not after: a site like Klix prints its own posao@klix.ba
+    # contact link in the page chrome on every single job page.
+    doc.search("script, style, nav, footer, header").remove
+
+    # A mailto: link or a bare email address printed in the remaining page
+    # text is a sure thing - Bosnian job ads print the HR address plainly
+    # very often. Try this before ever spending an AI call on it.
+    email = extract_email(doc)
+
+    # Strip remaining links (breadcrumbs, "back to listings", pagination,
+    # share buttons) now that mailto: extraction above is done with them -
+    # real job-posting prose is essentially never itself a hyperlink, but
+    # site chrome almost always is. Confirmed live against a Klix posting:
+    # its breadcrumb ("Početna Oglasi <title>") isn't inside <nav>/
+    # <header> at all, just a plain <a> in the main content area - no
+    # tag-name-based strip catches it, but this does. Whatever a link
+    # pointed at (company name, "X other locations") is already captured
+    # in Job#company/#location from the scrape itself, so losing that text
+    # here isn't a real data loss.
+    doc.css("a").remove
+
+    [ email, extract_readable_text(doc) ]
+  end
+
+  # Same headless-Chrome approach and launch flags as
+  # Scrapers::UniversalJobScraper/CompanyWallScraper - reused here as a
+  # fallback, not the default path, since launching a real browser per job
+  # is meaningfully slower/heavier than the plain HTTP fetch that covers
+  # most sites. Returns nil (rather than raising) on any failure - this is
+  # already a fallback for the fallback's sake, so a site that defeats even
+  # headless rendering should just fall through to keeping whatever the
+  # plain fetch got, not blow up the whole analysis.
+  def fetch_rendered_doc(url)
+    browser = Ferrum::Browser.new(
+      timeout: 20,
+      window_size: [ 1920, 1080 ],
+      browser_options: {
+        "no-sandbox": nil,
+        "disable-dev-shm-usage": nil,
+        "disable-gpu": nil,
+        "user-agent": REQUEST_HEADERS["User-Agent"]
+      }
+    )
+    browser.goto(url)
+    # Same two-step wait as the scrapers (UniversalJobScraper/
+    # CompanyWallScraper): network idle alone isn't always enough - a widget
+    # that renders its content just after its last network call still needs
+    # a beat to actually paint into the DOM. Confirmed live: without this,
+    # a BambooHR careers page's job list still read as empty immediately
+    # after wait_for_idle, but was fully populated 0.5s later.
+    browser.network.wait_for_idle(timeout: 10)
+    sleep(0.5)
+    Nokogiri::HTML(browser.body)
+  rescue StandardError => e
+    Honeybadger.notify(e, context: { job_id: @job.id, url: url, phase: "headless_fallback" })
+    nil
+  ensure
+    browser&.quit
+  end
+
   # doc.text alone concatenates every text node with no separation - a
   # posting laid out as <p>About us</p><p>We build...</p><li>Ruby</li>
   # <li>Rails</li> used to collapse into one unreadable run-on line
@@ -186,10 +268,25 @@ class AiJobAnalyzerService
   # is the only change needed to make a stored description look like the
   # original listing instead of a wall of text.
   def extract_readable_text(doc)
-    doc.css("br").each { |node| node.replace("\n") }
-    doc.css(BLOCK_TAGS.join(", ")).each { |node| node.add_child(Nokogiri::XML::Text.new("\n", doc)) }
+    # Prefer a page's own content wrapper when it has a reliable one, rather
+    # than the whole document. `.prose` is Tailwind Typography's actual
+    # class name for "this element is rendered article/description body" -
+    # a real convention, not a Klix-specific guess - and confirmed live on
+    # Klix to contain exactly the posting text with nothing else: no
+    # repeated title heading, no breadcrumb, no "Objavio ... " publication
+    # line (all of which live in sibling elements outside it, and which
+    # duplicate data already shown elsewhere in the UI - job.title,
+    # job.created_at, job.company, job.location). Falls back to <main>,
+    # then <body>, then the whole document (which also fixes <head><title>
+    # leaking in - every site's <title> duplicates the job title) for pages
+    # with none of these landmarks, so this only narrows extraction when
+    # there's an actual signal to do so, never guesses.
+    root = doc.at_css(".prose") || doc.at_css("main") || doc.at_css("body") || doc
 
-    doc.text
+    root.css("br").each { |node| node.replace("\n") }
+    root.css(BLOCK_TAGS.join(", ")).each { |node| node.add_child(Nokogiri::XML::Text.new("\n", doc)) }
+
+    root.text
       .split("\n")
       .map { |line| line.gsub(/[ \t]+/, " ").strip }
       .reject(&:blank?)

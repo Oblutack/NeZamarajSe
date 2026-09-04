@@ -3,12 +3,44 @@ require "test_helper"
 class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
+  # Every fixture HTML string in this file is deliberately short (well under
+  # MIN_RENDERED_TEXT_LENGTH), which would otherwise trigger the real
+  # headless-Chrome fallback on every single test in this file - slow, and a
+  # real browser launch has no business happening in a unit test. Raising
+  # here isn't a problem for those tests: fetch_rendered_doc's own
+  # rescue => nil swallows it, exactly like a real headless failure would,
+  # so the original short text is kept and those tests' assertions still
+  # hold. Tests that actually want to exercise the fallback stub
+  # Ferrum::Browser.new themselves (see below), which shadows this for the
+  # duration of their own block.
+  setup do
+    Ferrum::Browser.define_singleton_method(:new) { |*| raise "Ferrum::Browser.new should be stubbed explicitly by any test exercising the headless fallback" }
+  end
+
+  teardown do
+    Ferrum::Browser.singleton_class.send(:remove_method, :new)
+  end
+
   def stub_ai_response(content)
     fake_client = Object.new
     fake_client.define_singleton_method(:chat) do |*|
       { "choices" => [ { "message" => { "content" => content } } ] }
     end
     fake_client
+  end
+
+  # A minimal double for Ferrum::Browser - just enough surface
+  # (#goto/#network/#body/#quit) for fetch_rendered_doc to drive it.
+  def stub_headless_browser(rendered_html)
+    network = Object.new
+    network.define_singleton_method(:wait_for_idle) { |*| }
+
+    browser = Object.new
+    browser.define_singleton_method(:goto) { |*| }
+    browser.define_singleton_method(:network) { network }
+    browser.define_singleton_method(:body) { rendered_html }
+    browser.define_singleton_method(:quit) { }
+    browser
   end
 
   test "saves the hr_email and expiration date the AI extracts" do
@@ -208,6 +240,89 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
     assert_not_includes job.description, "ignored()"
   end
 
+  test "does not leak the page's <title> tag into the description" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = "<html><head><title>Backend Engineer | Acme - Some Job Board</title></head><body><p>The actual job posting text.</p></body></html>"
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal "The actual job posting text.", job.reload.description
+  end
+
+  test "extracts only from a .prose content wrapper when the page has one, skipping surrounding chrome" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = <<~HTML
+      <html><body>
+        <div class="breadcrumb">
+          <h1>Backend Engineer</h1>
+          <p>Objavio , 01.09.2026. u 09:02. - Prijava do 27.09.2026.</p>
+        </div>
+        <main>
+          <div class="prose">
+            <p>The real job description starts here.</p>
+            <p>Second paragraph.</p>
+          </div>
+        </main>
+      </body></html>
+    HTML
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal "The real job description starts here.\nSecond paragraph.", job.reload.description
+  end
+
+  test "falls back to <main> when the page has no .prose wrapper" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = <<~HTML
+      <html><body>
+        <div class="sidebar"><p>Related jobs widget.</p></div>
+        <main><p>The real job description.</p></main>
+      </body></html>
+    HTML
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal "The real job description.", job.reload.description
+  end
+
+  test "strips breadcrumb/navigation links from the description but still extracts a mailto: email first" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = <<~HTML
+      <html><body>
+        <a href="/jobs">Home</a> <a href="/jobs">Listings</a> <a href="/jobs/1">Backend Engineer</a>
+        <p>Apply to <a href="mailto:hr@realcompany.example">hr@realcompany.example</a> for this role.</p>
+      </body></html>
+    HTML
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    job.reload
+    assert_equal "hr@realcompany.example", job.hr_email
+    assert_equal "Apply to for this role.", job.description
+    assert_not_includes job.description, "Home"
+    assert_not_includes job.description, "Listings"
+  end
+
   test "preserves paragraph breaks instead of collapsing the page into one line" do
     job = jobs(:one)
     fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
@@ -351,5 +466,76 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
     end
 
     assert_equal "existing.png", job.company.reload.logo.filename.to_s
+  end
+
+  test "falls back to headless rendering when the plain fetch yields too little text" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    shell_html = "<html><body>BambooHR</body></html>"
+    rendered_html = "<html><body><p>#{'A real, fully client-side rendered job description. ' * 10}</p></body></html>"
+
+    stub_class_method(URI, :open, ->(*) { shell_html }) do
+      stub_class_method(Ferrum::Browser, :new, stub_headless_browser(rendered_html)) do
+        stub_class_method(OpenAI::Client, :new, fake_client) do
+          AiJobAnalyzerService.call(job)
+        end
+      end
+    end
+
+    assert_includes job.reload.description, "A real, fully client-side rendered job description."
+    assert_not_equal "BambooHR", job.description
+  end
+
+  test "does not fall back to headless rendering when the plain fetch already has enough text" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = "<html><body><p>#{'A perfectly normal, plenty-long job description sentence. ' * 10}</p></body></html>"
+
+    # No Ferrum::Browser stub here - the file-wide setup stub raises if it's
+    # ever called, so this test also proves the fallback stays untriggered.
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        assert_nothing_raised { AiJobAnalyzerService.call(job) }
+      end
+    end
+
+    assert_includes job.reload.description, "A perfectly normal, plenty-long job description sentence."
+  end
+
+  test "keeps the plain fetch's text when the headless fallback also comes back short" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    shell_html = "<html><body>Short but real text.</body></html>"
+    still_short_rendered_html = "<html><body>Nothing.</body></html>"
+
+    stub_class_method(URI, :open, ->(*) { shell_html }) do
+      stub_class_method(Ferrum::Browser, :new, stub_headless_browser(still_short_rendered_html)) do
+        stub_class_method(OpenAI::Client, :new, fake_client) do
+          AiJobAnalyzerService.call(job)
+        end
+      end
+    end
+
+    assert_equal "Short but real text.", job.reload.description
+  end
+
+  test "does not blow up when the headless fallback itself fails" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    shell_html = "<html><body>BambooHR</body></html>"
+
+    stub_class_method(URI, :open, ->(*) { shell_html }) do
+      stub_class_method(Ferrum::Browser, :new, ->(*) { raise "Chrome crashed" }) do
+        stub_class_method(OpenAI::Client, :new, fake_client) do
+          assert_nothing_raised { AiJobAnalyzerService.call(job) }
+        end
+      end
+    end
+
+    assert_equal "BambooHR", job.reload.description
   end
 end
