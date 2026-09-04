@@ -83,6 +83,56 @@ class ApplicationsController < ApplicationController
     @selected_resume = @resumes.find { |r| r.blob_id == params[:resume_blob_id].to_i } if params[:resume_blob_id].present?
   end
 
+  # Drafts a one-off cover letter for this specific application via
+  # CoverLetterGeneratorService, then saves it as a real CoverLetterTemplate
+  # (ai_generated: true) and redirects straight back into the normal compose
+  # preview with it selected - reuses render_content, the preview, the
+  # dispatch form, and sent-email history exactly as they already work for
+  # a hand-written template. Nothing downstream needed to change.
+  def generate_cover_letter
+    @application = current_user.applications.find(params[:id])
+    resume = current_user.resumes.find { |r| r.blob_id == params[:resume_blob_id].to_i }
+
+    if resume.nil?
+      redirect_to compose_application_path(@application), alert: t("flash.applications.select_a_resume_first")
+      return
+    end
+
+    language = params[:language]
+    body_html = CoverLetterGeneratorService.call(job: @application.job, resume_blob: resume.blob, language: language)
+
+    template = current_user.cover_letter_templates.create!(
+      name: "AI: #{@application.job.title} (#{l(Time.current, format: '%b %-d, %H:%M')})",
+      body: body_html,
+      ai_generated: true,
+      language: CoverLetterTemplate::LANGUAGES.key?(language) ? language : "en"
+    )
+
+    redirect_to compose_application_path(@application, template_id: template.id, resume_blob_id: resume.blob.id)
+  rescue StandardError => e
+    Honeybadger.notify(e, context: { application_id: params[:id] })
+    redirect_to compose_application_path(@application), alert: t("flash.applications.generation_failed")
+  end
+
+  # Re-translates an AI-drafted template in place (see
+  # CoverLetterTranslatorService) rather than creating a second draft -
+  # editing a template's body later has always been safe, since a past
+  # send's sent_body is captured independently onto the Application at send
+  # time (SendApplicationJob), not read live from the template afterward.
+  def translate_cover_letter
+    @application = current_user.applications.find(params[:id])
+    template = current_user.cover_letter_templates.find(params[:template_id])
+    language = params[:language]
+
+    translated_html = CoverLetterTranslatorService.call(plain_text: template.body.to_plain_text, target_language: language)
+    template.update!(body: translated_html, language: CoverLetterTemplate::LANGUAGES.key?(language) ? language : "en")
+
+    redirect_to compose_application_path(@application, template_id: template.id, resume_blob_id: params[:resume_blob_id])
+  rescue StandardError => e
+    Honeybadger.notify(e, context: { application_id: params[:id], template_id: params[:template_id] })
+    redirect_to compose_application_path(@application), alert: t("flash.applications.translation_failed")
+  end
+
   def dispatch_email
     @application = current_user.applications.find(params[:id])
     template_id = params[:template_id]

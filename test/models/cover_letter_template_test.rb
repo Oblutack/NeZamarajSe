@@ -84,6 +84,29 @@ class CoverLetterTemplateTest < ActiveSupport::TestCase
     assert_equal 0, template.reply_count
   end
 
+  test "language accepts a supported code or nil, rejects anything else" do
+    template = cover_letter_templates(:one)
+
+    template.language = "en"
+    assert template.valid?
+
+    template.language = "bs"
+    assert template.valid?
+
+    template.language = nil
+    assert template.valid?
+
+    template.language = "fr"
+    assert_not template.valid?
+    assert_includes template.errors[:language], "is not included in the list"
+  end
+
+  test "ai_generated defaults to false" do
+    template = CoverLetterTemplate.create!(user: users(:one), name: "Manual", body: "Body")
+
+    assert_equal false, template.ai_generated
+  end
+
   test "deleting a template nullifies cover_letter_template_id rather than removing the application" do
     user = users(:one)
     template = CoverLetterTemplate.create!(user: user, name: "Disposable", body: "Body")

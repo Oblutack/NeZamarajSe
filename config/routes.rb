@@ -46,6 +46,8 @@ Rails.application.routes.draw do
       post :add_note
       get :compose_follow_up
       post :dispatch_follow_up
+      post :generate_cover_letter
+      post :translate_cover_letter
     end
 
     # Collection routes apply to MULTIPLE records (e.g. /applications/bulk_compose)

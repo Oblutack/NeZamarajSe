@@ -10,8 +10,14 @@ class CoverLetterTemplate < ApplicationRecord
   # shouldn't disappear because the template that produced it did.
   has_many :applications, dependent: :nullify
 
+  # Shared by CoverLetterGeneratorService, CoverLetterTranslatorService, and
+  # the compose page's language picker - one place naming which languages
+  # the AI cover letter feature supports.
+  LANGUAGES = { "en" => "English", "bs" => "Bosnian" }.freeze
+
   validates :name, presence: true, uniqueness: { scope: :user_id }
   validates :body, presence: true
+  validates :language, inclusion: { in: LANGUAGES.keys }, allow_nil: true
 
   # This is the "Architect" way to handle string interpolation safely later.
   # We'll call this method right before sending an email.

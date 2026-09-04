@@ -100,3 +100,7 @@ gem "ferrum", "~> 0.17.2"
 gem "honeybadger", "~> 5.0"
 
 gem "pagy", "~> 9.3"
+
+# Extracts plain text from a resume PDF so it can be fed into the AI cover
+# letter generator - see CoverLetterGeneratorService.
+gem "pdf-reader", "~> 2.12"
