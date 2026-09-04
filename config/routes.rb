@@ -14,7 +14,10 @@ Rails.application.routes.draw do
 
   # --- ASSETS & TEMPLATES ---
   resources :resumes, only: [ :index, :create, :destroy ]
-  resources :cover_letter_templates, except: [ :show ]
+  resources :cover_letter_templates, except: [ :show ] do
+    collection { post :generate }
+    member { post :translate }
+  end
 
   resource :user_preference, only: [ :edit, :update ]
 

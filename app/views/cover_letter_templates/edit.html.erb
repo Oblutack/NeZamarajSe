@@ -1,6 +1,12 @@
 <div class="max-w-2xl mx-auto py-8">
   <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight mb-6 dark:text-zinc-50"><%= t(".title") %></h1>
   <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
+    <% if @template.ai_generated? %>
+      <% other_language = @template.language == "bs" ? "en" : "bs" %>
+      <div class="flex justify-end mb-3">
+        <%= button_to t("shared.ai_cover_letter.translate_to_#{other_language}"), translate_cover_letter_template_path(@template), method: :post, params: { language: other_language }, class: "cursor-pointer text-[12px] font-semibold text-zinc-600 hover:text-zinc-950 underline dark:text-zinc-400 dark:hover:text-zinc-50" %>
+      </div>
+    <% end %>
     <%= render "form", template: @template %>
   </div>
 </div>

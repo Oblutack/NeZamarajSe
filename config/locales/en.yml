@@ -41,6 +41,17 @@ en:
       dry_run_body: "Nothing is sent to the company yet. This email goes to your own inbox (%{email}) instead of the recipient shown below, so you can check it's right before you ever send for real."
       explainer_title: "How this works:"
       explainer_body: "Sending goes out from your own Gmail account to the address shown below, with your selected CV attached. Nothing is sent until you click the button, and you can always see exactly what went out afterward."
+    ai_cover_letter:
+      language: "Language"
+      english: "English"
+      bosnian: "Bosnian"
+      generate: "Generate"
+      pick_resume_first: "Pick a resume above first - the AI reads it to write something real."
+      translate_to_en: "Translate to English"
+      translate_to_bs: "Translate to Bosnian"
+    confirm_dialog:
+      cancel: "Cancel"
+      confirm: "Confirm"
     application_statuses:
       wishlist: "Wishlist"
       queued: "Sending soon"
@@ -306,13 +317,6 @@ en:
       send_email: "Send Email via Gmail"
       ai_generate_title: "Or generate one with AI"
       ai_generate_hint: "Drafts a fresh cover letter for this specific job, grounded in your resume - not a reusable template."
-      language: "Language"
-      english: "English"
-      bosnian: "Bosnian"
-      generate: "Generate"
-      pick_resume_first: "Pick a resume above first - the AI reads it to write something real."
-      translate_to_en: "Translate to English"
-      translate_to_bs: "Translate to Bosnian"
     compose_follow_up:
       title: "Send a Follow-up"
       following_up_on: "Following up on"
@@ -403,6 +407,9 @@ en:
       reply_stats: "%{sent} sent · %{replies} replies (%{percent}%)"
     new:
       title: "New Cover Letter Template"
+      ai_generate_title: "Or generate one with AI"
+      ai_generate_hint: "Drafts a reusable template grounded in your resume, using the {{company_name}}, {{job_title}}, and {{location}} placeholders so you can send it to any job."
+      no_resumes_yet: "Upload a resume in My Documents first - the AI needs one to write from."
     edit:
       title: "Edit Template"
     form:
@@ -493,6 +500,10 @@ en:
       created: "Template created successfully."
       updated: "Template updated successfully."
       deleted: "Template deleted."
+      generated: "Template generated - review it below before saving."
+      select_a_resume_first: "Select a resume above first - the AI reads it to write the letter."
+      generation_failed: "Couldn't generate a cover letter right now - please try again."
+      translation_failed: "Couldn't translate that right now - please try again."
     applications:
       added_to_wishlist: "%{job} added to your wishlist!"
       removed_from_crm: "Removed from your applications."

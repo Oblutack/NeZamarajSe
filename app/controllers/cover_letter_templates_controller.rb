@@ -1,7 +1,7 @@
 # app/controllers/cover_letter_templates_controller.rb
 class CoverLetterTemplatesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_template, only: [ :edit, :update, :destroy ]
+  before_action :set_template, only: [ :edit, :update, :destroy, :translate ]
 
   def index
     @templates = current_user.cover_letter_templates.order(created_at: :desc)
@@ -35,6 +35,41 @@ class CoverLetterTemplatesController < ApplicationController
   def destroy
     @template.destroy
     redirect_to cover_letter_templates_path, notice: t("flash.cover_letter_templates.deleted"), status: :see_other
+  end
+
+  def generate
+    resume = current_user.resumes.find { |r| r.blob_id == params[:resume_blob_id].to_i }
+
+    if resume.nil?
+      redirect_to new_cover_letter_template_path, alert: t("flash.cover_letter_templates.select_a_resume_first")
+      return
+    end
+
+    language = params[:language]
+    body_html = CoverLetterTemplateGeneratorService.call(resume_blob: resume.blob, language: language)
+
+    template = current_user.cover_letter_templates.create!(
+      name: "AI Template (#{l(Time.current, format: '%b %-d, %H:%M')})",
+      body: body_html,
+      ai_generated: true,
+      language: CoverLetterTemplate::LANGUAGES.key?(language) ? language : "en"
+    )
+
+    redirect_to edit_cover_letter_template_path(template), notice: t("flash.cover_letter_templates.generated")
+  rescue StandardError => e
+    Honeybadger.notify(e, context: { user_id: current_user.id })
+    redirect_to new_cover_letter_template_path, alert: t("flash.cover_letter_templates.generation_failed")
+  end
+
+  def translate
+    language = params[:language]
+    translated_html = CoverLetterTranslatorService.call(plain_text: @template.body.to_plain_text, target_language: language)
+    @template.update!(body: translated_html, language: CoverLetterTemplate::LANGUAGES.key?(language) ? language : "en")
+
+    redirect_to edit_cover_letter_template_path(@template)
+  rescue StandardError => e
+    Honeybadger.notify(e, context: { template_id: params[:id] })
+    redirect_to edit_cover_letter_template_path(@template), alert: t("flash.cover_letter_templates.translation_failed")
   end
 
   private

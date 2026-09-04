@@ -47,6 +47,7 @@
 
   <body class="relative" data-controller="<%= 'command-palette keyboard-shortcuts' if user_signed_in? %>">
     <%= render "shared/command_palette" if user_signed_in? %>
+    <%= render "shared/confirm_dialog" if user_signed_in? %>
 
     <!-- Full-bleed page canvas: a plain descendant (not <body> itself, which
          would propagate its background to the root and break normal

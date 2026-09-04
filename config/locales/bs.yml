@@ -41,6 +41,17 @@ bs:
       dry_run_body: "Kompaniji se još ništa ne šalje. Ovaj email ide na tvoj vlastiti inbox (%{email}) umjesto primaocu prikazanom ispod, da provjeriš da je sve u redu prije nego ikad pošalješ pravi email."
       explainer_title: "Kako ovo funkcioniše:"
       explainer_body: "Slanje ide sa tvog vlastitog Gmail naloga na adresu prikazanu ispod, sa tvojim odabranim CV-jem u prilogu. Ništa se ne šalje dok ne klikneš dugme, a uvijek možeš vidjeti tačno šta je poslano nakon toga."
+    ai_cover_letter:
+      language: "Jezik"
+      english: "Engleski"
+      bosnian: "Bosanski"
+      generate: "Generiši"
+      pick_resume_first: "Prvo odaberi CV iznad - AI ga čita da bi napisao nešto stvarno."
+      translate_to_en: "Prevedi na engleski"
+      translate_to_bs: "Prevedi na bosanski"
+    confirm_dialog:
+      cancel: "Otkaži"
+      confirm: "Potvrdi"
     application_statuses:
       wishlist: "Lista želja"
       queued: "Uskoro se šalje"
@@ -310,13 +321,6 @@ bs:
       send_email: "Pošalji email putem Gmaila"
       ai_generate_title: "Ili generiši uz pomoć AI-a"
       ai_generate_hint: "Sastavlja novo motivaciono pismo za ovaj konkretan posao, na osnovu tvog CV-a - nije predložak za ponovnu upotrebu."
-      language: "Jezik"
-      english: "Engleski"
-      bosnian: "Bosanski"
-      generate: "Generiši"
-      pick_resume_first: "Prvo odaberi CV iznad - AI ga čita da bi napisao nešto stvarno."
-      translate_to_en: "Prevedi na engleski"
-      translate_to_bs: "Prevedi na bosanski"
     compose_follow_up:
       title: "Pošalji podsjetnik"
       following_up_on: "Podsjećaš na prijavu za"
@@ -409,6 +413,9 @@ bs:
       reply_stats: "%{sent} poslano · %{replies} odgovora (%{percent}%)"
     new:
       title: "Novi predložak motivacionog pisma"
+      ai_generate_title: "Ili generiši uz pomoć AI-a"
+      ai_generate_hint: "Sastavlja predložak za ponovnu upotrebu na osnovu tvog CV-a, koristeći oznake {{company_name}}, {{job_title}} i {{location}} kako bi ga mogao/la poslati na bilo koji posao."
+      no_resumes_yet: "Prvo otpremi CV u Moji dokumenti - AI treba CV da bi znao šta da piše."
     edit:
       title: "Uredi predložak"
     form:
@@ -502,6 +509,10 @@ bs:
       created: "Predložak uspješno kreiran."
       updated: "Predložak uspješno ažuriran."
       deleted: "Predložak obrisan."
+      generated: "Predložak generisan - pregledaj ga ispod prije čuvanja."
+      select_a_resume_first: "Prvo odaberi CV iznad - AI ga čita da bi napisao pismo."
+      generation_failed: "Trenutno nije moguće generisati motivaciono pismo - pokušaj ponovo."
+      translation_failed: "Trenutno nije moguće prevesti - pokušaj ponovo."
     applications:
       added_to_wishlist: "%{job} dodan na tvoju listu želja!"
       removed_from_crm: "Uklonjeno iz tvojih prijava."

@@ -52,6 +52,19 @@ class CoverLetterTranslatorServiceTest < ActiveSupport::TestCase
     assert_includes captured_prompt, "into English"
   end
 
+  test "normalizes single-newline paragraphs into real separate <p> tags" do
+    fake_client = stub_ai_response("Opening line.\nBody paragraph.\nClosing paragraph.")
+
+    result = stub_class_method(OpenAI::Client, :new, fake_client) do
+      CoverLetterTranslatorService.call(plain_text: "Some source text.", target_language: "bs")
+    end
+
+    assert_includes result, "<p>Opening line.</p>"
+    assert_includes result, "<p>Body paragraph.</p>"
+    assert_includes result, "<p>Closing paragraph.</p>"
+    assert_not_includes result, "<br"
+  end
+
   test "returns blank input as-is rather than calling the AI" do
     fake_client = Object.new
     fake_client.define_singleton_method(:chat) { |*| raise "should not be called for blank input" }

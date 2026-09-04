@@ -1,6 +1,4 @@
 # app/services/cover_letter_generator_service.rb
-require "pdf/reader"
-require "stringio"
 
 # Drafts a cover letter tailored to one specific job, grounded in the user's
 # actual resume content - not a reusable {{smart_tag}} template, a one-off
@@ -12,8 +10,9 @@ require "stringio"
 # job later would read wrong regardless - it was never meant to be reused
 # the way a hand-written template is.
 class CoverLetterGeneratorService
+  include CoverLetterFormatting
+
   MAX_JOB_DESCRIPTION_CHARS = 3000
-  MAX_RESUME_CHARS = 4000
 
   def self.call(job:, resume_blob:, language:)
     new(job: job, resume_blob: resume_blob, language: language).call
@@ -38,7 +37,7 @@ class CoverLetterGeneratorService
     text = response.dig("choices", 0, "message", "content").to_s.strip
     raise "Groq returned an empty cover letter" if text.blank?
 
-    ApplicationController.helpers.simple_format(text)
+    ApplicationController.helpers.simple_format(normalize_paragraphs(text))
   end
 
   private
@@ -46,6 +45,8 @@ class CoverLetterGeneratorService
   def prompt
     <<~PROMPT
       You are a professional cover letter writer. Write a genuine, specific cover letter in #{CoverLetterTemplate::LANGUAGES.fetch(@language)} for the job application below. Use only real details drawn from the candidate's resume - never invent experience, skills, employers, or projects that aren't listed there. Keep it to roughly 250-350 words, professional but personable, no generic filler ("I am writing to express my interest..."). Address it generically since the specific hiring contact isn't known. Sign off with the candidate's name if their resume names them.
+
+      Structure the letter as short, clearly separated paragraphs: an opening line, one or two paragraphs about relevant experience, a closing paragraph, then the sign-off on its own line. Separate every paragraph and the sign-off with a blank line (two newline characters) - never run them together as one block of text.
 
       Job title: #{@job.title}
       Company: #{@job.company.name}
@@ -65,10 +66,6 @@ class CoverLetterGeneratorService
   end
 
   def resume_text
-    reader = PDF::Reader.new(StringIO.new(@resume_blob.download))
-    reader.pages.map(&:text).join("\n").strip.first(MAX_RESUME_CHARS)
-  rescue StandardError => e
-    Honeybadger.notify(e, context: { resume_blob_id: @resume_blob.id })
-    ""
+    ResumeTextExtractor.call(@resume_blob)
   end
 end

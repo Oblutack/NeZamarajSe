@@ -44,13 +44,16 @@
       <%= form_with url: generate_cover_letter_application_path(@application), method: :post, data: { turbo_frame: "_top" }, class: "flex flex-wrap items-end gap-3" do %>
         <%= hidden_field_tag :resume_blob_id, @selected_resume&.blob&.id %>
         <div>
-          <label class="block text-[11.5px] font-medium text-zinc-500 dark:text-zinc-400"><%= t(".language") %></label>
-          <%= select_tag :language, options_for_select(CoverLetterTemplate::LANGUAGES.map { |code, _| [ t(".#{code == 'en' ? 'english' : 'bosnian'}"), code ] }, "en"), class: "mt-1 rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100" %>
+          <label class="block text-[11.5px] font-medium text-zinc-500 dark:text-zinc-400"><%= t("shared.ai_cover_letter.language") %></label>
+          <%= select_tag :language, options_for_select(CoverLetterTemplate::LANGUAGES.map { |code, _| [ t("shared.ai_cover_letter.#{code == 'en' ? 'english' : 'bosnian'}"), code ] }, "en"), class: "mt-1 rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100" %>
         </div>
-        <%= submit_tag t(".generate"), disabled: @selected_resume.nil?, class: "cursor-pointer inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
+        <%= button_tag type: "submit", disabled: @selected_resume.nil?, class: "cursor-pointer inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" do %>
+          <%= render "shared/sparkle_icon", class: "w-3.5 h-3.5" %>
+          <%= t("shared.ai_cover_letter.generate") %>
+        <% end %>
       <% end %>
       <% if @selected_resume.nil? %>
-        <p class="text-[11.5px] text-amber-700 mt-2 dark:text-amber-400"><%= t(".pick_resume_first") %></p>
+        <p class="text-[11.5px] text-amber-700 mt-2 dark:text-amber-400"><%= t("shared.ai_cover_letter.pick_resume_first") %></p>
       <% end %>
     </div>
 
@@ -87,7 +90,7 @@
                 <%= hidden_field_tag :template_id, @selected_template.id %>
                 <%= hidden_field_tag :resume_blob_id, @selected_resume.blob.id %>
                 <%= hidden_field_tag :language, other_language %>
-                <%= submit_tag t(".translate_to_#{other_language}"), class: "cursor-pointer text-[12px] font-semibold text-zinc-600 hover:text-zinc-950 underline dark:text-zinc-400 dark:hover:text-zinc-50" %>
+                <%= submit_tag t("shared.ai_cover_letter.translate_to_#{other_language}"), class: "cursor-pointer text-[12px] font-semibold text-zinc-600 hover:text-zinc-950 underline dark:text-zinc-400 dark:hover:text-zinc-50" %>
               <% end %>
             <% end %>
           </div>

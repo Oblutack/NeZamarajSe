@@ -1,0 +1,14 @@
+<!-- app/views/shared/_confirm_dialog.html.erb -->
+<dialog data-controller="confirm-dialog"
+        data-action="click->confirm-dialog#backdropClick"
+        class="fixed inset-0 m-auto rounded-lg border border-zinc-200 shadow-xl p-5 max-w-sm w-[90vw] h-max bg-white text-zinc-800 backdrop:bg-zinc-950/40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+  <p data-confirm-dialog-target="message" class="text-[13.5px] leading-relaxed"></p>
+  <div class="mt-5 flex justify-end gap-2">
+    <button type="button" data-action="confirm-dialog#cancel" class="cursor-pointer py-2 px-4 border border-zinc-300 rounded-md text-[13px] font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
+      <%= t("shared.confirm_dialog.cancel") %>
+    </button>
+    <button type="button" data-action="confirm-dialog#confirm" data-confirm-dialog-target="confirmButton" class="cursor-pointer py-2 px-4 rounded-md text-[13px] font-semibold text-white bg-red-600 hover:bg-red-700">
+      <%= t("shared.confirm_dialog.confirm") %>
+    </button>
+  </div>
+</dialog>

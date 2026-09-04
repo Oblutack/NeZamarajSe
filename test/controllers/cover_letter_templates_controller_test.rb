@@ -2,7 +2,25 @@ require "test_helper"
 
 class CoverLetterTemplatesControllerTest < ActionDispatch::IntegrationTest
   setup do
-    sign_in users(:one)
+    @user = users(:one)
+    sign_in @user
+  end
+
+  def attach_resume
+    @user.resumes.attach(
+      io: File.open(Rails.root.join("test/fixtures/files/sample_resume.pdf")),
+      filename: "resume.pdf",
+      content_type: "application/pdf"
+    )
+    @user.resumes.first.blob_id
+  end
+
+  def stub_ai_response(content)
+    fake_client = Object.new
+    fake_client.define_singleton_method(:chat) do |*|
+      { "choices" => [ { "message" => { "content" => content } } ] }
+    end
+    fake_client
   end
 
   test "should get index" do
@@ -35,5 +53,73 @@ class CoverLetterTemplatesControllerTest < ActionDispatch::IntegrationTest
   test "should get edit" do
     get edit_cover_letter_template_url(cover_letter_templates(:one))
     assert_response :success
+  end
+
+  test "generate creates an AI template and redirects into its edit page" do
+    blob_id = attach_resume
+    fake_client = stub_ai_response("Dear {{company_name}},\n\nI'd love to join.")
+
+    assert_difference("@user.cover_letter_templates.count", 1) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        post generate_cover_letter_templates_url, params: { resume_blob_id: blob_id, language: "bs" }
+      end
+    end
+
+    template = @user.cover_letter_templates.order(:created_at).last
+    assert template.ai_generated?
+    assert_equal "bs", template.language
+    assert_redirected_to edit_cover_letter_template_path(template)
+  end
+
+  test "generate redirects back to new without generating when no resume is selected" do
+    assert_no_difference("@user.cover_letter_templates.count") do
+      post generate_cover_letter_templates_url, params: { resume_blob_id: "" }
+    end
+
+    assert_redirected_to new_cover_letter_template_path
+    assert_not_nil flash[:alert]
+  end
+
+  test "generate rescues a service failure and redirects with an alert" do
+    blob_id = attach_resume
+    fake_client = stub_ai_response("")
+
+    assert_no_difference("@user.cover_letter_templates.count") do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        post generate_cover_letter_templates_url, params: { resume_blob_id: blob_id, language: "en" }
+      end
+    end
+
+    assert_redirected_to new_cover_letter_template_path
+    assert_not_nil flash[:alert]
+  end
+
+  test "translate updates the template body and language in place" do
+    template = @user.cover_letter_templates.create!(name: "AI Draft", body: "Dear {{company_name}}.", ai_generated: true, language: "en")
+    fake_client = stub_ai_response("Poštovani {{company_name}}.")
+
+    assert_no_difference("@user.cover_letter_templates.count") do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        post translate_cover_letter_template_url(template), params: { language: "bs" }
+      end
+    end
+
+    template.reload
+    assert_equal "bs", template.language
+    assert_includes template.body.to_plain_text, "Poštovani"
+    assert_redirected_to edit_cover_letter_template_path(template)
+  end
+
+  test "translate rescues a service failure and redirects with an alert" do
+    template = @user.cover_letter_templates.create!(name: "AI Draft", body: "Dear {{company_name}}.", ai_generated: true, language: "en")
+    fake_client = stub_ai_response("")
+
+    stub_class_method(OpenAI::Client, :new, fake_client) do
+      post translate_cover_letter_template_url(template), params: { language: "bs" }
+    end
+
+    assert_redirected_to edit_cover_letter_template_path(template)
+    assert_not_nil flash[:alert]
+    assert_equal "en", template.reload.language
   end
 end

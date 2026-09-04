@@ -7,6 +7,8 @@
 # caller passes CoverLetterTemplate#body.to_plain_text and this returns the
 # same sanitized-paragraph HTML shape CoverLetterGeneratorService produces.
 class CoverLetterTranslatorService
+  include CoverLetterFormatting
+
   def self.call(plain_text:, target_language:)
     new(plain_text: plain_text, target_language: target_language).call
   end
@@ -31,7 +33,7 @@ class CoverLetterTranslatorService
     text = response.dig("choices", 0, "message", "content").to_s.strip
     raise "Groq returned an empty translation" if text.blank?
 
-    ApplicationController.helpers.simple_format(text)
+    ApplicationController.helpers.simple_format(normalize_paragraphs(text))
   end
 
   private
