@@ -2,6 +2,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  static targets = [ "scrollable" ]
+
   // Fired when you start dragging a card
   dragStart(event) {
     event.dataTransfer.setData("application_id", event.target.dataset.id)
@@ -13,9 +15,32 @@ export default class extends Controller {
     event.currentTarget.classList.remove("opacity-50", "scale-95")
   }
 
-  // Fired when a card is hovering over a column (Required for HTML5 dropping)
-  dragOver(event) { 
+  // Fired repeatedly (many times a second) while a card hovers over a
+  // column - required for HTML5 dropping to work at all (browsers only
+  // allow a drop if dragover was preventDefault()'d), and also where the
+  // column's own auto-scroll lives: a column with enough cards to need
+  // scrolling had no way to reach anything below the fold while a drag was
+  // in progress (native HTML5 drag doesn't auto-scroll a nested
+  // overflow-y container on its own, only the whole page) - it looked and
+  // felt like the column had a hard cap on card count, though nothing
+  // ever actually enforced one.
+  dragOver(event) {
     event.preventDefault()
+    this.autoScroll(event)
+  }
+
+  autoScroll(event) {
+    if (!this.hasScrollableTarget) return
+
+    const rect = this.scrollableTarget.getBoundingClientRect()
+    const edge = 48
+    const speed = 14
+
+    if (event.clientY < rect.top + edge) {
+      this.scrollableTarget.scrollTop -= speed
+    } else if (event.clientY > rect.bottom - edge) {
+      this.scrollableTarget.scrollTop += speed
+    }
   }
 
   // Fired when the card is dropped into a column

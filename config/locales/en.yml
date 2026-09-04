@@ -348,11 +348,15 @@ en:
       cancel_send_confirm: "Cancel this send? It'll move back to your wishlist and won't count against today's limit."
       move_to: "Move to…"
       details: "Details"
+      remove: "Remove"
+      remove_confirm: "Remove this from your applications? This deletes its whole history (notes, status changes) and can't be undone - the job itself stays on Job Market if you want to save it again."
     show:
       back_to_crm: "Back to My Applications"
       send_follow_up: "Send Follow-up"
       cancel_send: "Cancel send"
       cancel_send_confirm: "Cancel this send? It'll move back to your wishlist and won't count against today's limit."
+      remove: "Remove"
+      remove_confirm: "Remove this from your applications? This deletes its whole history (notes, status changes) and can't be undone - the job itself stays on Job Market if you want to save it again."
       no_reply_in_days:
         one: "No reply in over %{count} day."
         other: "No reply in over %{count} days."

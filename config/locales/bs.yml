@@ -353,11 +353,15 @@ bs:
       cancel_send_confirm: "Otkazati ovo slanje? Vratiće se na tvoju listu želja i neće se računati u današnji limit."
       move_to: "Premjesti u…"
       details: "Detalji"
+      remove: "Ukloni"
+      remove_confirm: "Ukloniti ovo iz tvojih prijava? Ovo briše cijelu historiju (bilješke, promjene statusa) i ne može se poništiti - sam oglas ostaje na Tržištu poslova ako ga želiš ponovo sačuvati."
     show:
       back_to_crm: "Nazad na Moje prijave"
       send_follow_up: "Pošalji podsjetnik"
       cancel_send: "Otkaži slanje"
       cancel_send_confirm: "Otkazati ovo slanje? Vratiće se na tvoju listu želja i neće se računati u današnji limit."
+      remove: "Ukloni"
+      remove_confirm: "Ukloniti ovo iz tvojih prijava? Ovo briše cijelu historiju (bilješke, promjene statusa) i ne može se poništiti - sam oglas ostaje na Tržištu poslova ako ga želiš ponovo sačuvati."
       no_reply_in_days:
         one: "Nema odgovora više od %{count} dan."
         few: "Nema odgovora više od %{count} dana."

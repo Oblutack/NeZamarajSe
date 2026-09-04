@@ -53,7 +53,7 @@
             (Application#broadcast_status_update) with no page reload for
             anyone else with this board open - without this, that update is
             silent to a screen reader. %>
-        <div class="flex-1 pr-3 overflow-y-auto space-y-2.5" aria-live="polite" aria-relevant="additions removals" aria-label="<%= application_status_label(status) %>">
+        <div class="flex-1 pr-3 overflow-y-auto space-y-2.5" data-drag-target="scrollable" aria-live="polite" aria-relevant="additions removals" aria-label="<%= application_status_label(status) %>">
           <% if applications.any? %>
             <% applications.each do |app| %>
               <%= render "applications/application_card", app: app %>

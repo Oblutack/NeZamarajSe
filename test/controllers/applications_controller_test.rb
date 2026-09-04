@@ -106,6 +106,14 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to crm_path
   end
 
+  test "the board and detail page both offer a way to remove an application" do
+    get crm_url
+    assert_select "a[href=?][data-turbo-method=delete]", application_path(@application)
+
+    get application_url(@application)
+    assert_select "a[href=?][data-turbo-method=delete]", application_path(@application)
+  end
+
   test "dispatch_email queues the send instead of marking it applied immediately" do
     assert_enqueued_with(job: SendApplicationJob) do
       post dispatch_email_application_url(@application), params: {
