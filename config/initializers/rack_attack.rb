@@ -24,4 +24,14 @@ class Rack::Attack
       req.ip
     end
   end
+
+  # 5. Limit crowdsourced email suggestions - this is the app's first
+  # write endpoint any signed-in user can hit against a *shared* record
+  # (Company), not just their own data, so it's worth a dedicated cap
+  # independent of the general request throttle above.
+  throttle("email_suggestions/ip", limit: 10, period: 1.minute) do |req|
+    if req.path.include?("/email_suggestions") && req.post?
+      req.ip
+    end
+  end
 end

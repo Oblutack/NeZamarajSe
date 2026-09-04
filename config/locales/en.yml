@@ -57,6 +57,10 @@ en:
       show_tips_again: "Show tips again"
       show_tips_again_hint: "Tips you've dismissed around the app (like on the CRM board or before sending) are hidden from now on. Bring them back here."
       reset_confirmation: "Done - dismissed tips will show again as you come across them."
+    email_suggestion:
+      prompt: "Do you know who to email here?"
+      placeholder: "hr@company.ba"
+      submit: "Submit"
 
   home:
     index:
@@ -219,6 +223,10 @@ en:
       contact_email: "Contact email"
       not_found_yet: "Not found yet"
       find_email: "Find email"
+      reply_confirmed_title: "At least one application sent to this address has gotten a reply"
+      reply_confirmed:
+        one: "%{count} reply confirmed"
+        other: "%{count} replies confirmed"
       website: "Website"
       address: "Address"
       last_contacted: "Last contacted"
@@ -446,6 +454,8 @@ en:
       no_contact_email: "%{company} has no known contact email, and dry-run mode is off - there's nowhere to send this."
       outreach_sending: "Outreach email to %{company} is being sent in the background."
       looking_up_email: "Looking up a contact email for %{company} - refresh in a moment."
+    company_email_suggestions:
+      saved: "Thanks - saved your suggestion."
     user_preferences:
       updated: "Radar preferences updated! 🎯"
     omniauth:

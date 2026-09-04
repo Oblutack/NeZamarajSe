@@ -57,6 +57,10 @@ bs:
       show_tips_again: "Prikaži savjete ponovo"
       show_tips_again_hint: "Savjeti koje si zatvorio/la širom aplikacije (npr. na CRM tabli ili prije slanja) su od tada sakriveni. Vrati ih nazad ovdje."
       reset_confirmation: "Gotovo - zatvoreni savjeti će se ponovo prikazati kad na njih naiđeš."
+    email_suggestion:
+      prompt: "Znaš li kome se ovdje šalje prijava?"
+      placeholder: "hr@kompanija.ba"
+      submit: "Pošalji"
 
   home:
     index:
@@ -221,6 +225,11 @@ bs:
       contact_email: "Kontakt email"
       not_found_yet: "Još nije pronađen"
       find_email: "Pronađi email"
+      reply_confirmed_title: "Bar jedna prijava poslana na ovu adresu je dobila odgovor"
+      reply_confirmed:
+        one: "%{count} potvrđen odgovor"
+        few: "%{count} potvrđena odgovora"
+        other: "%{count} potvrđenih odgovora"
       website: "Web stranica"
       address: "Adresa"
       last_contacted: "Zadnji kontakt"
@@ -455,6 +464,8 @@ bs:
       no_contact_email: "%{company} nema poznat kontakt email, a probni način rada je isključen - nema kome poslati ovo."
       outreach_sending: "Email za %{company} se šalje u pozadini."
       looking_up_email: "Tražimo kontakt email za %{company} - osvježi za trenutak."
+    company_email_suggestions:
+      saved: "Hvala - sačuvali smo tvoj prijedlog."
     user_preferences:
       updated: "Postavke radara ažurirane! 🎯"
     omniauth:

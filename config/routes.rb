@@ -26,6 +26,7 @@ Rails.application.routes.draw do
       post :dispatch_outreach
       post :refresh_email
     end
+    resources :email_suggestions, only: [ :create ], controller: "company_email_suggestions"
   end
   resources :applications, only: [ :create, :show, :update, :destroy ] do
     # Member routes apply to ONE specific record (e.g. /applications/5/compose)

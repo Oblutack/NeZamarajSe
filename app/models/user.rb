@@ -19,6 +19,7 @@ class User < ApplicationRecord
   has_one :user_preference, dependent: :destroy
 
   has_many :contacted_companies, class_name: "Company", foreign_key: :last_contacted_by_id, dependent: :nullify
+  has_many :company_email_suggestions, dependent: :destroy
 
   # NEW: Automatically create preferences after Google OAuth
   after_create :create_default_preferences

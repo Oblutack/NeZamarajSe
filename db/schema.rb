@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_03_071914) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_03_221314) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -106,6 +106,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_071914) do
     t.index ["is_cold_outreach"], name: "index_companies_on_is_cold_outreach"
     t.index ["last_contacted_by_id"], name: "index_companies_on_last_contacted_by_id"
     t.index ["name"], name: "index_companies_on_name", unique: true
+  end
+
+  create_table "company_email_suggestions", force: :cascade do |t|
+    t.bigint "company_id", null: false
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["company_id", "user_id"], name: "index_company_email_suggestions_on_company_id_and_user_id", unique: true
+    t.index ["company_id"], name: "index_company_email_suggestions_on_company_id"
+    t.index ["user_id"], name: "index_company_email_suggestions_on_user_id"
   end
 
   create_table "cover_letter_templates", force: :cascade do |t|
@@ -212,6 +223,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_071914) do
   add_foreign_key "applications", "jobs"
   add_foreign_key "applications", "users"
   add_foreign_key "companies", "users", column: "last_contacted_by_id"
+  add_foreign_key "company_email_suggestions", "companies"
+  add_foreign_key "company_email_suggestions", "users"
   add_foreign_key "cover_letter_templates", "users"
   add_foreign_key "hunter_lookups", "companies"
   add_foreign_key "job_sources", "jobs"
