@@ -6,7 +6,7 @@
   <p class="mt-1.5 mb-6 text-[13.5px] text-zinc-500 dark:text-zinc-400"><%= t(".subtitle") %></p>
 
   <div class="bg-white border border-zinc-200 rounded-lg p-6 dark:bg-zinc-900 dark:border-zinc-800">
-    <%= form_with model: @job, url: jobs_path, class: "space-y-5" do |f| %>
+    <%= form_with model: @job, url: jobs_path, multipart: true, class: "space-y-5" do |f| %>
       <% if @job.errors.any? %>
         <div class="border border-red-200 bg-red-50 text-red-700 text-[13px] p-3.5 rounded-md dark:border-red-900 dark:bg-red-950/40 dark:text-red-400">
           <ul class="list-disc pl-5">
@@ -29,6 +29,12 @@
       </div>
 
       <div>
+        <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".company_logo") %></label>
+        <%= f.file_field :company_logo, accept: "image/png,image/jpeg,image/webp", class: "mt-1.5 block w-full text-[12.5px] text-zinc-500 file:mr-4 file:py-2 file:px-3.5 file:rounded-md file:border-0 file:text-[12.5px] file:font-semibold file:bg-zinc-100 file:text-zinc-900 hover:file:bg-zinc-200 dark:text-zinc-400 dark:file:bg-zinc-800 dark:file:text-zinc-100 dark:hover:file:bg-zinc-700" %>
+        <p class="text-[11.5px] text-zinc-500 mt-1.5 dark:text-zinc-400"><%= t(".company_logo_hint") %></p>
+      </div>
+
+      <div>
         <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".url") %></label>
         <%= f.url_field :url, placeholder: t(".url_placeholder"), class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border placeholder:text-zinc-400 dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400 dark:placeholder:text-zinc-600" %>
         <p class="text-[11.5px] text-zinc-500 mt-1.5 dark:text-zinc-400"><%= t(".url_hint") %></p>
@@ -45,9 +51,34 @@
         </div>
       </div>
 
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".employment_type") %></label>
+          <%= f.select :employment_type, Job::EMPLOYMENT_TYPES.map { |v| [ t(".employment_types.#{v}"), v ] }, { include_blank: t(".any") }, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+        </div>
+        <div>
+          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".work_mode") %></label>
+          <%= f.select :work_mode, Job::WORK_MODES.map { |v| [ t(".work_modes.#{v}"), v ] }, { include_blank: t(".any") }, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+        </div>
+        <div>
+          <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".salary_range") %></label>
+          <%= f.text_field :salary_range, placeholder: t(".salary_range_placeholder"), class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border placeholder:text-zinc-400 dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400 dark:placeholder:text-zinc-600" %>
+        </div>
+      </div>
+
       <div>
-        <label class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".hr_email") %></label>
-        <%= f.email_field :hr_email, class: "mt-1.5 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+        <p class="block text-[13px] font-semibold text-zinc-700 dark:text-zinc-300"><%= t(".how_to_apply") %></p>
+        <p class="text-[11.5px] text-zinc-500 mt-0.5 mb-2 dark:text-zinc-400"><%= t(".how_to_apply_hint") %></p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400"><%= t(".hr_email") %></label>
+            <%= f.email_field :hr_email, class: "mt-1 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400" %>
+          </div>
+          <div>
+            <label class="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400"><%= t(".apply_url") %></label>
+            <%= f.url_field :apply_url, placeholder: t(".apply_url_placeholder"), class: "mt-1 block w-full rounded-md border-zinc-300 text-[13.5px] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 p-2 border placeholder:text-zinc-400 dark:border-zinc-700 dark:focus:border-zinc-400 dark:focus:ring-zinc-400 dark:placeholder:text-zinc-600" %>
+          </div>
+        </div>
         <p class="text-[11.5px] text-zinc-500 mt-1.5 dark:text-zinc-400"><%= t(".hr_email_hint") %></p>
       </div>
 

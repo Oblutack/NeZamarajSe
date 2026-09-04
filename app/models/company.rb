@@ -4,6 +4,17 @@ class Company < ApplicationRecord
   has_many :email_suggestions, class_name: "CompanyEmailSuggestion", dependent: :destroy
   belongs_to :last_contacted_by, class_name: "User", optional: true
 
+  # Global/shared like the rest of Company (see CLAUDE.md's Multi-tenancy
+  # note) - deliberately the opposite privacy call from Track M's manual
+  # jobs: a logo is public brand material, reused across every job this
+  # company posts, not a personal lead. Same validation shape as
+  # User#resumes (content type + size, lambda message so English assertion
+  # text stays byte-stable across locales).
+  has_one_attached :logo
+  validates :logo,
+            content_type: { in: %w[image/png image/jpeg image/webp], message: ->(_object, _data) { I18n.t("activerecord.errors.models.company.attributes.logo.content_type_invalid") } },
+            size: { less_than: 2.megabytes, message: ->(_object, _data) { I18n.t("activerecord.errors.models.company.attributes.logo.file_too_large") } }
+
   validates :name, presence: true, uniqueness: true
 
   # Reply detection is the free validator for a crowdsourced (or scraped, or

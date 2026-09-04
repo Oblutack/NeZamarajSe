@@ -53,4 +53,39 @@ class CompanyTest < ActiveSupport::TestCase
 
     assert_equal 1, company.reply_confirmed_send_count
   end
+
+  test "rejects a logo that is not an accepted image type" do
+    company = companies(:one)
+    company.logo.attach(
+      io: StringIO.new("not an image"),
+      filename: "logo.txt",
+      content_type: "text/plain"
+    )
+
+    assert_not company.valid?
+    assert_includes company.errors[:logo], "must be a PNG, JPEG, or WebP image"
+  end
+
+  test "rejects a logo over 2MB" do
+    company = companies(:one)
+    company.logo.attach(
+      io: StringIO.new("x" * 3.megabytes),
+      filename: "logo.png",
+      content_type: "image/png"
+    )
+
+    assert_not company.valid?
+    assert_includes company.errors[:logo], "must be under 2MB"
+  end
+
+  test "accepts a valid logo" do
+    company = companies(:one)
+    company.logo.attach(
+      io: StringIO.new("fake png bytes"),
+      filename: "logo.png",
+      content_type: "image/png"
+    )
+
+    assert company.valid?
+  end
 end

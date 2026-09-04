@@ -83,4 +83,54 @@ class JobTest < ActiveSupport::TestCase
     assert_equal 0, job.keyword_match_count([])
     assert_equal 0, job.keyword_match_count(nil)
   end
+
+  test "allows a valid employment_type and work_mode" do
+    job = Job.new(company: companies(:one), title: "Role", employment_type: "full_time", work_mode: "remote")
+    assert job.valid?
+  end
+
+  test "rejects an employment_type outside the fixed vocabulary" do
+    job = Job.new(company: companies(:one), title: "Role", employment_type: "freelance")
+    assert_not job.valid?
+    assert_includes job.errors[:employment_type], "is not included in the list"
+  end
+
+  test "rejects a work_mode outside the fixed vocabulary" do
+    job = Job.new(company: companies(:one), title: "Role", work_mode: "space")
+    assert_not job.valid?
+    assert_includes job.errors[:work_mode], "is not included in the list"
+  end
+
+  test "employment_type and work_mode are optional" do
+    job = Job.new(company: companies(:one), title: "Role")
+    assert job.valid?
+  end
+
+  test "share! sets an unguessable token and returns it" do
+    job = jobs(:one)
+    assert_not job.shared?
+
+    token = job.share!
+
+    assert job.shared?
+    assert_equal job.share_token, token
+    assert token.length >= 20
+  end
+
+  test "share! is idempotent - calling it again keeps the same token" do
+    job = jobs(:one)
+    first_token = job.share!
+    second_token = job.share!
+
+    assert_equal first_token, second_token
+  end
+
+  test "unshare! clears the token" do
+    job = jobs(:one)
+    job.share!
+    job.unshare!
+
+    assert_not job.shared?
+    assert_nil job.share_token
+  end
 end

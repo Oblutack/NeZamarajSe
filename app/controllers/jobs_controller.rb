@@ -64,8 +64,12 @@ class JobsController < ApplicationController
   end
 
   def create
-    @job = Job.new(job_params)
+    attrs = job_params
+    company_logo = attrs[:company_logo]
+
+    @job = Job.new(attrs.except(:company_logo))
     @job.url = @job.url.presence
+    @job.apply_url = @job.apply_url.presence
     @job.added_by = current_user
 
     if @job.company_name.blank?
@@ -76,6 +80,7 @@ class JobsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       @job.company = Company.find_or_create_by!(name: @job.company_name.strip)
+      @job.company.update!(logo: company_logo) if company_logo.present?
       @job.save!
     end
 
@@ -88,17 +93,41 @@ class JobsController < ApplicationController
     # unconditionally overwrites `description` with whatever it scrapes off
     # the page (that's correct for a scraper's own placeholder text, but
     # would silently clobber something the user deliberately typed here).
+    # It's also the same pass that tries to pick up a company logo from the
+    # page's og:image, if none was uploaded directly here.
     AnalyzeJob.perform_later(@job.id) if @job.url.present? && @job.description.blank?
 
     redirect_to crm_path, notice: t("flash.applications.added_to_wishlist", job: @job.title)
-  rescue ActiveRecord::RecordInvalid
+  rescue ActiveRecord::RecordInvalid => e
+    # Could be @job itself or @job.company (a bad logo upload, most likely)
+    # - either way, surface it through the same @job.errors the form
+    # already renders from, rather than needing two separate error boxes.
+    @job.errors.merge!(e.record.errors) unless e.record.equal?(@job)
     render :new, status: :unprocessable_entity
+  end
+
+  # Anyone who can see the job can share it (same Job.visible_to rule as
+  # everywhere else) - a scraped job is already public, and sharing your
+  # own manual find with someone who has no account is the actual point.
+  def share
+    @job = Job.visible_to(current_user).find(params[:id])
+    @job.share!
+    redirect_to job_path(@job), notice: t("flash.jobs.shared")
+  end
+
+  def unshare
+    @job = Job.visible_to(current_user).find(params[:id])
+    @job.unshare!
+    redirect_to job_path(@job), notice: t("flash.jobs.unshared")
   end
 
   private
 
   def job_params
-    params.require(:job).permit(:title, :company_name, :url, :location, :hr_email, :description, :expires_at)
+    params.require(:job).permit(
+      :title, :company_name, :company_logo, :url, :apply_url, :location, :hr_email,
+      :description, :expires_at, :employment_type, :work_mode, :salary_range
+    )
   end
 
   def sort_jobs(scope, sort)

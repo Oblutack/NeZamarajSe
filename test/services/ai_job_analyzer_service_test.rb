@@ -193,4 +193,77 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
     assert_includes job.reload.description, "The actual job posting text."
     assert_not_includes job.description, "ignored()"
   end
+
+  def fake_downloaded_image(content_type: "image/png")
+    io = StringIO.new("fake image bytes")
+    io.define_singleton_method(:content_type) { content_type }
+    io
+  end
+
+  test "attaches a company logo from an og:image hosted on the company's own domain" do
+    job = jobs(:one)
+    job.company.update!(domain: "realcompany.example")
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = '<html><head><meta property="og:image" content="https://realcompany.example/assets/logo.png"></head><body>Job description</body></html>'
+    fake_image = fake_downloaded_image
+
+    stub_class_method(URI, :open, ->(url, *) { url.include?("logo.png") ? fake_image : html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert job.company.reload.logo.attached?
+  end
+
+  test "does not attach an og:image hosted on a different domain than the company's" do
+    job = jobs(:one)
+    job.company.update!(domain: "realcompany.example")
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = '<html><head><meta property="og:image" content="https://some-job-board.example/logo.png"></head><body>Job description</body></html>'
+
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_not job.company.reload.logo.attached?
+  end
+
+  test "does not attempt a logo lookup when the company has no resolved domain" do
+    job = jobs(:one)
+    job.company.update!(domain: nil)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = '<html><head><meta property="og:image" content="https://realcompany.example/logo.png"></head><body>Job description</body></html>'
+
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_not job.company.reload.logo.attached?
+  end
+
+  test "does not overwrite a company's existing logo" do
+    job = jobs(:one)
+    job.company.update!(domain: "realcompany.example")
+    job.company.logo.attach(io: StringIO.new("existing logo"), filename: "existing.png", content_type: "image/png")
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = '<html><head><meta property="og:image" content="https://realcompany.example/new-logo.png"></head><body>Job description</body></html>'
+    fake_image = fake_downloaded_image
+
+    stub_class_method(URI, :open, ->(url, *) { url.include?("new-logo.png") ? fake_image : html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal "existing.png", job.company.reload.logo.filename.to_s
+  end
 end

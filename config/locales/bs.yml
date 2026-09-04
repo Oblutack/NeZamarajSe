@@ -172,22 +172,59 @@ bs:
       description: "Opis"
       no_description: "Opis još nije dostupan - u toku je analiza."
       view_original_posting: "Pogledaj originalni oglas"
+      apply_now: "Prijavi se"
+      share:
+        title: "Podijeli ovaj oglas"
+        active_hint: "Svako ko ima ovaj link može vidjeti ovaj oglas - bez potrebe za prijavom. Neće se pojaviti u pretraživačima niti na javnom Tržištu poslova."
+        inactive_hint: "Napravi neuvršten link na ovaj oglas koji možeš poslati bilo kome - neće im trebati nalog da ga vide."
+        share: "Napravi link za dijeljenje"
+        unshare: "Prestani dijeliti"
+        unshare_confirm: "Svako ko ima stari link će izgubiti pristup. Nastaviti?"
     new:
       title: "Dodaj posao"
       subtitle: "Pronašao/la si nešto što naši pretraživači nisu - na LinkedIn-u, karijernoj stranici kompanije, ili preko preporuke? Dodaj to ovdje i odmah završava na tvojoj tabli."
       company_name: "Kompanija"
       company_name_placeholder: "npr. Example d.o.o."
       job_title: "Naziv posla"
+      company_logo: "Logo kompanije (opcionalno)"
+      company_logo_hint: "PNG, JPEG ili WebP, do 2MB."
       url: "Link na oglas (opcionalno)"
       url_placeholder: "https://…"
       url_hint: "Ako zalijepiš link i ostaviš opis ispod praznim, pokušaćemo automatski popuniti opis, rok i kontakt email - isto kao kod prikupljenog oglasa."
       location: "Lokacija (opcionalno)"
-      hr_email: "Kontakt email (opcionalno)"
-      hr_email_hint: "Već znaš kome poslati prijavu? Dodaj to sada umjesto da čekaš da mi to pronađemo."
       expires_at: "Rok za prijavu (opcionalno)"
+      employment_type: "Tip zaposlenja (opcionalno)"
+      work_mode: "Način rada (opcionalno)"
+      salary_range: "Raspon plate (opcionalno)"
+      salary_range_placeholder: "npr. 1500-2000 KM"
+      any: "Bilo koji"
+      employment_types:
+        full_time: "Puno radno vrijeme"
+        part_time: "Skraćeno radno vrijeme"
+        contract: "Ugovor"
+        internship: "Pripravništvo"
+      work_modes:
+        on_site: "U kancelariji"
+        hybrid: "Hibridno"
+        remote: "Na daljinu"
+      how_to_apply: "Kako se prijaviti"
+      how_to_apply_hint: "Dodaj kontakt email, link za prijavu, ili oboje."
+      hr_email: "Kontakt email"
+      hr_email_hint: "Već znaš kome poslati prijavu? Dodaj to sada umjesto da čekaš da mi to pronađemo."
+      apply_url: "Link za prijavu"
+      apply_url_placeholder: "https://…"
       description: "Opis (opcionalno)"
       add_job: "Dodaj posao"
       privacy_note: "Ovaj posao je privatan za tvoj nalog - za razliku od prikupljenih oglasa, drugi korisnici ove aplikacije ga neće vidjeti, kao ni kontakt podatke koje ovdje dodaš."
+
+  public_jobs:
+    show:
+      bosnia_and_herzegovina: "Bosna i Hercegovina"
+      deadline: "Rok %{date}"
+      description: "Opis"
+      no_description: "Opis nije dostupan."
+      apply_now: "Prijavi se"
+      shared_via: "Podijeljeno putem %{app_name}"
 
   companies:
     index:
@@ -466,6 +503,9 @@ bs:
       looking_up_email: "Tražimo kontakt email za %{company} - osvježi za trenutak."
     company_email_suggestions:
       saved: "Hvala - sačuvali smo tvoj prijedlog."
+    jobs:
+      shared: "Link za dijeljenje kreiran - svako ko ga ima može vidjeti ovaj posao."
+      unshared: "Dijeljenje isključeno - stari link više ne radi."
     user_preferences:
       updated: "Postavke radara ažurirane! 🎯"
     omniauth:
@@ -486,6 +526,11 @@ bs:
           attributes:
             user_id:
               already_saved: "je već sačuvao/la ovaj posao"
+        company:
+          attributes:
+            logo:
+              content_type_invalid: "mora biti PNG, JPEG ili WebP slika"
+              file_too_large: "mora biti manji od 2MB"
 
   mailers:
     job_application:

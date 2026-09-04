@@ -3,7 +3,11 @@
   <%= link_to "&larr; #{t(".all_companies")}".html_safe, companies_path, class: "text-[12.5px] font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100" %>
 
   <div class="mt-3 mb-8 flex items-start justify-between gap-4">
-    <div>
+    <div class="flex items-start gap-3">
+      <% if @company.logo.attached? %>
+        <%= image_tag @company.logo.variant(resize_to_limit: [ 48, 48 ]), class: "w-12 h-12 rounded-md object-contain border border-zinc-200 bg-white dark:border-zinc-800", alt: @company.name %>
+      <% end %>
+      <div>
       <h1 class="text-[22px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= @company.name %></h1>
       <p class="mt-1.5 text-[13px] text-zinc-500 dark:text-zinc-400">
         <% if @company.is_cold_outreach %>
@@ -15,6 +19,7 @@
           <span class="ml-1.5 text-zinc-400 dark:text-zinc-600">NACE <%= @company.industry_code %></span>
         <% end %>
       </p>
+      </div>
     </div>
 
     <%= link_to t(".send_outreach_email"), compose_outreach_company_path(@company), class: "flex-shrink-0 inline-flex items-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>

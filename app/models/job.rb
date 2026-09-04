@@ -12,6 +12,9 @@ class Job < ApplicationRecord
   # every other field on the form.
   attr_accessor :company_name
 
+  EMPLOYMENT_TYPES = %w[full_time part_time contract internship].freeze
+  WORK_MODES = %w[on_site hybrid remote].freeze
+
   validates :title, presence: true
   # A scraped job always has a url (and always did - this was `presence:
   # true` before manual entry existed); one entered by hand often doesn't
@@ -19,6 +22,11 @@ class Job < ApplicationRecord
   # `allow_nil` also means multiple manual jobs with no url don't collide
   # with each other under the uniqueness check.
   validates :url, uniqueness: true, allow_nil: true
+  # Manual-entry-only fields (nothing populates these from a scraper yet) -
+  # optional, but constrained to a fixed vocabulary when given, same reason
+  # Application's status enum is a fixed set rather than free text.
+  validates :employment_type, inclusion: { in: EMPLOYMENT_TYPES }, allow_nil: true
+  validates :work_mode, inclusion: { in: WORK_MODES }, allow_nil: true
 
   scope :expiring_soon, -> { where(expires_at: Date.current..14.days.from_now) }
 
@@ -43,5 +51,21 @@ class Job < ApplicationRecord
 
     haystack = "#{title} #{description}".downcase
     keywords.count { |keyword| haystack.include?(keyword.downcase) }
+  end
+
+  def shared?
+    share_token.present?
+  end
+
+  # A 128-bit random token, not a sequential id or anything derived from the
+  # job itself - GET /j/:token (PublicJobsController) skips authentication
+  # entirely, so this needs to be unguessable, not just "not obvious".
+  def share!
+    update!(share_token: SecureRandom.urlsafe_base64(16)) unless shared?
+    share_token
+  end
+
+  def unshare!
+    update!(share_token: nil)
   end
 end

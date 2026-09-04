@@ -19,7 +19,15 @@ Rails.application.routes.draw do
   resource :user_preference, only: [ :edit, :update ]
 
   # --- PHASE 4 ROUTES (The Job Market & CRM) ---
-  resources :jobs, only: [ :index, :show, :new, :create ]
+  resources :jobs, only: [ :index, :show, :new, :create ] do
+    member do
+      post :share
+      post :unshare
+    end
+  end
+  # Deliberately outside the authenticated jobs/ namespace - the app's first
+  # unauthenticated, non-Devise surface (see ROADMAP.md Track N).
+  get "/j/:token", to: "public_jobs#show", as: :public_job
   resources :companies, only: [ :index, :show ] do
     member do
       get :compose_outreach

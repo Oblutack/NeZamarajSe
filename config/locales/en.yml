@@ -170,22 +170,59 @@ en:
       description: "Description"
       no_description: "No description available yet - still being analyzed."
       view_original_posting: "View Original Posting"
+      apply_now: "Apply Now"
+      share:
+        title: "Share this job"
+        active_hint: "Anyone with this link can view this posting - no login required. It won't show up in search engines or the public Job Market."
+        inactive_hint: "Get an unlisted link to this job you can send to anyone - they won't need an account to view it."
+        share: "Get shareable link"
+        unshare: "Stop sharing"
+        unshare_confirm: "Anyone with the old link will lose access. Continue?"
     new:
       title: "Add a Job"
       subtitle: "Found something the scrapers missed - on LinkedIn, a company's careers page, or word of mouth? Add it here and it lands straight on your board."
       company_name: "Company"
       company_name_placeholder: "e.g. Example d.o.o."
       job_title: "Job Title"
+      company_logo: "Company Logo (optional)"
+      company_logo_hint: "PNG, JPEG, or WebP, under 2MB."
       url: "Job Posting URL (optional)"
       url_placeholder: "https://…"
       url_hint: "If you paste a link and leave the description below blank, we'll try to fill in the description, deadline, and contact email automatically - same as a scraped job."
       location: "Location (optional)"
-      hr_email: "Contact Email (optional)"
-      hr_email_hint: "Already know who to send this to? Add it now instead of waiting on us to find it."
       expires_at: "Application Deadline (optional)"
+      employment_type: "Employment Type (optional)"
+      work_mode: "Work Mode (optional)"
+      salary_range: "Salary Range (optional)"
+      salary_range_placeholder: "e.g. 1500-2000 BAM"
+      any: "Any"
+      employment_types:
+        full_time: "Full-time"
+        part_time: "Part-time"
+        contract: "Contract"
+        internship: "Internship"
+      work_modes:
+        on_site: "On-site"
+        hybrid: "Hybrid"
+        remote: "Remote"
+      how_to_apply: "How to Apply"
+      how_to_apply_hint: "Add a contact email, an apply link, or both."
+      hr_email: "Contact Email"
+      hr_email_hint: "Already know who to send this to? Add it now instead of waiting on us to find it."
+      apply_url: "Apply Link"
+      apply_url_placeholder: "https://…"
       description: "Description (optional)"
       add_job: "Add Job"
       privacy_note: "This job is private to your account - unlike scraped listings, other people using this app won't see it or the contact details you add here."
+
+  public_jobs:
+    show:
+      bosnia_and_herzegovina: "Bosnia and Herzegovina"
+      deadline: "Deadline %{date}"
+      description: "Description"
+      no_description: "No description available."
+      apply_now: "Apply Now"
+      shared_via: "Shared via %{app_name}"
 
   companies:
     index:
@@ -456,6 +493,9 @@ en:
       looking_up_email: "Looking up a contact email for %{company} - refresh in a moment."
     company_email_suggestions:
       saved: "Thanks - saved your suggestion."
+    jobs:
+      shared: "Shareable link created - anyone with it can view this job."
+      unshared: "Sharing turned off - the old link no longer works."
     user_preferences:
       updated: "Radar preferences updated! 🎯"
     omniauth:
@@ -476,6 +516,11 @@ en:
           attributes:
             user_id:
               already_saved: "has already saved this job"
+        company:
+          attributes:
+            logo:
+              content_type_invalid: "must be a PNG, JPEG, or WebP image"
+              file_too_large: "must be under 2MB"
 
   mailers:
     job_application:

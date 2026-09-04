@@ -275,4 +275,74 @@ class JobsControllerTest < ActionDispatch::IntegrationTest
     get job_url(other_job)
     assert_response :not_found
   end
+
+  test "create accepts employment_type, work_mode, salary_range, and apply_url" do
+    post jobs_url, params: {
+      job: {
+        company_name: "Newco", title: "Full Details Role",
+        employment_type: "full_time", work_mode: "remote",
+        salary_range: "2000-2500 BAM", apply_url: "https://example.com/apply"
+      }
+    }
+
+    job = Job.order(:created_at).last
+    assert_equal "full_time", job.employment_type
+    assert_equal "remote", job.work_mode
+    assert_equal "2000-2500 BAM", job.salary_range
+    assert_equal "https://example.com/apply", job.apply_url
+  end
+
+  test "create attaches a company logo when a valid image is uploaded" do
+    post jobs_url, params: {
+      job: {
+        company_name: "Logoco", title: "Role With Logo",
+        company_logo: fixture_file_upload("blank.png", "image/png")
+      }
+    }
+
+    job = Job.order(:created_at).last
+    assert job.company.logo.attached?
+  end
+
+  test "create surfaces a company logo validation error without creating the job" do
+    assert_no_difference("Job.count") do
+      post jobs_url, params: {
+        job: {
+          company_name: "Badlogoco", title: "Role With Bad Logo",
+          company_logo: fixture_file_upload("not_a_pdf.txt", "text/plain")
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "li", text: /PNG, JPEG, or WebP/
+  end
+
+  test "share sets a share_token and redirects to the job" do
+    job = jobs(:one)
+    assert_not job.shared?
+
+    post share_job_url(job)
+
+    assert job.reload.shared?
+    assert_redirected_to job_url(job)
+  end
+
+  test "unshare clears the share_token" do
+    job = jobs(:one)
+    job.share!
+
+    post unshare_job_url(job)
+
+    assert_not job.reload.shared?
+  end
+
+  test "share is scoped to jobs visible to the current user" do
+    other_job = Job.create!(company: companies(:one), title: "Someone Else's Lead", added_by: users(:two))
+
+    post share_job_url(other_job)
+
+    assert_response :not_found
+    assert_not other_job.reload.shared?
+  end
 end

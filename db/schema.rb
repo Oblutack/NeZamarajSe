@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_03_221314) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_04_063309) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -154,21 +154,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_221314) do
 
   create_table "jobs", force: :cascade do |t|
     t.bigint "added_by_id"
+    t.string "apply_url"
     t.bigint "company_id", null: false
     t.datetime "created_at", null: false
     t.text "description"
+    t.string "employment_type"
     t.date "expires_at"
     t.string "external_id"
     t.string "hr_email"
     t.string "location"
+    t.string "salary_range"
+    t.string "share_token"
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.string "url"
+    t.string "work_mode"
     t.index ["added_by_id"], name: "index_jobs_on_added_by_id"
     t.index ["company_id"], name: "index_jobs_on_company_id"
     t.index ["created_at"], name: "index_jobs_on_created_at"
     t.index ["expires_at"], name: "index_jobs_on_expires_at"
     t.index ["external_id"], name: "index_jobs_on_external_id", unique: true
+    t.index ["share_token"], name: "index_jobs_on_share_token", unique: true
     t.index ["url"], name: "index_jobs_on_url", unique: true
   end
 

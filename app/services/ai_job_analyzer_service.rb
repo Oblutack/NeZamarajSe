@@ -60,6 +60,11 @@ class AiJobAnalyzerService
       # very often. Try this before ever spending an AI call on it.
       email_from_page = extract_email(doc)
 
+      # Best-effort, and deliberately after email extraction rather than
+      # before it - a failure in here must never affect the more important
+      # email/description work above it.
+      extract_and_attach_company_logo(doc)
+
       # Convert the DOM to raw text, removing excessive whitespace
       raw_text = doc.text.gsub(/\s+/, " ").strip
 
@@ -146,5 +151,34 @@ class AiJobAnalyzerService
     return mailto["href"].sub(/^mailto:/, "").split("?").first.strip if mailto
 
     doc.text[EMAIL_REGEX]
+  end
+
+  # Only fills in a logo the company doesn't already have, and only from an
+  # image actually hosted on the company's own resolved domain - a job
+  # board's own og:image (its own logo) shows up on every single posting on
+  # that board, exactly the same trap as Klix's sitewide "contact us"
+  # mailto: link that Track A already learned to check for. No resolved
+  # domain (Company#domain, set by EmailFinderService) means no match is
+  # even possible, so this just skips rather than guessing.
+  def extract_and_attach_company_logo(doc)
+    return if @job.company.logo.attached?
+
+    domain = @job.company.domain
+    return if domain.blank?
+
+    og_image = doc.at_css('meta[property="og:image"]')&.[]("content")
+    return if og_image.blank?
+
+    image_host = URI.parse(og_image).host
+    return if image_host.blank?
+    return unless image_host.include?(domain) || domain.include?(image_host)
+
+    downloaded = URI.open(og_image, "User-Agent" => "Mozilla/5.0", open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT)
+    filename = File.basename(URI.parse(og_image).path.to_s)
+    filename = "logo.jpg" if filename.blank? || !filename.include?(".")
+
+    @job.company.update!(logo: { io: downloaded, filename: filename, content_type: downloaded.content_type })
+  rescue StandardError => e
+    Honeybadger.notify(e, context: { job_id: @job.id, company_id: @job.company.id, og_image: og_image })
   end
 end
