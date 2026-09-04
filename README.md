@@ -23,19 +23,50 @@ your inbox in the dark about it:
 - **Scrapes** Bosnian job boards on a schedule with a headless-Chrome engine
   driven entirely by database-configured selectors — no redeploy needed to
   add a new source.
-- **Enriches** every listing with AI, extracting the HR contact email and
-  application deadline straight from the posting.
+- **Enriches** every listing with AI, extracting a real, formatted
+  description, the HR contact email, and the application deadline straight
+  from the posting — with a headless-rendering fallback for job pages that
+  only render client-side, and direct reads of embedded SSR state (Nuxt
+  apps) when even that comes back empty.
 - **Tracks** applications on a drag-and-drop Kanban board, from wishlist
-  through offer.
+  through offer, with a per-application timeline, follow-up reminders, and
+  automatic reply detection against your own Gmail thread.
 - **Sends** cover letters natively through your own Gmail account — real
   outbound mail, not a transactional relay — staggered automatically to
-  stay under spam-filter radar for bulk campaigns.
+  stay under spam-filter radar for bulk campaigns, with a permanent
+  dry-run mode so nothing reaches a real company until you're ready.
 - **Watches** the market for you with a daily digest of new postings that
-  match your own keywords, across every industry, not just IT.
+  match your own keywords, across every industry, not just IT, and a
+  dashboard that leads with a short "what needs you today" list instead of
+  just stats.
 - **Builds** a cold-outreach company directory in the background by
   crawling business registries independently of active job postings,
   resolving each company's real domain and a plausible contact address
-  automatically.
+  automatically — backed up by crowdsourced suggestions from your own CRM
+  when the automation comes up empty.
+- **Speaks** English and Bosnian throughout, including real Slavic
+  pluralization, with full keyboard navigation and screen-reader support.
+- **Lets you post directly** — add a job by hand when a source misses it,
+  privately by default, with an optional unlisted share link for sending a
+  single posting to someone with no account.
+
+## Screenshots
+
+**Dashboard** — leads with a short "what needs you today" list, not just stats.
+
+![Dashboard](docs/screenshots/dashboard.jpg)
+
+**Kanban CRM** — drag a card between columns to update its status; live over Turbo Streams.
+
+![Kanban CRM board](docs/screenshots/crm-board.jpg)
+
+**Job Market** — every scraped listing, searchable and filterable, AI-enriched in the background.
+
+![Job Market listing](docs/screenshots/job-market.jpg)
+
+**Job detail** — a real, formatted description pulled straight from the posting, not a wall of text.
+
+![Job detail with a formatted description](docs/screenshots/job-detail.jpg)
 
 ## Stack
 
@@ -46,8 +77,8 @@ your inbox in the dark about it:
 | Database | PostgreSQL, Active Record Encryption for OAuth tokens |
 | Background jobs | Sidekiq with `sidekiq-cron` scheduling |
 | Scraping | Ferrum (headless Chrome) and Nokogiri |
-| AI enrichment | Groq (Llama 3.1) via an OpenAI-compatible client |
-| Contact resolution | Clearbit Autocomplete and Hunter.io |
+| AI enrichment | Groq via an OpenAI-compatible client |
+| Contact resolution | Clearbit Autocomplete, Hunter.io, and crowdsourced suggestions |
 | Auth & mail | Devise with Google OAuth, native sending over the Gmail API |
 | Deployment | Kamal |
 
@@ -129,7 +160,10 @@ business registries, and each new one triggers a domain-resolution and
 email-lookup job of its own. Applications move through a status pipeline
 — wishlist, queued, applied, interviewing, rejected, offered — and a card
 only ever reaches *applied* after Gmail has actually confirmed the send,
-broadcast live to the board over a Turbo Stream.
+broadcast live to the board over a Turbo Stream. From there a scheduled
+job polls each sent thread's Gmail metadata for a reply and advances the
+card automatically, and a follow-up reminder appears on its own once a
+sent application has gone quiet for too long.
 
 ## License
 
