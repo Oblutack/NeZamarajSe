@@ -25,11 +25,20 @@
       <div>
         <dt class="text-zinc-500 dark:text-zinc-400"><%= t(".contact_email") %></dt>
         <% if @company.primary_email.present? %>
-          <dd class="font-medium text-emerald-700 mt-0.5 dark:text-emerald-400"><%= @company.primary_email %></dd>
+          <dd class="font-medium text-emerald-700 mt-0.5 dark:text-emerald-400">
+            <%= @company.primary_email %>
+            <% if (replies = @company.reply_confirmed_send_count).positive? %>
+              <span class="ml-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400" title="<%= t(".reply_confirmed_title") %>">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <%= t(".reply_confirmed", count: replies) %>
+              </span>
+            <% end %>
+          </dd>
         <% else %>
           <dd class="mt-0.5">
             <span class="text-red-600 font-medium dark:text-red-400"><%= t(".not_found_yet") %></span>
             <%= button_to t(".find_email"), refresh_email_company_path(@company), class: "cursor-pointer ml-2 inline-flex items-center px-2.5 py-1 text-[11.5px] font-semibold rounded text-zinc-700 bg-zinc-100 hover:bg-zinc-200 dark:text-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700" %>
+            <%= render "shared/email_suggestion_form", company: @company %>
           </dd>
         <% end %>
       </div>

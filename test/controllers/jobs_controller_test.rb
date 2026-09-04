@@ -169,6 +169,33 @@ class JobsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/keywords match/, response.body)
   end
 
+  test "index prompts for an email suggestion on a job with no known contact" do
+    jobs(:one).update!(hr_email: nil)
+    companies(:one).update!(primary_email: nil)
+
+    get jobs_url, params: { q: jobs(:one).title }
+
+    assert_match(/Do you know who to email here\?/, response.body)
+  end
+
+  test "index does not prompt for an email suggestion once a contact is known" do
+    jobs(:one).update!(hr_email: "hr@realcompany.example")
+
+    get jobs_url, params: { q: jobs(:one).title }
+
+    assert_no_match(/Do you know who to email here\?/, response.body)
+  end
+
+  test "show prompts for an email suggestion on a job with no known contact" do
+    job = jobs(:one)
+    job.update!(hr_email: nil)
+    job.company.update!(primary_email: nil)
+
+    get job_url(job)
+
+    assert_select "form[action=?]", company_email_suggestions_path(job.company)
+  end
+
   test "should get new" do
     get new_job_url
     assert_response :success

@@ -1,0 +1,19 @@
+<%# app/views/shared/_email_suggestion_form.html.erb
+    Locals: `company` (required). Used from the Job Market card, the job
+    detail page, and the company page - one shared form so "do you know
+    who to email here?" looks and behaves identically everywhere it shows
+    up, and there's one place to fix it. No prefill of the current user's
+    own prior suggestion (deliberately - the card placement renders up to
+    24 of these per Job Market page, and looking up a per-user suggestion
+    for each would be a real N+1 for a small polish detail). %>
+<div data-controller="reveal" class="mt-2">
+  <button type="button" data-reveal-target="trigger" data-action="click->reveal#show" class="cursor-pointer text-[11.5px] font-semibold text-zinc-500 hover:text-zinc-900 underline decoration-dotted underline-offset-2 dark:text-zinc-400 dark:hover:text-zinc-100">
+    <%= t("shared.email_suggestion.prompt") %>
+  </button>
+  <%= form_with url: company_email_suggestions_path(company), method: :post, data: { reveal_target: "content", turbo: false }, class: "hidden mt-1.5 flex gap-1.5" do %>
+    <%= email_field_tag :email, nil, placeholder: t("shared.email_suggestion.placeholder"), required: true, class: "flex-1 min-w-0 rounded-md border-zinc-300 text-[12px] px-2 py-1.5 border placeholder:text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:placeholder:text-zinc-600" %>
+    <button type="submit" class="cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-md bg-zinc-900 text-white text-[11.5px] font-semibold hover:bg-zinc-800 active:scale-[0.98] dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200">
+      <%= t("shared.email_suggestion.submit") %>
+    </button>
+  <% end %>
+</div>

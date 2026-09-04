@@ -75,6 +75,33 @@ class CompaniesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: @company.name
   end
 
+  test "show prompts for an email suggestion when there's no known contact" do
+    @company.update!(primary_email: nil)
+
+    get company_url(@company)
+
+    assert_select "form[action=?]", company_email_suggestions_path(@company)
+  end
+
+  test "show does not prompt for an email suggestion once a contact is known" do
+    @company.update!(primary_email: "hr@vertexsolutions.example")
+
+    get company_url(@company)
+
+    assert_no_match(/Do you know who to email here\?/, response.body)
+  end
+
+  test "show surfaces a reply-confirmed badge once an application to that address got a reply" do
+    @company.update!(primary_email: "hr@vertexsolutions.example")
+    job = Job.create!(company: @company, title: "Confirmed Reply Role", url: "https://jobs.example.com/confirmed-reply-role")
+    application = @user.applications.create!(job: job, status: "applied", applied_at: Time.current, sent_recipient: "hr@vertexsolutions.example")
+    application.application_events.create!(event_type: "reply_detected")
+
+    get company_url(@company)
+
+    assert_match(/1 reply confirmed/, response.body)
+  end
+
   test "show does not list another user's private manually-added job under this company" do
     mine = Job.create!(company: @company, title: "My Private Lead", added_by: @user)
     theirs = Job.create!(company: @company, title: "Someone Else's Lead", added_by: users(:two))
