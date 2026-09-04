@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @import "../stylesheets/actiontext.css";
 
 /* Class-based dark mode (not the media-query default) - Tailwind v4 has no

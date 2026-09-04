@@ -251,7 +251,7 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal "The actual job posting text.", job.reload.description
+    assert_equal "<p>The actual job posting text.</p>", job.reload.description
   end
 
   test "extracts only from a .prose content wrapper when the page has one, skipping surrounding chrome" do
@@ -278,7 +278,11 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal "The real job description starts here.\nSecond paragraph.", job.reload.description
+    job.reload
+    assert_includes job.description, "<p>The real job description starts here.</p>"
+    assert_includes job.description, "<p>Second paragraph.</p>"
+    assert_not_includes job.description, "Backend Engineer"
+    assert_not_includes job.description, "Objavio"
   end
 
   test "falls back to <main> when the page has no .prose wrapper" do
@@ -297,7 +301,9 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal "The real job description.", job.reload.description
+    job.reload
+    assert_equal "<p>The real job description.</p>", job.description
+    assert_not_includes job.description, "Related jobs widget"
   end
 
   test "strips breadcrumb/navigation links from the description but still extracts a mailto: email first" do
@@ -318,65 +324,50 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
 
     job.reload
     assert_equal "hr@realcompany.example", job.hr_email
-    assert_equal "Apply to for this role.", job.description
+    assert_includes job.description, "Apply to"
+    assert_includes job.description, "for this role."
     assert_not_includes job.description, "Home"
     assert_not_includes job.description, "Listings"
   end
 
-  test "preserves paragraph breaks instead of collapsing the page into one line" do
-    job = jobs(:one)
-    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+  test "extract_readable_content preserves paragraph breaks instead of collapsing the page into one line" do
+    svc = AiJobAnalyzerService.new(jobs(:one))
+    doc = Nokogiri::HTML("<html><body><p>About us: we build things.</p><p>We are looking for a developer.</p></body></html>")
 
-    html = "<html><body><p>About us: we build things.</p><p>We are looking for a developer.</p></body></html>"
-    stub_class_method(URI, :open, ->(*) { html }) do
-      stub_class_method(OpenAI::Client, :new, fake_client) do
-        AiJobAnalyzerService.call(job)
-      end
-    end
+    html, text = svc.send(:extract_readable_content, doc)
 
-    assert_equal "About us: we build things.\nWe are looking for a developer.", job.reload.description
+    assert_equal "About us: we build things.\nWe are looking for a developer.", text
+    assert_equal "<p>About us: we build things.</p>\n<p>We are looking for a developer.</p>", html
   end
 
-  test "puts each list item on its own line" do
-    job = jobs(:one)
-    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+  test "extract_readable_content puts each list item on its own line and in a real <li>" do
+    svc = AiJobAnalyzerService.new(jobs(:one))
+    doc = Nokogiri::HTML("<html><body><p>Requirements:</p><ul><li>Ruby</li><li>Rails</li></ul></body></html>")
 
-    html = "<html><body><p>Requirements:</p><ul><li>Ruby</li><li>Rails</li></ul></body></html>"
-    stub_class_method(URI, :open, ->(*) { html }) do
-      stub_class_method(OpenAI::Client, :new, fake_client) do
-        AiJobAnalyzerService.call(job)
-      end
-    end
+    html, text = svc.send(:extract_readable_content, doc)
 
-    assert_equal "Requirements:\nRuby\nRails", job.reload.description
+    assert_equal "Requirements:\nRuby\nRails", text
+    assert_equal "<p>Requirements:</p>\n<ul>\n<li>Ruby</li>\n<li>Rails</li>\n</ul>", html
   end
 
-  test "turns <br> tags into line breaks" do
-    job = jobs(:one)
-    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+  test "extract_readable_content turns <br> tags into line breaks in the text, keeps them as <br> in the html" do
+    svc = AiJobAnalyzerService.new(jobs(:one))
+    doc = Nokogiri::HTML("<html><body><p>Line one<br>Line two</p></body></html>")
 
-    html = "<html><body><p>Line one<br>Line two</p></body></html>"
-    stub_class_method(URI, :open, ->(*) { html }) do
-      stub_class_method(OpenAI::Client, :new, fake_client) do
-        AiJobAnalyzerService.call(job)
-      end
-    end
+    html, text = svc.send(:extract_readable_content, doc)
 
-    assert_equal "Line one\nLine two", job.reload.description
+    assert_equal "Line one\nLine two", text
+    assert_equal "<p>Line one<br>Line two</p>", html
   end
 
-  test "collapses repeated internal whitespace within a line without losing line breaks" do
-    job = jobs(:one)
-    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+  test "extract_readable_content collapses repeated internal whitespace in the text without losing line breaks" do
+    svc = AiJobAnalyzerService.new(jobs(:one))
+    doc = Nokogiri::HTML("<html><body><p>Too    much     space.</p><p>Second line.</p></body></html>")
 
-    html = "<html><body><p>Too    much     space.</p><p>Second line.</p></body></html>"
-    stub_class_method(URI, :open, ->(*) { html }) do
-      stub_class_method(OpenAI::Client, :new, fake_client) do
-        AiJobAnalyzerService.call(job)
-      end
-    end
+    html, text = svc.send(:extract_readable_content, doc)
 
-    assert_equal "Too much space.\nSecond line.", job.reload.description
+    assert_equal "Too much space.\nSecond line.", text
+    assert_equal "<p>Too    much     space.</p>\n<p>Second line.</p>", html
   end
 
   test "fetches the job page with full browser headers, not just a bare User-Agent" do
@@ -561,7 +552,7 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal "Real description paragraph one.\nReal description paragraph two.", job.reload.description
+    assert_equal "<p>Real description paragraph one.</p><p>Real description paragraph two.</p>", job.reload.description
     assert_not_includes job.description, "Rendered page shell"
   end
 
@@ -688,6 +679,66 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal "Potrebna 2 JAVA Developera sa minimalno 3 godine iskustva.", job.reload.description
+    assert_equal "<p>Potrebna 2 JAVA Developera sa minimalno 3 godine iskustva.</p>", job.reload.description
+  end
+
+  test "keeps headings, bold, and list markup so the stored description has real visual structure" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = <<~HTML
+      <html><body>
+        <h2>Requirements</h2>
+        <p>We need someone with <strong>3+ years</strong> of experience.</p>
+        <ul><li>Ruby</li><li>Rails</li></ul>
+      </body></html>
+    HTML
+
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    job.reload
+    assert_includes job.description, "<h2>Requirements</h2>"
+    assert_includes job.description, "<strong>3+ years</strong>"
+    assert_includes job.description, "<li>Ruby</li>"
+    assert_includes job.description, "<li>Rails</li>"
+  end
+
+  test "strips scripts, links, and event-handler attributes from the stored description" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = <<~HTML
+      <html><body>
+        <p onclick="alert('x')" style="color:red">Apply <a href="https://tracker.example/click">here</a> now.</p>
+        <script>steal_cookies()</script>
+        <img src="x" onerror="alert('y')">
+      </body></html>
+    HTML
+
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    job.reload
+    assert_not_includes job.description, "onclick"
+    assert_not_includes job.description, "style="
+    assert_not_includes job.description, "<a "
+    assert_not_includes job.description, "href"
+    assert_not_includes job.description, "<script"
+    assert_not_includes job.description, "steal_cookies"
+    assert_not_includes job.description, "<img"
+    assert_not_includes job.description, "onerror"
+    assert_includes job.description, "Apply"
+    # The <a> itself (and its "here" text) is dropped entirely, not just
+    # unwrapped - the same "links are chrome" removal every other extraction
+    # path in this file already relies on, not special-cased for safety here.
+    assert_not_includes job.description, "here"
+    assert_includes job.description, "now."
   end
 end

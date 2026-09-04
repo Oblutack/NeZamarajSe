@@ -219,6 +219,31 @@ class JobsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to crm_path
   end
 
+  test "create wraps a hand-typed multi-paragraph description in real HTML paragraphs" do
+    post jobs_url, params: {
+      job: {
+        company_name: "Newco", title: "Manual Entry With Paragraphs",
+        description: "First paragraph.\n\nSecond paragraph."
+      }
+    }
+
+    job = Job.order(:created_at).last
+    assert_equal "<p>First paragraph.</p>\n\n<p>Second paragraph.</p>", job.description
+  end
+
+  test "create escapes and strips dangerous markup a user types into the description" do
+    post jobs_url, params: {
+      job: {
+        company_name: "Newco", title: "Manual Entry With Script",
+        description: "Apply now.\n\n<script>alert('x')</script>"
+      }
+    }
+
+    job = Job.order(:created_at).last
+    assert_not_includes job.description, "<script"
+    assert_includes job.description, "Apply now."
+  end
+
   test "create reuses an existing company by name instead of duplicating it" do
     existing = companies(:one)
 

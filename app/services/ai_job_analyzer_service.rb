@@ -40,6 +40,15 @@ class AiJobAnalyzerService
   # structure instead of collapsing into one run-on line.
   BLOCK_TAGS = %w[p div li h1 h2 h3 h4 h5 h6 tr].freeze
 
+  # What survives into the stored description as real markup - enough to
+  # give a posting actual visual hierarchy (headings, bold, bullet lists)
+  # instead of a flat wall of text, nothing that can carry a link, an
+  # attribute, or a script. Rendered through Tailwind Typography's `.prose`
+  # styling (see jobs/show.html.erb) and re-sanitized with this exact same
+  # allowlist at render time too - this is the only layer that needs to
+  # hold for storage, but belt-and-suspenders costs nothing.
+  ALLOWED_DESCRIPTION_TAGS = %w[p br ul ol li h1 h2 h3 h4 h5 h6 strong b em i].freeze
+
   # Some itbase.ba postings link to a specific job on a third-party ATS
   # (BambooHR, Workday, ...) that has since closed or moved - the ATS
   # doesn't 404 in that case, it redirects to its own generic "see our
@@ -118,7 +127,7 @@ class AiJobAnalyzerService
       # <script id="__NUXT_DATA__"> tag for client-side hydration, and the
       # job's real description lives right there as an HTML string,
       # untouched by any of the page's own chrome. Must run before
-      # extract_email_and_text below, which strips every <script> tag
+      # extract_email_and_content below, which strips every <script> tag
       # (including this one) as part of its normal chrome-stripping.
       nuxt_html = extract_nuxt_payload_html(doc)
 
@@ -129,14 +138,25 @@ class AiJobAnalyzerService
       # (a1b2c3@oXXXXXX.ingest.sentry.io) that happens to be shaped exactly
       # like an email address, and extract_email's plain-text regex
       # fallback matched it as if it were the page's HR contact.
-      email_from_page, raw_text = extract_email_and_text(doc)
+      #
+      # description_html and raw_text describe the *same* content in two
+      # shapes the whole way through this method: raw_text (plain) drives
+      # every length comparison/threshold below and feeds the AI prompt,
+      # while description_html (sanitized markup) is what actually gets
+      # saved - keeping both in lockstep means whichever source wins a
+      # comparison, its real structure (headings/bullets/bold) is what
+      # ends up stored, not just its word count.
+      email_from_page, description_html, raw_text = extract_email_and_content(doc)
 
-      # Only the *text* gets a second opinion from the Nuxt payload, and only
-      # if it's actually better than what the DOM gave us - same
+      # Only the content gets a second opinion from the Nuxt payload, and
+      # only if it's actually better than what the DOM gave us - same
       # longer-wins comparison as the headless fallback below.
       if nuxt_html.present?
-        nuxt_text = extract_readable_text(Nokogiri::HTML.fragment(nuxt_html))
-        raw_text = nuxt_text if nuxt_text.length > raw_text.length
+        nuxt_content_html, nuxt_text = extract_readable_content(Nokogiri::HTML.fragment(nuxt_html))
+        if nuxt_text.length > raw_text.length
+          description_html = nuxt_content_html
+          raw_text = nuxt_text
+        end
       end
 
       # Some sites (and some itbase.ba redirect targets) render their actual
@@ -149,15 +169,19 @@ class AiJobAnalyzerService
       if raw_text.length < MIN_RENDERED_TEXT_LENGTH
         rendered_doc = fetch_rendered_doc(@job.url)
         if rendered_doc
-          rendered_email, rendered_text = extract_email_and_text(rendered_doc)
+          rendered_email, rendered_html, rendered_text = extract_email_and_content(rendered_doc)
           if rendered_text.length > raw_text.length
+            description_html = rendered_html
             raw_text = rendered_text
             email_from_page = email_from_page.presence || rendered_email
           end
         end
       end
 
-      # Truncate to ~4000 characters just to be safe with token limits
+      # Truncate to ~4000 characters just to be safe with token limits - only
+      # affects the plain-text copy fed to the AI prompt below; the stored
+      # HTML is saved in full (no risk of slicing through the middle of a
+      # tag, and real postings don't run long enough for DB bloat to matter).
       text_to_analyze = raw_text[0..4000]
 
       # The placeholder set at scrape time ("Scraped via ...") gets replaced
@@ -168,7 +192,7 @@ class AiJobAnalyzerService
       # placeholder in place is strictly better than replacing it with
       # boilerplate that looks like a successful analysis but isn't.
       if text_to_analyze.present? && !dead_end_landing_page?(text_to_analyze)
-        @job.update!(description: text_to_analyze)
+        @job.update!(description: description_html.presence || text_to_analyze)
       end
     rescue StandardError => e
       DeadDomain.record_failure!(host)
@@ -279,10 +303,11 @@ class AiJobAnalyzerService
     nil
   end
 
-  # Strips chrome and pulls the [email, readable_text] pair out of a parsed
-  # page - shared between the plain-fetch doc and the headless-rendered
-  # fallback doc so both go through identical extraction logic.
-  def extract_email_and_text(doc)
+  # Strips chrome and pulls the [email, description_html, readable_text]
+  # triple out of a parsed page - shared between the plain-fetch doc and the
+  # headless-rendered fallback doc so both go through identical extraction
+  # logic.
+  def extract_email_and_content(doc)
     # Strip noisy HTML tags so we don't confuse the AI (and save tokens) -
     # and so a job board's own generic "contact us" mailto: link in its nav
     # or footer (site-wide, printed on every posting) isn't mistaken for
@@ -308,7 +333,8 @@ class AiJobAnalyzerService
     # here isn't a real data loss.
     doc.css("a").remove
 
-    [ email, extract_readable_text(doc) ]
+    html, text = extract_readable_content(doc)
+    [ email, html, text ]
   end
 
   # Same headless-Chrome approach and launch flags as
@@ -347,6 +373,39 @@ class AiJobAnalyzerService
     browser&.quit
   end
 
+  # Resolves the actual content root of a parsed page/fragment, shared by
+  # both the HTML- and plain-text-producing extractors below. Prefer a
+  # page's own content wrapper when it has a reliable one, rather than the
+  # whole document. `.prose` is Tailwind Typography's actual class name for
+  # "this element is rendered article/description body" - a real
+  # convention, not a Klix-specific guess - and confirmed live on Klix to
+  # contain exactly the posting text with nothing else: no repeated title
+  # heading, no breadcrumb, no "Objavio ... " publication line (all of
+  # which live in sibling elements outside it, and which duplicate data
+  # already shown elsewhere in the UI - job.title, job.created_at,
+  # job.company, job.location). Falls back to <main>, then <body>, then the
+  # whole document/fragment for pages with none of these landmarks, so this
+  # only narrows extraction when there's an actual signal to do so, never
+  # guesses.
+  def content_root(doc)
+    doc.at_css(".prose") || doc.at_css("main") || doc.at_css("body") || doc
+  end
+
+  # Produces the [html, text] pair actually stored/analyzed: html is a
+  # sanitized fragment (ALLOWED_DESCRIPTION_TAGS only, no attributes at
+  # all - so no link, no inline style, no event handler survives) giving
+  # the posting real visual structure once rendered through Tailwind
+  # Typography; text is the exact same content flattened to plain lines,
+  # derived from that same sanitized html (not computed separately) so the
+  # two can never describe different content. Real job-posting prose is
+  # never mangled by the round-trip through sanitize - it only ever drops
+  # tags/attributes this app doesn't want kept anyway.
+  def extract_readable_content(doc)
+    root = content_root(doc)
+    html = Rails::Html::SafeListSanitizer.new.sanitize(root.inner_html, tags: ALLOWED_DESCRIPTION_TAGS, attributes: [])
+    [ html, extract_readable_text(Nokogiri::HTML.fragment(html)) ]
+  end
+
   # doc.text alone concatenates every text node with no separation - a
   # posting laid out as <p>About us</p><p>We build...</p><li>Ruby</li>
   # <li>Rails</li> used to collapse into one unreadable run-on line
@@ -354,25 +413,11 @@ class AiJobAnalyzerService
   # `gsub(/\s+/, " ")` also erased the handful of real newlines that had
   # survived. Inserting a newline after every block-level element (and
   # turning <br> into one directly) before extracting text keeps each
-  # paragraph/list item/heading on its own line - jobs/show.html.erb's
-  # `whitespace-pre-wrap` already renders that structure correctly, so this
-  # is the only change needed to make a stored description look like the
-  # original listing instead of a wall of text.
+  # paragraph/list item/heading on its own line - used for the AI prompt and
+  # for every length comparison in #call, not for what's actually stored
+  # (see #extract_readable_content for that).
   def extract_readable_text(doc)
-    # Prefer a page's own content wrapper when it has a reliable one, rather
-    # than the whole document. `.prose` is Tailwind Typography's actual
-    # class name for "this element is rendered article/description body" -
-    # a real convention, not a Klix-specific guess - and confirmed live on
-    # Klix to contain exactly the posting text with nothing else: no
-    # repeated title heading, no breadcrumb, no "Objavio ... " publication
-    # line (all of which live in sibling elements outside it, and which
-    # duplicate data already shown elsewhere in the UI - job.title,
-    # job.created_at, job.company, job.location). Falls back to <main>,
-    # then <body>, then the whole document (which also fixes <head><title>
-    # leaking in - every site's <title> duplicates the job title) for pages
-    # with none of these landmarks, so this only narrows extraction when
-    # there's an actual signal to do so, never guesses.
-    root = doc.at_css(".prose") || doc.at_css("main") || doc.at_css("body") || doc
+    root = content_root(doc)
 
     root.css("br").each { |node| node.replace("\n") }
     root.css(BLOCK_TAGS.join(", ")).each { |node| node.add_child(Nokogiri::XML::Text.new("\n", doc)) }

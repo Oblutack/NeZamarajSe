@@ -72,6 +72,17 @@ class JobsController < ApplicationController
     @job.apply_url = @job.apply_url.presence
     @job.added_by = current_user
 
+    # jobs/show.html.erb renders every description as sanitized markup
+    # (AiJobAnalyzerService::ALLOWED_DESCRIPTION_TAGS) so a scraped posting
+    # gets real paragraphs/headings/bullets instead of a wall of text - a
+    # hand-typed description needs to go through the same shape, or its
+    # line breaks would just collapse when rendered as HTML. simple_format
+    # wraps blank-line-separated paragraphs in <p> and single line breaks in
+    # <br>, escaping the input first - the view's own sanitize() call still
+    # re-applies the app's narrower allowlist on render, so this only needs
+    # to produce *some* safe markup, not the final word on what's allowed.
+    @job.description = ApplicationController.helpers.simple_format(@job.description) if @job.description.present?
+
     if @job.company_name.blank?
       @job.errors.add(:company_name, :blank)
       render :new, status: :unprocessable_entity
