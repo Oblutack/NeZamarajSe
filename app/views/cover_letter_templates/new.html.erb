@@ -6,19 +6,19 @@
     <p class="text-[12.5px] text-zinc-500 mb-3 dark:text-zinc-400"><%= t(".ai_generate_hint") %></p>
 
     <% if current_user.resumes.any? %>
-      <%= form_with url: generate_cover_letter_templates_path, method: :post, class: "flex flex-wrap items-end gap-3" do %>
-        <div>
+      <%= form_with url: generate_cover_letter_templates_path, method: :post, class: "grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-end" do %>
+        <div class="min-w-0">
           <label class="block text-[11.5px] font-medium text-zinc-500 dark:text-zinc-400"><%= t("shared.compose.select_resume") %></label>
           <%= select_tag :resume_blob_id,
                 options_for_select(current_user.resumes.map { |r| [ r.filename.to_s, r.blob.id ] }),
                 include_blank: t("shared.compose.choose_resume"),
-                class: "mt-1 rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100" %>
+                class: "w-full sm:w-auto mt-1 rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100" %>
         </div>
-        <div>
+        <div class="min-w-0">
           <label class="block text-[11.5px] font-medium text-zinc-500 dark:text-zinc-400"><%= t("shared.ai_cover_letter.language") %></label>
-          <%= select_tag :language, options_for_select(CoverLetterTemplate::LANGUAGES.map { |code, _| [ t("shared.ai_cover_letter.#{code == 'en' ? 'english' : 'bosnian'}"), code ] }, "en"), class: "mt-1 rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100" %>
+          <%= select_tag :language, options_for_select(CoverLetterTemplate::LANGUAGES.map { |code, _| [ t("shared.ai_cover_letter.#{code == 'en' ? 'english' : 'bosnian'}"), code ] }, "en"), class: "w-full sm:w-auto mt-1 rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100" %>
         </div>
-        <%= button_tag type: "submit", class: "cursor-pointer inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" do %>
+        <%= button_tag type: "submit", class: "cursor-pointer inline-flex items-center justify-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" do %>
           <%= render "shared/sparkle_icon", class: "w-3.5 h-3.5" %>
           <%= t("shared.ai_cover_letter.generate") %>
         <% end %>

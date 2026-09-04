@@ -3,12 +3,16 @@
     Pagy's own pagy_nav helper, to match the rest of the app's plain
     Tailwind-zinc styling instead of Pagy's own default markup/classes. %>
 <% if pagy.pages > 1 %>
-  <nav class="flex items-center justify-between mt-8 text-[13px]" aria-label="Pagination">
+  <nav class="flex flex-wrap items-center justify-between gap-3 mt-8 text-[13px]" aria-label="Pagination">
     <%# Rails' own t(), not Pagy's pagy_info - Pagy ships no Bosnian
         locale, and this is the only string it would be needed for. %>
     <p class="text-zinc-500 dark:text-zinc-400"><%= t("shared.pagination.info", from: pagy.from, to: pagy.to, count: pagy.count) %></p>
 
-    <div class="flex items-center gap-1">
+    <%# overflow-x-auto is the fallback for a page count wide enough that
+        even a full mobile-width row can't fit every link - degrades to a
+        horizontally scrollable strip instead of forcing the whole page
+        wider, matching the Kanban board's own overflow-x-auto columns. %>
+    <div class="flex items-center gap-1 max-w-full overflow-x-auto">
       <% if pagy.prev %>
         <%= link_to t("shared.pagination.prev"), url_for(request.query_parameters.merge(page: pagy.prev)), class: "px-3 py-1.5 rounded-md font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800" %>
       <% else %>

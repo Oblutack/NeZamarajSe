@@ -5,33 +5,33 @@
     <p class="mt-1.5 text-[13.5px] text-zinc-500 dark:text-zinc-400"><%= t(".subtitle") %> <span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= @pagy.count %></span> <%= t(".total") %></p>
   </div>
 
-  <%= form_with url: companies_path, method: :get, class: "mb-6 bg-white border border-zinc-200 rounded-lg p-4 flex flex-wrap items-end gap-4 dark:bg-zinc-900 dark:border-zinc-800" do %>
-    <div>
+  <%= form_with url: companies_path, method: :get, class: "mb-6 bg-white border border-zinc-200 rounded-lg p-4 grid grid-cols-1 gap-4 sm:flex sm:flex-wrap sm:items-end dark:bg-zinc-900 dark:border-zinc-800" do %>
+    <div class="min-w-0">
       <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1 dark:text-zinc-400"><%= t(".email") %></label>
       <%= select_tag :has_email, options_for_select([ [ t(".any"), "" ], [ t(".has_email"), "1" ], [ t(".no_email"), "0" ] ], params[:has_email]),
-            class: "rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
+            class: "w-full sm:w-auto rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
     </div>
 
-    <div>
+    <div class="min-w-0">
       <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1 dark:text-zinc-400"><%= t(".outreach_type") %></label>
       <%= select_tag :cold, options_for_select([ [ t(".any"), "" ], [ t(".warm_option"), "0" ], [ t(".cold_option"), "1" ] ], params[:cold]),
-            class: "rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
+            class: "w-full sm:w-auto rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
     </div>
 
-    <div>
+    <div class="min-w-0">
       <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1 dark:text-zinc-400"><%= t(".industry_code") %></label>
       <%= select_tag :industry_code, options_for_select([ [ t(".any"), "" ] ] + @industry_codes.map { |c| [ c, c ] }, params[:industry_code]),
-            class: "rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
+            class: "w-full sm:w-auto rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
     </div>
 
-    <div>
+    <div class="min-w-0">
       <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1 dark:text-zinc-400"><%= t(".city") %></label>
-      <%= text_field_tag :city, params[:city], placeholder: t(".city_placeholder"), data: { shortcut: "search" }, class: "rounded-md border-zinc-300 text-[13px] p-2 border placeholder:text-zinc-400 dark:border-zinc-700 dark:placeholder:text-zinc-600" %>
+      <%= text_field_tag :city, params[:city], placeholder: t(".city_placeholder"), data: { shortcut: "search" }, class: "w-full sm:w-auto rounded-md border-zinc-300 text-[13px] p-2 border placeholder:text-zinc-400 dark:border-zinc-700 dark:placeholder:text-zinc-600" %>
     </div>
 
     <div class="flex gap-2">
-      <button type="submit" class="cursor-pointer inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200"><%= t(".filter") %></button>
-      <%= link_to t(".clear"), companies_path, class: "inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-zinc-600 hover:bg-zinc-50 border border-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:border-zinc-800" %>
+      <button type="submit" class="cursor-pointer inline-flex items-center justify-center flex-1 sm:flex-initial px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200"><%= t(".filter") %></button>
+      <%= link_to t(".clear"), companies_path, class: "inline-flex items-center justify-center flex-1 sm:flex-initial px-4 py-2 text-[13px] font-semibold rounded-md text-zinc-600 hover:bg-zinc-50 border border-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:border-zinc-800" %>
     </div>
   <% end %>
 
@@ -49,7 +49,7 @@
       <% @companies.each do |company| %>
         <div data-shortcut-item class="p-4 space-y-2">
           <div class="flex items-start justify-between gap-2">
-            <%= link_to company.name, company_path(company), class: "font-semibold text-zinc-900 hover:underline dark:text-zinc-100" %>
+            <%= link_to company.name, company_path(company), class: "min-w-0 truncate font-semibold text-zinc-900 hover:underline dark:text-zinc-100" %>
             <% if company.is_cold_outreach %>
               <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"><%= t(".cold") %></span>
             <% else %>

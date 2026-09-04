@@ -11,8 +11,8 @@
       of the title and search field rather than behind them. %>
   <div class="absolute inset-x-0 top-0 h-52 pointer-events-none bg-[linear-gradient(to_bottom,transparent,white_90%)] dark:bg-[linear-gradient(to_bottom,transparent,var(--color-zinc-950)_90%)]" aria-hidden="true"></div>
 
-  <div class="relative mb-6 flex items-start justify-between gap-4">
-    <div>
+  <div class="relative mb-6 flex flex-wrap items-start justify-between gap-4">
+    <div class="min-w-0">
       <h2 class="text-[22px] font-bold text-zinc-950 tracking-tight dark:text-zinc-50"><%= t(".title") %></h2>
       <p class="mt-1.5 text-[13.5px] text-zinc-500 dark:text-zinc-400">
         <% if @query.present? %>
@@ -28,8 +28,8 @@
     <%= link_to t(".add_a_job"), new_job_path, class: "flex-shrink-0 inline-flex items-center justify-center px-4 py-2.5 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200" %>
   </div>
 
-  <%= form_with url: jobs_path, method: :get, class: "relative mb-8 bg-white border border-zinc-200 rounded-lg p-4 flex flex-wrap items-end gap-4 dark:bg-zinc-900 dark:border-zinc-800" do %>
-    <div class="flex-1 min-w-[200px]">
+  <%= form_with url: jobs_path, method: :get, class: "relative mb-8 bg-white border border-zinc-200 rounded-lg p-4 grid grid-cols-1 gap-4 sm:flex sm:flex-wrap sm:items-end dark:bg-zinc-900 dark:border-zinc-800" do %>
+    <div class="min-w-0 sm:flex-1 sm:min-w-[200px]">
       <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1 dark:text-zinc-400"><%= t(".search") %></label>
       <div class="relative">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -37,31 +37,31 @@
       </div>
     </div>
 
-    <div>
+    <div class="min-w-0">
       <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1 dark:text-zinc-400"><%= t(".location") %></label>
       <%= select_tag :location, options_for_select([ [ t(".any"), "" ] ] + @locations.map { |l| [ l, l ] }, params[:location]),
-            class: "rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
+            class: "w-full sm:w-auto rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
     </div>
 
-    <div>
+    <div class="min-w-0">
       <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1 dark:text-zinc-400"><%= t(".source") %></label>
       <%= select_tag :source, options_for_select([ [ t(".any"), "" ] ] + @sources.map { |s| [ s, s ] }, params[:source]),
-            class: "rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
+            class: "w-full sm:w-auto rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
     </div>
 
-    <div>
+    <div class="min-w-0">
       <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1 dark:text-zinc-400"><%= t(".posted_within") %></label>
       <%= select_tag :posted_within, options_for_select([ [ t(".any_time"), "" ], [ t(".hours_24"), "1" ], [ t(".days_3"), "3" ], [ t(".days_7"), "7" ], [ t(".days_30"), "30" ] ], params[:posted_within]),
-            class: "rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
+            class: "w-full sm:w-auto rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
     </div>
 
-    <div>
+    <div class="min-w-0">
       <label class="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1 dark:text-zinc-400"><%= t(".sort_by") %></label>
       <%= select_tag :sort, options_for_select([ [ t(".newest"), "" ], [ t(".deadline"), "deadline" ], [ t(".company"), "company" ] ], params[:sort]),
-            class: "rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
+            class: "w-full sm:w-auto rounded-md border-zinc-300 text-[13px] p-2 border dark:border-zinc-700" %>
     </div>
 
-    <div class="flex items-center gap-4 pb-2">
+    <div class="flex flex-wrap items-center gap-4 sm:pb-2">
       <label class="flex items-center gap-1.5 text-[13px] text-zinc-700 cursor-pointer dark:text-zinc-300">
         <%= check_box_tag :has_contact, "1", params[:has_contact] == "1", class: "rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500 dark:border-zinc-700 dark:text-zinc-100 dark:focus:ring-zinc-400" %>
         <%= t(".has_contact_email") %>
@@ -73,8 +73,8 @@
     </div>
 
     <div class="flex gap-2">
-      <button type="submit" class="cursor-pointer inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200"><%= t(".filter") %></button>
-      <%= link_to t(".clear"), jobs_path, class: "inline-flex items-center px-4 py-2 text-[13px] font-semibold rounded-md text-zinc-600 hover:bg-zinc-50 border border-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:border-zinc-800" %>
+      <button type="submit" class="cursor-pointer inline-flex items-center justify-center flex-1 sm:flex-initial px-4 py-2 text-[13px] font-semibold rounded-md text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] dark:text-zinc-900 dark:bg-white dark:hover:bg-zinc-200"><%= t(".filter") %></button>
+      <%= link_to t(".clear"), jobs_path, class: "inline-flex items-center justify-center flex-1 sm:flex-initial px-4 py-2 text-[13px] font-semibold rounded-md text-zinc-600 hover:bg-zinc-50 border border-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:border-zinc-800" %>
     </div>
   <% end %>
 
