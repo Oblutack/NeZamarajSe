@@ -18,12 +18,19 @@ class AiJobAnalyzerService
   # as text rather than an <a href="mailto:"> link.
   EMAIL_REGEX = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/
 
-  def self.call(job)
-    new(job).call
+  def self.call(job, skip_email_lookup: false)
+    new(job, skip_email_lookup: skip_email_lookup).call
   end
 
-  def initialize(job)
+  # skip_email_lookup exists for the enrichment-backlog drain rake task
+  # (lib/tasks/enrichment.rake) - running hundreds of jobs through this
+  # service back to back would otherwise enqueue a Hunter.io lookup for
+  # every company still missing an email, blowing through the ~25/month free
+  # quota in one run. Normal per-job analysis (the AnalyzeJob callback after
+  # a fresh scrape) always leaves this false.
+  def initialize(job, skip_email_lookup: false)
     @job = job
+    @skip_email_lookup = skip_email_lookup
     @client = OpenAI::Client.new
   end
 
@@ -132,7 +139,7 @@ class AiJobAnalyzerService
       # to the same Clearbit->Hunter.io domain lookup cold outreach uses,
       # scoped to this job's company (guarded so an already-resolved company
       # doesn't trigger a repeat Hunter.io lookup for every job it posts).
-      if @job.hr_email.blank? && @job.company.primary_email.blank?
+      if @job.hr_email.blank? && @job.company.primary_email.blank? && !@skip_email_lookup
         FindCompanyEmailJob.perform_later(@job.company.id)
       end
     rescue JSON::ParserError => e

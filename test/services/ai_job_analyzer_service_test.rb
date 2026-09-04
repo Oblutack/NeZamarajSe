@@ -40,6 +40,20 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test "skip_email_lookup suppresses the Hunter.io fallback even when both emails are blank" do
+    job = jobs(:one)
+    job.company.update!(primary_email: nil)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    stub_class_method(URI, :open, ->(*) { "<html><body>No contact info here</body></html>" }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        assert_no_enqueued_jobs(only: FindCompanyEmailJob) do
+          AiJobAnalyzerService.call(job, skip_email_lookup: true)
+        end
+      end
+    end
+  end
+
   test "does not re-trigger a lookup when the company's email is already known" do
     job = jobs(:one)
     job.company.update!(primary_email: "hr@vertex.example")

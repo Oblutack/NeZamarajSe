@@ -5,11 +5,25 @@ class AnalyzeJobTest < ActiveJob::TestCase
     job = jobs(:one)
     called_with = []
 
-    stub_class_method(AiJobAnalyzerService, :call, ->(j) { called_with << j.id }) do
+    stub_class_method(AiJobAnalyzerService, :call, ->(j, *) { called_with << j.id }) do
       AnalyzeJob.perform_now(job.id)
     end
 
     assert_equal [ job.id ], called_with
+  end
+
+  test "forwards skip_email_lookup to AiJobAnalyzerService" do
+    called_with = nil
+
+    # stub_class_method only splats *args through, so a keyword call arrives
+    # here as a trailing positional Hash, not real keywords - capture it with
+    # a plain positional param rather than **kwargs to avoid Ruby 3's strict
+    # positional/keyword separation.
+    stub_class_method(AiJobAnalyzerService, :call, ->(j, opts = {}) { called_with = opts[:skip_email_lookup] }) do
+      AnalyzeJob.perform_now(jobs(:one).id, skip_email_lookup: true)
+    end
+
+    assert_equal true, called_with
   end
 
   test "does nothing if the job no longer exists" do
