@@ -40,6 +40,26 @@ class AiJobAnalyzerService
   # structure instead of collapsing into one run-on line.
   BLOCK_TAGS = %w[p div li h1 h2 h3 h4 h5 h6 tr].freeze
 
+  # Some itbase.ba postings link to a specific job on a third-party ATS
+  # (BambooHR, Workday, ...) that has since closed or moved - the ATS
+  # doesn't 404 in that case, it redirects to its own generic "see our
+  # current openings" landing page instead, which fetches (and even
+  # headless-renders) just fine but has no job-specific content at all.
+  # Matched by exact, directly-observed phrasing rather than length - a
+  # short-but-genuine posting is common enough in this dataset (plenty of
+  # real Bosnian ads run under MIN_RENDERED_TEXT_LENGTH) that a length-only
+  # rule would wrongly blank those out too.
+  DEAD_END_LANDING_PAGE_PHRASES = [
+    "Thanks for checking out our job openings",
+    "Workday, Inc. All rights reserved"
+  ].freeze
+
+  # Bare platform-branding strings seen when a page's JS never even finishes
+  # hydrating past its own logo/title - matched as the *entire* stripped
+  # result, not a substring, since these particular words are short enough
+  # that they could plausibly appear inside real prose.
+  DEAD_END_LANDING_PAGE_EXACT_MATCHES = [ "BambooHR", "IT Karijera" ].freeze
+
   # A real job posting runs into the hundreds of characters at minimum -
   # confirmed live, some itbase.ba postings redirect to ATS pages (e.g.
   # BambooHR) that render the actual listing client-side via JS, so the
@@ -143,7 +163,13 @@ class AiJobAnalyzerService
       # The placeholder set at scrape time ("Scraped via ...") gets replaced
       # with the real posting text now that we've actually fetched it - even
       # if the AI call below fails, this part of the job was still worth doing.
-      @job.update!(description: text_to_analyze) if text_to_analyze.present?
+      # Except when the "real posting text" is actually a dead-end ATS
+      # landing page (see DEAD_END_LANDING_PAGE_*) - leaving the honest
+      # placeholder in place is strictly better than replacing it with
+      # boilerplate that looks like a successful analysis but isn't.
+      if text_to_analyze.present? && !dead_end_landing_page?(text_to_analyze)
+        @job.update!(description: text_to_analyze)
+      end
     rescue StandardError => e
       DeadDomain.record_failure!(host)
       puts "❌ Failed to fetch inner job URL: #{e.message}"
@@ -214,6 +240,11 @@ class AiJobAnalyzerService
   end
 
   private
+
+  def dead_end_landing_page?(text)
+    return true if DEAD_END_LANDING_PAGE_EXACT_MATCHES.include?(text.strip)
+    DEAD_END_LANDING_PAGE_PHRASES.any? { |phrase| text.include?(phrase) }
+  end
 
   # Nuxt 3's SSR mode serializes the whole page's reactive state as a flat
   # JSON array in <script id="__NUXT_DATA__"> - objects reference other

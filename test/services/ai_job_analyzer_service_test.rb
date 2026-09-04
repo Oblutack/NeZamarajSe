@@ -526,7 +526,7 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
     job = jobs(:one)
     fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
 
-    shell_html = "<html><body>BambooHR</body></html>"
+    shell_html = "<html><body>Short shell text.</body></html>"
 
     stub_class_method(URI, :open, ->(*) { shell_html }) do
       stub_class_method(Ferrum::Browser, :new, ->(*) { raise "Chrome crashed" }) do
@@ -536,7 +536,7 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal "BambooHR", job.reload.description
+    assert_equal "Short shell text.", job.reload.description
   end
 
   def nuxt_data_html(job_object_json, *values)
@@ -636,5 +636,58 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
     end
 
     assert_includes job.reload.description, "Fallback page content that is plenty long enough."
+  end
+
+  test "leaves the placeholder alone rather than saving a bare platform-branding dead end" do
+    job = jobs(:one)
+    original_description = job.description
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    shell_html = "<html><body>BambooHR</body></html>"
+    rendered_html = "<html><body>BambooHR</body></html>"
+
+    stub_class_method(URI, :open, ->(*) { shell_html }) do
+      stub_class_method(Ferrum::Browser, :new, stub_headless_browser(rendered_html)) do
+        stub_class_method(OpenAI::Client, :new, fake_client) do
+          AiJobAnalyzerService.call(job)
+        end
+      end
+    end
+
+    assert_equal original_description, job.reload.description
+  end
+
+  test "leaves the placeholder alone for a known ATS dead-end landing page phrase" do
+    job = jobs(:one)
+    original_description = job.description
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    shell_html = "<html><body>Careers</body></html>"
+    rendered_html = "<html><body>Follow Us\n© 2026 Workday, Inc. All rights reserved.</body></html>"
+
+    stub_class_method(URI, :open, ->(*) { shell_html }) do
+      stub_class_method(Ferrum::Browser, :new, stub_headless_browser(rendered_html)) do
+        stub_class_method(OpenAI::Client, :new, fake_client) do
+          AiJobAnalyzerService.call(job)
+        end
+      end
+    end
+
+    assert_equal original_description, job.reload.description
+  end
+
+  test "still saves a genuinely short real posting that doesn't match any dead-end signature" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = "<html><body><p>Potrebna 2 JAVA Developera sa minimalno 3 godine iskustva.</p></body></html>"
+
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal "Potrebna 2 JAVA Developera sa minimalno 3 godine iskustva.", job.reload.description
   end
 end
