@@ -208,6 +208,78 @@ class AiJobAnalyzerServiceTest < ActiveSupport::TestCase
     assert_not_includes job.description, "ignored()"
   end
 
+  test "preserves paragraph breaks instead of collapsing the page into one line" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = "<html><body><p>About us: we build things.</p><p>We are looking for a developer.</p></body></html>"
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal "About us: we build things.\nWe are looking for a developer.", job.reload.description
+  end
+
+  test "puts each list item on its own line" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = "<html><body><p>Requirements:</p><ul><li>Ruby</li><li>Rails</li></ul></body></html>"
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal "Requirements:\nRuby\nRails", job.reload.description
+  end
+
+  test "turns <br> tags into line breaks" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = "<html><body><p>Line one<br>Line two</p></body></html>"
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal "Line one\nLine two", job.reload.description
+  end
+
+  test "collapses repeated internal whitespace within a line without losing line breaks" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+
+    html = "<html><body><p>Too    much     space.</p><p>Second line.</p></body></html>"
+    stub_class_method(URI, :open, ->(*) { html }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal "Too much space.\nSecond line.", job.reload.description
+  end
+
+  test "fetches the job page with full browser headers, not just a bare User-Agent" do
+    job = jobs(:one)
+    fake_client = stub_ai_response({ hr_email: nil, expiration_date: nil }.to_json)
+    captured_options = nil
+
+    stub_class_method(URI, :open, ->(_url, options) { captured_options = options; "<html><body>Job description</body></html>" }) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        AiJobAnalyzerService.call(job)
+      end
+    end
+
+    assert_equal AiJobAnalyzerService::REQUEST_HEADERS["User-Agent"], captured_options["User-Agent"]
+    assert_equal AiJobAnalyzerService::REQUEST_HEADERS["Accept"], captured_options["Accept"]
+    assert_equal AiJobAnalyzerService::REQUEST_HEADERS["Accept-Language"], captured_options["Accept-Language"]
+  end
+
   def fake_downloaded_image(content_type: "image/png")
     io = StringIO.new("fake image bytes")
     io.define_singleton_method(:content_type) { content_type }

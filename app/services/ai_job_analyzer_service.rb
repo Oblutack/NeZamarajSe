@@ -14,9 +14,30 @@ class AiJobAnalyzerService
   OPEN_TIMEOUT = 8
   READ_TIMEOUT = 12
 
+  # A bare User-Agent isn't enough for every site - itbase.ba's own job pages
+  # are just 301 redirects to onecontact.com.mk (a defunct regional
+  # aggregator, already flagged as troublesome in CLAUDE.md), and that
+  # destination outright 406s a request with no Accept/Accept-Language
+  # header, real browser or not. Confirmed live: the identical request
+  # succeeds with these two headers added and nothing else changed -
+  # accounted for 80 of ~183 backlog jobs stuck on their scrape-time
+  # placeholder description. A full browser UA string plus Accept/
+  # Accept-Language is cheap insurance against the same bot-filter
+  # elsewhere.
+  REQUEST_HEADERS = {
+    "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+    "Accept" => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language" => "en-US,en;q=0.9"
+  }.freeze
+
   # Matches a plain-text email as a fallback for pages that print the address
   # as text rather than an <a href="mailto:"> link.
   EMAIL_REGEX = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/
+
+  # Block-level tags that get a newline inserted after them in
+  # #extract_readable_text, so a stored description keeps its paragraph/list
+  # structure instead of collapsing into one run-on line.
+  BLOCK_TAGS = %w[p div li h1 h2 h3 h4 h5 h6 tr].freeze
 
   def self.call(job, skip_email_lookup: false)
     new(job, skip_email_lookup: skip_email_lookup).call
@@ -50,7 +71,7 @@ class AiJobAnalyzerService
 
     # 1. Fetch the actual job posting page
     begin
-      html = URI.open(@job.url, "User-Agent" => "Mozilla/5.0", open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT)
+      html = URI.open(@job.url, REQUEST_HEADERS.merge(open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT))
       DeadDomain.record_success!(host)
       doc = Nokogiri::HTML(html)
 
@@ -72,8 +93,8 @@ class AiJobAnalyzerService
       # email/description work above it.
       extract_and_attach_company_logo(doc)
 
-      # Convert the DOM to raw text, removing excessive whitespace
-      raw_text = doc.text.gsub(/\s+/, " ").strip
+      # Convert the DOM to readable text, preserving paragraph/list structure
+      raw_text = extract_readable_text(doc)
 
       # Truncate to ~4000 characters just to be safe with token limits
       text_to_analyze = raw_text[0..4000]
@@ -153,6 +174,28 @@ class AiJobAnalyzerService
 
   private
 
+  # doc.text alone concatenates every text node with no separation - a
+  # posting laid out as <p>About us</p><p>We build...</p><li>Ruby</li>
+  # <li>Rails</li> used to collapse into one unreadable run-on line
+  # ("About usWe build...RubyRails") once the old code's blanket
+  # `gsub(/\s+/, " ")` also erased the handful of real newlines that had
+  # survived. Inserting a newline after every block-level element (and
+  # turning <br> into one directly) before extracting text keeps each
+  # paragraph/list item/heading on its own line - jobs/show.html.erb's
+  # `whitespace-pre-wrap` already renders that structure correctly, so this
+  # is the only change needed to make a stored description look like the
+  # original listing instead of a wall of text.
+  def extract_readable_text(doc)
+    doc.css("br").each { |node| node.replace("\n") }
+    doc.css(BLOCK_TAGS.join(", ")).each { |node| node.add_child(Nokogiri::XML::Text.new("\n", doc)) }
+
+    doc.text
+      .split("\n")
+      .map { |line| line.gsub(/[ \t]+/, " ").strip }
+      .reject(&:blank?)
+      .join("\n")
+  end
+
   def extract_email(doc)
     mailto = doc.at_css("a[href^='mailto:']")
     return mailto["href"].sub(/^mailto:/, "").split("?").first.strip if mailto
@@ -180,7 +223,7 @@ class AiJobAnalyzerService
     return if image_host.blank?
     return unless image_host.include?(domain) || domain.include?(image_host)
 
-    downloaded = URI.open(og_image, "User-Agent" => "Mozilla/5.0", open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT)
+    downloaded = URI.open(og_image, REQUEST_HEADERS.merge(open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT))
     filename = File.basename(URI.parse(og_image).path.to_s)
     filename = "logo.jpg" if filename.blank? || !filename.include?(".")
 
