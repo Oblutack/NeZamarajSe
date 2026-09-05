@@ -8,6 +8,19 @@ export default class extends Controller {
     this.toggleBar()
   }
 
+  // Cards now move in and out of columns without a page reload (an optimistic
+  // drag, the server's own stream, or a broadcast from another tab), and a
+  // card leaving the wishlist column takes its checkbox with it. Recounting
+  // whenever a checkbox enters or leaves the DOM covers all of those without
+  // each one having to remember to announce itself.
+  checkboxTargetConnected() {
+    this.toggleBar()
+  }
+
+  checkboxTargetDisconnected() {
+    this.toggleBar()
+  }
+
   // This fires every time a user clicks a checkbox
   toggleBar() {
     // Count how many checkboxes are currently checked

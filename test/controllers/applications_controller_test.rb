@@ -29,7 +29,7 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "index offers a non-drag 'Move to' menu with every other status as a target" do
+  test "index offers a non-drag 'Move to' menu with every user-owned status as a target" do
     get crm_url
 
     assert_select "button[data-action='click->dropdown#toggle']", text: "" do
@@ -37,10 +37,32 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_select "button[aria-label='Move to…']"
     card = "##{ActionView::RecordIdentifier.dom_id(@application)}"
-    (Application.statuses.keys - [ @application.status ]).each do |status|
+    @application.manually_movable_statuses.each do |status|
       assert_select "#{card} button[data-action='click->drag#moveTo click->dropdown#close'][data-id='#{@application.id}'][data-status='#{status}']"
     end
     assert_select "#{card} button[data-status='#{@application.status}']", count: 0
+
+    # "Sending soon" is reachable only through the real Apply flow, so it is
+    # never offered here (nor accepted server-side).
+    assert_select "#{card} button[data-status='queued']", count: 0
+  end
+
+  test "a sending card is not draggable and its menu explains why instead of offering moves" do
+    @application.update!(status: "queued", queued_at: Time.current)
+
+    get crm_url
+
+    card = "##{ActionView::RecordIdentifier.dom_id(@application)}"
+    assert_select "#{card} button[data-action='click->drag#moveTo click->dropdown#close']", count: 0
+    assert_select "#{card} div[draggable='false']"
+    assert_select "#{card} a[href=?]", cancel_application_path(@application)
+  end
+
+  test "the Sending soon column accepts no drops" do
+    get crm_url
+
+    assert_select "div[data-status='queued'][data-action=?]", "", count: 1
+    assert_select "div[data-status='wishlist'][data-action=?]", "dragover->drag#dragOver drop->drag#drop"
   end
 
   test "index renders one shared move-form, not one per application" do
@@ -95,8 +117,61 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
 
   test "should get update" do
     patch application_url(@application), params: { application: { status: "interviewing" } }
-    assert_redirected_to crm_path
+    assert_response :success
     assert_equal "interviewing", @application.reload.status
+  end
+
+  test "a board move answers with the streams that relocate the card, not a page reload" do
+    patch application_url(@application), params: { application: { status: "interviewing" } }
+
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+
+    card = ActionView::RecordIdentifier.dom_id(@application)
+    assert_select "turbo-stream[action=remove][target=?]", card
+    assert_select "turbo-stream[action=append][target=?]", "crm_list_interviewing"
+    assert_select "turbo-stream[action=replace][target=?]", "crm_count_wishlist"
+    assert_select "turbo-stream[action=replace][target=?]", "crm_count_interviewing"
+  end
+
+  test "emptying a column streams its empty state back in" do
+    patch application_url(@application), params: { application: { status: "interviewing" } }
+
+    assert_select "turbo-stream[action=append][target=?]", "crm_list_wishlist" do
+      assert_select "div#crm_empty_wishlist"
+    end
+  end
+
+  test "a column that still has cards gets no empty state" do
+    second = @user.applications.create!(
+      job: Job.create!(company: companies(:one), title: "Still Here", url: "https://ex.test/still-#{SecureRandom.hex(4)}"),
+      status: "wishlist"
+    )
+
+    patch application_url(@application), params: { application: { status: "interviewing" } }
+
+    assert_select "turbo-stream[target=?]", "crm_empty_wishlist", count: 0
+    assert second.reload.wishlist?
+  end
+
+  test "a moved card is slotted into deadline order, not appended to the bottom" do
+    urgent = @user.applications.create!(
+      job: Job.create!(company: companies(:one), title: "Urgent", url: "https://ex.test/u-#{SecureRandom.hex(4)}", expires_at: 1.day.from_now),
+      status: "interviewing"
+    )
+    @application.job.update!(expires_at: 30.days.from_now)
+
+    patch application_url(@application), params: { application: { status: "interviewing" } }
+
+    # The moved card outlives the urgent one, so it lands after it - which
+    # means appended, since there is no later sibling to go before.
+    assert_select "turbo-stream[action=append][target=?]", "crm_list_interviewing"
+
+    @application.job.update!(expires_at: 1.hour.from_now)
+    @application.update!(status: "wishlist")
+    patch application_url(@application), params: { application: { status: "interviewing" } }
+
+    assert_select "turbo-stream[action=before][target=?]", ActionView::RecordIdentifier.dom_id(urgent)
   end
 
   test "should get destroy" do
@@ -282,6 +357,54 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
     assert @application.reload.applied?
   end
 
+  test "a board move into Sending soon is refused - Apply is the only way in" do
+    patch application_url(@application), params: { application: { status: "queued" } }
+
+    assert_response :unprocessable_entity
+    assert_select "turbo-stream[action=update][target=flash]"
+    assert @application.reload.wishlist?, "status must not change"
+    assert_nil @application.queued_at, "nothing should look scheduled"
+  end
+
+  test "a board move out of Sending soon is refused - Cancel send is the only way out" do
+    @application.update!(status: "queued", queued_at: Time.current)
+
+    patch application_url(@application), params: { application: { status: "interviewing" } }
+
+    assert_response :unprocessable_entity
+    assert_select "turbo-stream[action=update][target=flash]"
+    @application.reload
+    assert @application.queued?, "a scheduled send must not be abandoned by a drag"
+    assert_not_nil @application.queued_at, "queued_at must stay in step with the daily cap"
+  end
+
+  test "a queued application can still have its detail fields edited" do
+    @application.update!(status: "queued", queued_at: Time.current)
+
+    patch application_url(@application), params: { application: { contact_person: "Amila" } }
+
+    assert_redirected_to application_path(@application)
+    assert_equal "Amila", @application.reload.contact_person
+    assert @application.queued?
+  end
+
+  test "an unknown status is rejected instead of raising" do
+    patch application_url(@application), params: { application: { status: "totally_bogus" } }
+
+    assert_response :unprocessable_entity
+    assert_select "turbo-stream[action=update][target=flash]"
+    assert @application.reload.wishlist?
+  end
+
+  test "a board move to applied records applied_at through the controller" do
+    patch application_url(@application), params: { application: { status: "applied" } }
+
+    assert_response :success
+    @application.reload
+    assert @application.applied?
+    assert_not_nil @application.applied_at
+  end
+
   test "interview_ics downloads a calendar file when an interview date is set" do
     @application.update!(interview_date: 3.days.from_now)
 
@@ -330,9 +453,11 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/What we actually sent/, response.body)
   end
 
-  test "updating status redirects to the CRM board" do
+  test "updating status answers the board in place instead of navigating" do
     patch application_url(@application), params: { application: { status: "interviewing" } }
-    assert_redirected_to crm_path
+
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
   end
 
   test "updating CRM-depth fields redirects to the application's own detail page" do

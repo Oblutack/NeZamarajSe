@@ -1,0 +1,15 @@
+<%# Extracted so the stream that empties a column can append the exact same
+    markup the initial render would have produced. The id lets the reverse
+    case - a card arriving in an empty column - remove it again. %>
+<div id="crm_empty_<%= status %>" class="flex flex-col items-center text-center py-8 px-3 border border-dashed border-zinc-200 rounded-lg dark:border-zinc-800">
+  <svg class="w-6 h-6 text-zinc-300 dark:text-zinc-700" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0l-2.586 2.586a2 2 0 01-1.414.586H10a2 2 0 01-1.414-.586L6 13m14 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5"></path>
+  </svg>
+  <% if status == "wishlist" %>
+    <p class="mt-2.5 text-[12px] text-zinc-500 dark:text-zinc-400"><%= t("applications.index.save_jobs_from_the") %></p>
+    <%= link_to t("navbar.job_market"), jobs_path, class: "text-[12px] font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50" %>
+    <p class="text-[12px] text-zinc-500 dark:text-zinc-400"><%= t("applications.index.to_get_started") %></p>
+  <% else %>
+    <p class="mt-2.5 text-[12px] text-zinc-500 dark:text-zinc-400"><%= t("applications.index.empty_states.#{status}", default: t("applications.index.nothing_here_yet")) %></p>
+  <% end %>
+</div>

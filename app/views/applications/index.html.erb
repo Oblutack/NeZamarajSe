@@ -49,38 +49,30 @@
 
   <div class="relative flex-1 overflow-x-auto flex min-w-0 px-4 sm:px-6 lg:px-8 pb-4 border-t border-zinc-100 dark:border-zinc-800">
     <% @grouped_applications.each do |status, applications| %>
-      <div class="hidden sm:flex w-full sm:w-72 flex-shrink-0 flex-col border-r-0 sm:border-r border-zinc-100 last:border-r-0 dark:border-zinc-800" data-mobile-crm-target="column" data-status="<%= status %>" data-controller="drag" data-action="dragover->drag#dragOver drop->drag#drop">
+      <%# "Sending soon" takes no drops: a card can only get there through the
+          real Apply flow (see Application::MACHINE_OWNED_STATUS). Leaving the
+          dragover handler off means the browser never allows a drop here at
+          all and shows its own "no drop" cursor - a native affordance, rather
+          than accepting the gesture and then rejecting it server-side. %>
+      <div class="hidden sm:flex w-full sm:w-72 flex-shrink-0 flex-col border-r-0 sm:border-r border-zinc-100 last:border-r-0 dark:border-zinc-800" data-mobile-crm-target="column" data-status="<%= status %>" data-controller="drag" data-action="<%= "dragover->drag#dragOver drop->drag#drop" unless status == Application::MACHINE_OWNED_STATUS %>">
 
         <div class="pt-3.5 pb-3 pr-4">
           <h3 class="text-[11px] font-bold text-zinc-500 uppercase tracking-wide flex justify-between items-center dark:text-zinc-400">
             <%= application_status_label(status) %>
-            <span class="text-zinc-400 font-semibold dark:text-zinc-600"><%= applications.count %></span>
+            <%= render "applications/column_count", status: status, count: applications.count %>
           </h3>
         </div>
 
-        <%# aria-live: a status change lands here via a Turbo Stream replace
-            (Application#broadcast_status_update) with no page reload for
-            anyone else with this board open - without this, that update is
-            silent to a screen reader. %>
-        <div class="flex-1 pr-3 overflow-y-auto space-y-2.5" data-drag-target="scrollable" aria-live="polite" aria-relevant="additions removals" aria-label="<%= application_status_label(status) %>">
-          <% if applications.any? %>
-            <% applications.each do |app| %>
-              <%= render "applications/application_card", app: app %>
-            <% end %>
-          <% else %>
-            <div class="flex flex-col items-center text-center py-8 px-3 border border-dashed border-zinc-200 rounded-lg dark:border-zinc-800">
-              <svg class="w-6 h-6 text-zinc-300 dark:text-zinc-700" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0l-2.586 2.586a2 2 0 01-1.414.586H10a2 2 0 01-1.414-.586L6 13m14 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5"></path>
-              </svg>
-              <% if status == "wishlist" %>
-                <p class="mt-2.5 text-[12px] text-zinc-500 dark:text-zinc-400"><%= t(".save_jobs_from_the") %></p>
-                <%= link_to t("navbar.job_market"), jobs_path, class: "text-[12px] font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50" %>
-                <p class="text-[12px] text-zinc-500 dark:text-zinc-400"><%= t(".to_get_started") %></p>
-              <% else %>
-                <p class="mt-2.5 text-[12px] text-zinc-500 dark:text-zinc-400"><%= t(".empty_states.#{status}", default: t(".nothing_here_yet")) %></p>
-              <% end %>
-            </div>
+        <%# aria-live: a status change lands here as a Turbo Stream remove +
+            insert (see applications/_status_change_streams) with no page
+            reload - without this, that update is silent to a screen reader.
+            This element itself must persist for that to work, which is why
+            the streams patch its contents rather than replacing it. %>
+        <div id="crm_list_<%= status %>" class="flex-1 pr-3 overflow-y-auto space-y-2.5" data-drag-target="scrollable" aria-live="polite" aria-relevant="additions removals" aria-label="<%= application_status_label(status) %>">
+          <% applications.each do |app| %>
+            <%= render "applications/application_card", app: app %>
           <% end %>
+          <%= render "applications/column_empty_state", status: status if applications.empty? %>
         </div>
       </div>
     <% end %>

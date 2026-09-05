@@ -1,0 +1,51 @@
+<%# The full set of stream actions for one card changing status.
+    Rendered twice over: as ApplicationsController#update's direct response to
+    whoever made the move, and as the broadcast to every other open board
+    (Application#broadcast_status_update) - so both audiences converge on the
+    same DOM instead of each tab having its own idea of where the card is.
+
+    Deliberately surgical (remove the card, slot it back in, patch the two
+    counts) rather than re-rendering whole columns: each column's card list is
+    an aria-live region, and replacing that element wholesale destroys the
+    region instead of announcing an addition/removal inside it - see the
+    aria-live note in applications/index.html.erb. It also keeps the column's
+    scroll position, which a wholesale replace would reset.
+
+    Applying this twice is harmless: removing an already-removed card is a
+    no-op, and the insert is keyed off ids that are recomputed each time.
+
+    `app.user` rather than current_user - there's no request context when this
+    renders from a broadcast. %>
+<% user = app.user %>
+<% siblings = user.applications.includes(:job).where(status: to_status).sort_by(&:deadline_sort_key) %>
+<% next_sibling = siblings[(siblings.index { |a| a.id == app.id } || -1) + 1] %>
+
+<%# The card's own markup depends on its status (the bulk-select checkbox,
+    Apply vs. Cancel send, which Move-to options are offered, whether it's
+    draggable at all), so it's re-rendered rather than relocated. %>
+<%= turbo_stream.remove app %>
+<%= turbo_stream.remove "crm_empty_#{to_status}" %>
+
+<% if next_sibling %>
+  <%# Slotted into deadline order rather than appended, so a card doesn't
+      land at the bottom of a column that's sorted by urgency. %>
+  <%= turbo_stream.before ActionView::RecordIdentifier.dom_id(next_sibling) do %>
+    <%= render "applications/application_card", app: app %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.append "crm_list_#{to_status}" do %>
+    <%= render "applications/application_card", app: app %>
+  <% end %>
+<% end %>
+
+<% [ from_status, to_status ].compact.uniq.each do |status| %>
+  <%= turbo_stream.replace "crm_count_#{status}" do %>
+    <%= render "applications/column_count", status: status, count: user.applications.where(status: status).count %>
+  <% end %>
+<% end %>
+
+<% if from_status.present? && user.applications.where(status: from_status).none? %>
+  <%= turbo_stream.append "crm_list_#{from_status}" do %>
+    <%= render "applications/column_empty_state", status: from_status %>
+  <% end %>
+<% end %>

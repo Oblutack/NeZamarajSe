@@ -11,8 +11,7 @@ class ApplicationsController < ApplicationController
     # known deadline sorts last, not first (nil isn't more urgent than a
     # real date). This creates a Hash: { "wishlist" => [...], "applied" => [...] }
     @grouped_applications = Application.statuses.keys.index_with do |status|
-      @applications.select { |app| app.status == status }
-        .sort_by { |app| app.job.expires_at || Date.new(9999, 12, 31) }
+      @applications.select { |app| app.status == status }.sort_by(&:deadline_sort_key)
     end
   end
 
@@ -28,16 +27,24 @@ class ApplicationsController < ApplicationController
     @application = current_user.applications.includes(job: :company).find(params[:id])
   end
 
+  # Two callers: the Kanban board (a drag or the card's "Move to…" menu, which
+  # sends a status) and the detail page's own form (contact person, salary,
+  # interview date, rejection reason - no status). The board gets Turbo Stream
+  # actions back so the card moves without re-rendering the page; the detail
+  # form keeps its plain redirect.
   def update
     @application = current_user.applications.find(params[:id])
-    redirect_target = params[:application]&.key?("status") ? crm_path : application_path(@application)
+    new_status = params[:application]&.[]("status")
 
-    # Update the status (e.g., from 'wishlist' to 'applied') or, from the
-    # detail page's own form, the CRM-depth fields (contact person, salary,
-    # interview date, rejection reason) - same action either way, just a
-    # different subset of application_params depending on which form posted.
+    return update_details if new_status.blank?
+    return unless allow_status_move?(new_status)
+
+    from_status = @application.status
+
     if @application.update(application_params)
-      redirect_to redirect_target
+      render_status_change(from_status)
+    else
+      render_board_alert(@application.errors.full_messages.to_sentence)
     end
   end
 
@@ -295,6 +302,64 @@ class ApplicationsController < ApplicationController
 
   def application_params
     params.require(:application).permit(:status, :contact_person, :salary, :interview_date, :rejection_reason)
+  end
+
+  def update_details
+    if @application.update(application_params)
+      redirect_to application_path(@application)
+    else
+      # There was no else branch here at all, so a failed update rendered no
+      # template and 500'd on the app's most-used write endpoint.
+      redirect_to application_path(@application), alert: @application.errors.full_messages.to_sentence
+    end
+  end
+
+  # The moved card, its new slot, and both column counts - see
+  # applications/_status_change_streams for why it's surgical rather than a
+  # column re-render. The board's own JS has already moved the card
+  # optimistically; this is the authoritative reconciliation on top of it.
+  def render_status_change(from_status)
+    render turbo_stream: render_to_string(
+      partial: "applications/status_change_streams",
+      locals: { app: @application, from_status: from_status, to_status: @application.status },
+      formats: [ :turbo_stream ]
+    )
+  end
+
+  # A refused move has to come back as an error status, not a redirect: the
+  # board's drag controller keys its rollback off turbo:submit-end's success
+  # flag, and a 302 would read as "the move worked" and leave the card sitting
+  # in a column the server never accepted.
+  def render_board_alert(message)
+    flash.now[:alert] = message
+    render turbo_stream: turbo_stream.update("flash", partial: "shared/flash"),
+      status: :unprocessable_entity
+  end
+
+  # Guards the two ways a manual board move can put the record out of step
+  # with reality. Returns false having already rendered.
+  def allow_status_move?(new_status)
+    # An unknown value raises ArgumentError straight out of the enum setter
+    # (a 500, not a validation failure), so it has to be caught before the
+    # assignment rather than rescued after it.
+    unless Application.statuses.key?(new_status)
+      render_board_alert(t("flash.applications.unknown_status"))
+      return false
+    end
+
+    # Entering or leaving "Sending soon" by hand - see
+    # Application::MACHINE_OWNED_STATUS for why that lane is off limits.
+    if new_status == Application::MACHINE_OWNED_STATUS
+      render_board_alert(t("flash.applications.use_apply_to_send"))
+      return false
+    end
+
+    if @application.queued?
+      render_board_alert(t("flash.applications.cancel_send_first"))
+      return false
+    end
+
+    true
   end
 
   # dry_run_emails on means every send lands in the user's own inbox

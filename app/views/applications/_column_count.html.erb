@@ -1,0 +1,3 @@
+<%# Its own partial with a stable id so a status change can patch just this
+    number, rather than re-rendering the column around it. %>
+<span id="crm_count_<%= status %>" class="text-zinc-400 font-semibold dark:text-zinc-600"><%= count %></span>

@@ -1,5 +1,8 @@
 <%= turbo_frame_tag app do %>
-  <div class="bg-white p-3.5 rounded-lg border border-zinc-200 cursor-grab active:cursor-grabbing hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition relative dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700" draggable="true" data-controller="drag dropdown" data-action="dragstart->drag#dragStart dragend->drag#dragEnd" data-id="<%= app.id %>">
+  <%# A card that's mid-send isn't draggable at all - its only way out is
+      Cancel send below, which also hands back the daily-send allowance that
+      dragging it elsewhere would silently strand. %>
+  <div class="bg-white p-3.5 rounded-lg border border-zinc-200 <%= app.queued? ? "cursor-default" : "cursor-grab active:cursor-grabbing" %> hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5 transition relative dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700" draggable="<%= !app.queued? %>" data-controller="drag dropdown" data-action="dragstart->drag#dragStart dragend->drag#dragEnd" data-id="<%= app.id %>" data-deadline="<%= app.job.expires_at&.iso8601 %>">
 
     <% if app.status == "wishlist" %>
       <div class="absolute top-3.5 right-3.5">
@@ -51,11 +54,19 @@
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>
           </button>
           <div data-dropdown-target="menu" class="hidden absolute right-0 mt-2 w-40 bg-white border border-zinc-200 rounded-lg shadow-lg py-1.5 z-20 dark:bg-zinc-900 dark:border-zinc-800">
-            <p class="px-3.5 py-1 text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide dark:text-zinc-600"><%= t(".move_to") %></p>
-            <% (Application.statuses.keys - [ app.status ]).each do |status| %>
-              <button type="button" data-action="click->drag#moveTo click->dropdown#close" data-id="<%= app.id %>" data-status="<%= status %>" class="cursor-pointer block w-full text-left px-3.5 py-1.5 text-[12.5px] font-medium text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800">
-                <%= application_status_label(status) %>
-              </button>
+            <%# Empty while the card is sending - "Sending soon" is never
+                offered as a target either, since Apply is the only way in.
+                Says why rather than just showing a bare Remove. %>
+            <% movable = app.manually_movable_statuses %>
+            <% if movable.any? %>
+              <p class="px-3.5 py-1 text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide dark:text-zinc-600"><%= t(".move_to") %></p>
+              <% movable.each do |status| %>
+                <button type="button" data-action="click->drag#moveTo click->dropdown#close" data-id="<%= app.id %>" data-status="<%= status %>" class="cursor-pointer block w-full text-left px-3.5 py-1.5 text-[12.5px] font-medium text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                  <%= application_status_label(status) %>
+                </button>
+              <% end %>
+            <% else %>
+              <p class="px-3.5 py-1.5 text-[11.5px] text-zinc-500 dark:text-zinc-400"><%= t(".sending_locked") %></p>
             <% end %>
             <%# link_to + turbo_method, not button_to - same reason as the
                 cancel-send link below: this card renders inside the board's
