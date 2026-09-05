@@ -68,7 +68,15 @@
             reload - without this, that update is silent to a screen reader.
             This element itself must persist for that to work, which is why
             the streams patch its contents rather than replacing it. %>
-        <div id="crm_list_<%= status %>" class="flex-1 pr-3 overflow-y-auto space-y-2.5" data-drag-target="scrollable" aria-live="polite" aria-relevant="additions removals" aria-label="<%= application_status_label(status) %>">
+        <%# pt-1 is load-bearing, not spacing taste: every card lifts 2px on
+            hover (hover:-translate-y-0.5) and this list is overflow-y-auto, so
+            without any top padding the topmost card has zero clearance - it
+            translates straight past the container's top edge, gets clipped
+            there, and its top border reads as merging into the column header
+            above. The padding also gives hover:shadow-sm somewhere to render.
+            space-y-2.5 only sets margins between cards, so it never covered
+            the first one. %>
+        <div id="crm_list_<%= status %>" class="flex-1 pr-3 pt-1 overflow-y-auto space-y-2.5" data-drag-target="scrollable" aria-live="polite" aria-relevant="additions removals" aria-label="<%= application_status_label(status) %>">
           <% applications.each do |app| %>
             <%= render "applications/application_card", app: app %>
           <% end %>
