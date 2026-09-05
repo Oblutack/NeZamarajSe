@@ -102,7 +102,7 @@ class ApplicationsController < ApplicationController
     body_html = CoverLetterGeneratorService.call(job: @application.job, resume_blob: resume.blob, language: language)
 
     template = current_user.cover_letter_templates.create!(
-      name: "AI: #{@application.job.title} (#{l(Time.current, format: '%b %-d, %H:%M')})",
+      name: CoverLetterTemplate.unique_ai_name(current_user, "AI: #{@application.job.title} (#{l(Time.current, format: '%b %-d, %H:%M:%S')})"),
       body: body_html,
       ai_generated: true,
       language: CoverLetterTemplate::LANGUAGES.key?(language) ? language : "en"

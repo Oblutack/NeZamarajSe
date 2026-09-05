@@ -19,6 +19,24 @@ class CoverLetterTemplate < ApplicationRecord
   validates :body, presence: true
   validates :language, inclusion: { in: LANGUAGES.keys }, allow_nil: true
 
+  # An AI-generated draft's name is auto-built from a timestamp (see
+  # CoverLetterTemplatesController#generate / ApplicationsController#generate_cover_letter)
+  # rather than typed by the user, but it still has to satisfy the
+  # uniqueness validation above. Two generations landing in the same
+  # second (a fast API response, a double click) would otherwise raise
+  # ActiveRecord::RecordInvalid on the second one - append a numeric
+  # suffix instead of letting that surface as a generic "couldn't
+  # generate" error over what's really just a name clash.
+  def self.unique_ai_name(user, base)
+    name = base
+    suffix = 1
+    while user.cover_letter_templates.exists?(name: name)
+      suffix += 1
+      name = "#{base} (#{suffix})"
+    end
+    name
+  end
+
   # This is the "Architect" way to handle string interpolation safely later.
   # We'll call this method right before sending an email.
   #

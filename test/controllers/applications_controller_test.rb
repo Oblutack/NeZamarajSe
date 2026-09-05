@@ -425,6 +425,28 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to compose_application_path(@application, template_id: template.id, resume_blob_id: blob_id)
   end
 
+  test "generating twice for the same application in the same second both succeed" do
+    blob_id = attach_resume
+    fake_client = stub_ai_response("Dear Hiring Team,\n\nI would love to join.")
+
+    # Same class of bug as CoverLetterTemplatesController#generate: the
+    # auto-generated name (job title + minute-precision timestamp) used to
+    # collide on the per-user uniqueness validation and raise, surfacing as
+    # a generic "couldn't generate" alert.
+    assert_difference("@user.cover_letter_templates.count", 2) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        travel_to Time.zone.local(2026, 9, 5, 7, 48, 25) do
+          post generate_cover_letter_application_url(@application), params: { resume_blob_id: blob_id, language: "en" }
+          post generate_cover_letter_application_url(@application), params: { resume_blob_id: blob_id, language: "en" }
+        end
+      end
+    end
+
+    names = @user.cover_letter_templates.order(:created_at).last(2).map(&:name)
+    assert_equal names.uniq.size, names.size, "both generated templates must have distinct names"
+    assert_nil flash[:alert]
+  end
+
   test "generate_cover_letter redirects back to compose without generating when no resume is selected" do
     assert_no_difference("@user.cover_letter_templates.count") do
       post generate_cover_letter_application_url(@application), params: { resume_blob_id: "" }

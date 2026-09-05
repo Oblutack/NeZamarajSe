@@ -107,6 +107,39 @@ class CoverLetterTemplateTest < ActiveSupport::TestCase
     assert_equal false, template.ai_generated
   end
 
+  test "unique_ai_name returns the base name when it's free" do
+    user = users(:one)
+
+    assert_equal "AI Template (Sep 5, 07:48:25)",
+      CoverLetterTemplate.unique_ai_name(user, "AI Template (Sep 5, 07:48:25)")
+  end
+
+  test "unique_ai_name appends a suffix when two generations land on the same name" do
+    user = users(:one)
+    base = "AI Template (Sep 5, 07:48)"
+    user.cover_letter_templates.create!(name: base, body: "Body")
+
+    assert_equal "#{base} (2)", CoverLetterTemplate.unique_ai_name(user, base)
+  end
+
+  test "unique_ai_name keeps incrementing past multiple collisions" do
+    user = users(:one)
+    base = "AI Template (Sep 5, 07:48)"
+    user.cover_letter_templates.create!(name: base, body: "Body")
+    user.cover_letter_templates.create!(name: "#{base} (2)", body: "Body")
+    user.cover_letter_templates.create!(name: "#{base} (3)", body: "Body")
+
+    assert_equal "#{base} (4)", CoverLetterTemplate.unique_ai_name(user, base)
+  end
+
+  test "unique_ai_name is scoped per user - another user's name in use doesn't force a suffix" do
+    other_user = User.create!(email: "collision-check@example.com", password: "password123")
+    base = "AI Template (Sep 5, 07:48)"
+    other_user.cover_letter_templates.create!(name: base, body: "Body")
+
+    assert_equal base, CoverLetterTemplate.unique_ai_name(users(:one), base)
+  end
+
   test "deleting a template nullifies cover_letter_template_id rather than removing the application" do
     user = users(:one)
     template = CoverLetterTemplate.create!(user: user, name: "Disposable", body: "Body")

@@ -71,6 +71,28 @@ class CoverLetterTemplatesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to edit_cover_letter_template_path(template)
   end
 
+  test "generating twice back-to-back both succeed even with the same auto-generated name" do
+    blob_id = attach_resume
+    fake_client = stub_ai_response("Dear {{company_name}},\n\nI'd love to join.")
+
+    # Reproduces the reported bug: two generations landing in the same
+    # clock-second used to collide on CoverLetterTemplate's per-user unique
+    # name and raise on the second one, surfacing as a generic
+    # "couldn't generate" alert that looked like a cooldown.
+    assert_difference("@user.cover_letter_templates.count", 2) do
+      stub_class_method(OpenAI::Client, :new, fake_client) do
+        travel_to Time.zone.local(2026, 9, 5, 7, 48, 25) do
+          post generate_cover_letter_templates_url, params: { resume_blob_id: blob_id, language: "en" }
+          post generate_cover_letter_templates_url, params: { resume_blob_id: blob_id, language: "en" }
+        end
+      end
+    end
+
+    names = @user.cover_letter_templates.order(:created_at).last(2).map(&:name)
+    assert_equal names.uniq.size, names.size, "both generated templates must have distinct names"
+    assert_nil flash[:alert]
+  end
+
   test "generate redirects back to new without generating when no resume is selected" do
     assert_no_difference("@user.cover_letter_templates.count") do
       post generate_cover_letter_templates_url, params: { resume_blob_id: "" }
