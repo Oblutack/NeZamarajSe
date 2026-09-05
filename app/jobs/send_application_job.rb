@@ -16,10 +16,19 @@ class SendApplicationJob < ApplicationJob
     user = application.user
     job = application.job
 
-    template = user.cover_letter_templates.find(template_id)
+    # Either can be gone by now - a bulk campaign's last send fires up to 45
+    # minutes after the user hit the button. Hand the reserved daily
+    # allowance back and put the card where #cancel would leave it, rather
+    # than crash-looping through every Sidekiq retry on `resume.filename`
+    # and stranding the application in "queued" forever.
+    template, resume = send_assets_for(user, template_id, resume_blob_id)
 
-    # ActiveStorage lookup by blob ID
-    resume = user.resumes.find { |r| r.blob_id == resume_blob_id.to_i }
+    if template.nil? || resume.nil?
+      report_missing_send_assets("Application send", template, resume,
+        application_id: application_id, template_id: template_id, resume_blob_id: resume_blob_id)
+      application.update!(status: "wishlist", queued_at: nil)
+      return
+    end
 
     # Generate the raw email - locale scoped to whatever the user had active
     # when they hit send, so the subject line matches what they previewed

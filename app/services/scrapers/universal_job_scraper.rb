@@ -65,7 +65,13 @@ module Scrapers
             # Exact-URL dedup above can't catch that - fall back to title+company.
             next if record_or_skip_duplicate?(company, title, @config.site_name, job_url)
 
-            job = Job.find_or_initialize_by(url: job_url)
+            # A user who pasted this exact URL into the manual-add form owns
+            # a private row for it. `jobs.url` is globally unique, so a public
+            # copy can't coexist - skip the card rather than overwrite their
+            # own title and notes with scraper text.
+            next if Job.where.not(added_by_id: nil).exists?(url: job_url)
+
+            job = Job.scraped.find_or_initialize_by(url: job_url)
             job.title = title
             job.company = company
             job.description = "Scraped via Headless Chrome from #{@config.site_name}"

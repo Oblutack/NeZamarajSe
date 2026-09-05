@@ -52,7 +52,11 @@ module Scrapers
           # but is worth recording as a cross-posting rather than discarding.
           next if record_or_skip_duplicate?(company, title, SOURCE_NAME, job_url)
 
-          job = Job.find_or_initialize_by(url: job_url)
+          # Same private-entry guard as UniversalJobScraper - see the
+          # Job.scraped scope's note.
+          next if Job.where.not(added_by_id: nil).exists?(url: job_url)
+
+          job = Job.scraped.find_or_initialize_by(url: job_url)
           job.title = title
           job.company = company
           job.description = "Scraped via IT Karijera API"

@@ -7,8 +7,15 @@ class SendFollowUpJob < ApplicationJob
     user = application.user
     job = application.job
 
-    template = user.cover_letter_templates.find(template_id)
-    resume = user.resumes.find { |r| r.blob_id == resume_blob_id.to_i }
+    # Same permanent-failure guard as SendApplicationJob - nothing to revert
+    # here, since a follow-up doesn't move the application's status.
+    template, resume = send_assets_for(user, template_id, resume_blob_id)
+
+    if template.nil? || resume.nil?
+      report_missing_send_assets("Follow-up send", template, resume,
+        application_id: application_id, template_id: template_id, resume_blob_id: resume_blob_id)
+      return
+    end
 
     mail = I18n.with_locale(locale) { JobApplicationMailer.follow_up(user, job, template, resume) }
     raw_email = mail.message.to_s

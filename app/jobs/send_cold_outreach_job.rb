@@ -5,8 +5,15 @@ class SendColdOutreachJob < ApplicationJob
   def perform(user_id, company_id, template_id, resume_blob_id, locale = I18n.default_locale.to_s)
     user = User.find(user_id)
     company = Company.find(company_id)
-    template = user.cover_letter_templates.find(template_id)
-    resume = user.resumes.find { |r| r.blob_id == resume_blob_id.to_i }
+    # Same permanent-failure guard as SendApplicationJob - nothing to revert
+    # here, since last_contacted_at is only written after Gmail confirms.
+    template, resume = send_assets_for(user, template_id, resume_blob_id)
+
+    if template.nil? || resume.nil?
+      report_missing_send_assets("Cold outreach send", template, resume,
+        user_id: user_id, company_id: company_id, template_id: template_id, resume_blob_id: resume_blob_id)
+      return
+    end
 
     mail = I18n.with_locale(locale) { JobApplicationMailer.cold_outreach(user, company, template, resume) }
     raw_email = mail.message.to_s

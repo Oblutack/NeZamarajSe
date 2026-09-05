@@ -491,6 +491,11 @@ bs:
         didnt_receive_confirmation_instructions: "Nisi dobio/la upute za potvrdu?"
         didnt_receive_unlock_instructions: "Nisi dobio/la upute za otključavanje?"
         sign_in_with: "Prijavi se putem %{provider}"
+        # Vidi napomenu u en.yml - OmniAuth bi inače ispisao "GoogleOauth2".
+        # "putem" traži genitiv, pa ovdje stoji "Google računa", a ne samo
+        # "Google" kao u engleskoj verziji.
+        providers:
+          google_oauth2: "Google računa"
 
   user_preferences:
     edit:

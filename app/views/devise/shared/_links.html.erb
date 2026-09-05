@@ -22,7 +22,10 @@
   <%- if devise_mapping.omniauthable? %>
     <%- resource_class.omniauth_providers.each do |provider| %>
       <p class="pt-2">
-        <%= button_to t(".sign_in_with", provider: OmniAuth::Utils.camelize(provider)), omniauth_authorize_path(resource_name, provider),
+<%# OmniAuth::Utils.camelize turns :google_oauth2 into "GoogleOauth2", which
+    is the strategy's name, not a brand a user recognises - fall back to it
+    only for a provider we haven't given a display name yet. %>
+        <%= button_to t(".sign_in_with", provider: t(".providers.#{provider}", default: OmniAuth::Utils.camelize(provider))), omniauth_authorize_path(resource_name, provider),
               data: { turbo: false },
               class: "cursor-pointer w-full inline-flex justify-center py-2 px-4 border border-zinc-300 text-[13px] font-semibold rounded-md text-zinc-700 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800" %>
       </p>

@@ -42,6 +42,15 @@ class Job < ApplicationRecord
   # filter through this.
   scope :visible_to, ->(user) { where(added_by_id: nil).or(where(added_by_id: user.id)) }
 
+  # The shared, scraped pool - the other side of `visible_to`'s rule. Every
+  # scraper must dedupe against *only* these: a hand-entered private job is
+  # one user's own row (their own title, their own notes), not a claim on
+  # that company+title for the whole platform. Without this, a manual entry
+  # absorbs the real posting when a scraper later finds it - the public job
+  # is never created (invisible to every other user), and matching on `url`
+  # additionally overwrites the owner's title/description with scraper text.
+  scope :scraped, -> { where(added_by_id: nil) }
+
   # How many of the user's own radar keywords show up in this posting's
   # title/description - a plain substring count, not a ranked search
   # relevance score. Deliberately reuses whatever's already in `description`

@@ -14,7 +14,9 @@ module Scrapers
     # recorded as one of its sources either way, so the caller should `next`
     # rather than create a duplicate Job row.
     def record_or_skip_duplicate?(company, title, source_name, job_url)
-      existing_job = Job.find_by(company_id: company.id, title: title)
+      # Job.scraped, not Job - a user's private hand-entered job must never
+      # absorb a real public posting (see the scope's own note in Job).
+      existing_job = Job.scraped.find_by(company_id: company.id, title: title)
       return false unless existing_job
 
       record_job_source!(existing_job, source_name, job_url)

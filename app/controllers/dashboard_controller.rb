@@ -102,7 +102,11 @@ class DashboardController < ApplicationController
     since = current_user.last_dashboard_visit_at || 7.days.ago
     saved_job_ids = applications.select(:job_id)
 
+    # includes(:company) because the card below renders job.company.name -
+    # keyword_match_count has to run in Ruby (it reads title *and*
+    # description), so these rows are loaded either way.
     Job.visible_to(current_user)
+      .includes(:company)
       .where(created_at: since..)
       .where.not(id: saved_job_ids)
       .select { |job| job.keyword_match_count(keywords).positive? }

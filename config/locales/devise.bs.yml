@@ -1,0 +1,17 @@
+# Bosnian labels for the Devise forms.
+#
+# devise-i18n ships a bs.yml, but its `activerecord.attributes.user.*` keys
+# are empty stubs (present, never translated upstream), so every one of them
+# fell through the fallback chain to English - the login, sign-up and account
+# pages rendered "Password"/"Remember me" in an otherwise Bosnian UI. Only
+# the five attributes the app's own Devise views actually label are defined
+# here; the rest stay on the gem's stubs, since nothing renders them.
+bs:
+  activerecord:
+    attributes:
+      user:
+        email: "Email"
+        password: "Lozinka"
+        password_confirmation: "Potvrda lozinke"
+        current_password: "Trenutna lozinka"
+        remember_me: "Zapamti me"
