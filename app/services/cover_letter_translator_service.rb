@@ -26,7 +26,12 @@ class CoverLetterTranslatorService
       parameters: {
         model: "openai/gpt-oss-20b",
         messages: [ { role: "user", content: prompt } ],
-        temperature: 0.3
+        temperature: 0.3,
+        # See CoverLetterTemplateGeneratorService for why this matters:
+        # gpt-oss-20b's reasoning tokens share the completion budget with
+        # the visible reply and, left unset, can consume nearly all of it -
+        # truncating the translation mid-sentence or emptying it entirely.
+        reasoning_effort: "low"
       }
     )
 

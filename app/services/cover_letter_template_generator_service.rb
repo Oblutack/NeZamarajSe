@@ -24,7 +24,15 @@ class CoverLetterTemplateGeneratorService
       parameters: {
         model: "openai/gpt-oss-20b",
         messages: [ { role: "user", content: prompt } ],
-        temperature: 0.6
+        temperature: 0.6,
+        # gpt-oss-20b is a reasoning model: its internal chain-of-thought
+        # shares Groq's default completion token budget with the visible
+        # reply. Left unset, reasoning has run away and consumed nearly the
+        # whole budget (observed: 2046 of 2048 tokens), truncating or
+        # entirely emptying the actual letter (finish_reason: "length").
+        # "low" reliably keeps reasoning to ~15-25 tokens, leaving the rest
+        # for the ~250-350 word letter this prompt asks for.
+        reasoning_effort: "low"
       }
     )
 

@@ -30,7 +30,12 @@ class CoverLetterGeneratorService
       parameters: {
         model: "openai/gpt-oss-20b",
         messages: [ { role: "user", content: prompt } ],
-        temperature: 0.6
+        temperature: 0.6,
+        # See CoverLetterTemplateGeneratorService for why this matters:
+        # gpt-oss-20b's reasoning tokens share the completion budget with
+        # the visible letter and, left unset, can consume nearly all of it -
+        # truncating the letter mid-sentence or emptying it entirely.
+        reasoning_effort: "low"
       }
     )
 

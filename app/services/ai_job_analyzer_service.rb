@@ -228,7 +228,14 @@ class AiJobAnalyzerService
           model: "openai/gpt-oss-20b",
           messages: [ { role: "user", content: prompt } ],
           temperature: 0.1,
-          response_format: { type: "json_object" }
+          response_format: { type: "json_object" },
+          # gpt-oss-20b is a reasoning model: its internal chain-of-thought
+          # shares Groq's default completion token budget with the visible
+          # reply. Left unset, reasoning can run away and consume nearly the
+          # whole budget, truncating the JSON mid-object - the likely cause
+          # of the JSON::ParserError rescue below firing on real jobs, not
+          # just a malformed-model-output edge case.
+          reasoning_effort: "low"
         }
       )
 
