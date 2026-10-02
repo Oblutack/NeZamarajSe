@@ -147,6 +147,67 @@ the full test suite against a real Postgres instance.
 
 ## Architecture at a glance
 
+```mermaid
+flowchart LR
+    classDef ext fill:#e5e7eb,stroke:#6b7280,color:#111827
+    classDef ingest fill:#dbeafe,stroke:#2563eb,color:#111827
+    classDef enrich fill:#ede9fe,stroke:#7c3aed,color:#111827
+    classDef data fill:#fef3c7,stroke:#d97706,color:#111827
+    classDef web fill:#dcfce7,stroke:#16a34a,color:#111827
+    classDef send fill:#ffe4e6,stroke:#e11d48,color:#111827
+
+    subgraph WEB["Web app · Hotwire"]
+        PAGES["<b>Pages</b><br/>Dashboard · Job Market<br/>Companies · Job Alerts<br/>Cover letters · Resumes"]:::web
+        KANBAN["<b>Kanban CRM board</b><br/>Drag-and-drop moves<br/>Bulk campaigns<br/>Live via Turbo Streams"]:::web
+        SEC["<b>Auth + hardening</b><br/>Devise + Google OAuth<br/>Rack::Attack · CSP"]:::web
+    end
+
+    subgraph DATA["Data"]
+        DB[("<b>PostgreSQL</b><br/>Jobs · Companies<br/>Applications · events<br/>Templates · Users<br/>Notifications<br/>Scraper configs · quotas")]:::data
+        FILES[("<b>Active Storage</b><br/>resumes · logos")]:::data
+    end
+
+    subgraph WORK["Sidekiq workers · cron"]
+        INGEST["<b>Ingest</b><br/>UniversalJobScraper<br/>daily 03:00<br/>ItKarijeraScraper<br/>daily 03:30<br/>CompanyWallScraper<br/>Mondays 04:00"]:::ingest
+        ENRICH["<b>Enrich</b><br/>AnalyzeJob<br/>description, HR email,<br/>deadline, logo<br/>FindCompanyEmailJob<br/>domain → HR address"]:::enrich
+        ALERT["<b>Alerts</b><br/>Instant in-app notice<br/>Daily 08:00 digest"]:::send
+        SEND["<b>Send and track</b><br/>Send jobs; bulk sends<br/>staggered 5 min<br/>CheckForRepliesJob<br/>every 4h"]:::send
+    end
+
+    subgraph EXT["External world"]
+        BOARDS["<b>Job boards</b><br/>Dzobs · MojPosao<br/>ITBase.ba · Klix"]:::ext
+        ITK["<b>IT Karijera</b><br/>JSON API"]:::ext
+        CW["<b>CompanyWall</b><br/>business registry"]:::ext
+        GROQ["<b>Groq</b><br/>job analysis<br/>cover letters"]:::ext
+        LOOKUP["<b>Clearbit +<br/>Hunter.io</b><br/>quota-gated"]:::ext
+        GOOGLE["<b>Google</b><br/>Gmail API + OAuth"]:::ext
+        HB["<b>Honeybadger</b><br/>error tracking"]:::ext
+    end
+
+    PAGES <--> DB
+    KANBAN <--> DB
+    KANBAN -->|enqueue| SEND
+
+    DB <--> INGEST
+    DB <--> ENRICH
+    DB <--> ALERT
+    DB <--> SEND
+
+    INGEST -->|Chrome| BOARDS
+    INGEST -->|JSON| ITK
+    INGEST -->|Chrome| CW
+    ENRICH --> GROQ
+    ENRICH --> LOOKUP
+    SEND -->|own OAuth| GOOGLE
+```
+
+Arrows show which part talks to which. Everything in the *Sidekiq workers*
+box runs in the background, either on a cron schedule or triggered by another
+job, and the web app only enqueues work for it (an application send, a
+follow-up, an email lookup) instead of doing it inline. The one exception is AI
+cover letter drafting and translation, which run inside the request so the
+result appears immediately.
+
 `ScraperConfig` rows are the only thing that define what gets scraped —
 CSS selectors and a seed URL, stored in the database. A scheduled job
 loops over the active ones and hands each to a headless-Chrome scraper,
