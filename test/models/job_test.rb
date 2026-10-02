@@ -144,6 +144,27 @@ class JobTest < ActiveSupport::TestCase
     end
   end
 
+  test "a private job notifies nobody - not other users whose keywords match, and not its owner" do
+    owner = users(:two) # keywords "Ruby, Rails"
+    # Matches user one ("Software") and the owner ("Ruby"), so a missing guard
+    # shows up as a notification for either of them.
+    assert_no_difference("Notification.count") do
+      Job.create!(
+        company: companies(:one), title: "Confidential Ruby Software Developer",
+        url: "https://jobs.example.com/private-ruby-software", added_by: owner
+      )
+    end
+
+    assert_empty users(:one).notifications
+    assert_empty owner.notifications
+  end
+
+  test "a shared posting with the same title still notifies, so the guard is about privacy not wording" do
+    assert_difference("users(:one).notifications.count", 1) do
+      Job.create!(company: companies(:one), title: "Confidential Ruby Software Developer", url: "https://jobs.example.com/public-ruby-software")
+    end
+  end
+
   test "does not notify anyone when the new job matches no one's keywords" do
     assert_no_difference("Notification.count") do
       Job.create!(company: companies(:one), title: "Marketing Coordinator", url: "https://jobs.example.com/marketing-coordinator")

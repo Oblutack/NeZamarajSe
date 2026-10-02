@@ -92,6 +92,13 @@ class Job < ApplicationRecord
   # substring check, whereas those two filter the whole jobs table and need
   # SQL to stay fast.
   def notify_matching_users
+    # A hand-entered job is private to whoever added it (see visible_to), but
+    # this loop runs over *every* user's keywords - so without this, a private
+    # entry put its title and company into the bell of anyone whose keywords
+    # happened to match. Nobody is told about it: not other users, and not the
+    # owner, who just typed it in and doesn't need a notification for it.
+    return if added_by_id.present?
+
     UserPreference.where.not(keywords: [ nil, "" ]).find_each do |preference|
       next unless keyword_match_count(preference.keyword_array).positive?
 
