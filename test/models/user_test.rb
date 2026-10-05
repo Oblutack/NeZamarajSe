@@ -118,4 +118,21 @@ class UserTest < ActiveSupport::TestCase
       assert_equal 0, user.remaining_daily_sends
     end
   end
+
+  test "gmail_connected? needs the refresh token GmailSenderService refreshes with" do
+    user = users(:one)
+
+    user.update!(refresh_token: nil)
+    assert_not user.gmail_connected?, "someone who signed up with email + password has no Google tokens"
+
+    user.update!(access_token: "access-token", refresh_token: "refresh-token")
+    assert user.gmail_connected?
+  end
+
+  test "an access token alone doesn't count as connected, since it expires within the hour" do
+    user = users(:one)
+    user.update!(access_token: "access-token", refresh_token: nil)
+
+    assert_not user.gmail_connected?
+  end
 end

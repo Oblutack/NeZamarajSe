@@ -37,6 +37,15 @@ class User < ApplicationRecord
     [ Rails.application.config.daily_send_cap - sent_today, 0 ].max
   end
 
+  # True once the user has signed in with Google and granted the refresh token
+  # GmailSenderService needs to mint fresh access tokens. Someone who registered
+  # with email + password has none, and constructing the sender for them raises
+  # (it tries to refresh a nil token) - so anything that mails *through the
+  # user's own Gmail* has to check this first and skip them.
+  def gmail_connected?
+    refresh_token.present?
+  end
+
   private
 
   def create_default_preferences
